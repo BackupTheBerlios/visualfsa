@@ -42,6 +42,9 @@ public class IntegerSet {
 		content = content.clearBit(i);
 	}
 	
+	public boolean isEmpty() {
+		return (content.equals(BigInteger.ZERO));
+	}
 
 	// Mächtigkeit
 	public int cardinality() {
@@ -64,6 +67,23 @@ public class IntegerSet {
 	public void minus(IntegerSet b) {
 		content = content.andNot(b.content);
 	}
+	
+	
+	/* breche die Menge auf ihre eigentlichen Elemente runter
+		und packe diese in einen Vector */
+	public Vector<Integer> pureElements() {
+		int maxIt = content.bitLength();
+		Vector<Integer> result = new Vector<Integer>();
+		
+		for (int i = 0 ; i < maxIt ; i++) {
+			if (content.testBit(i))
+				result.add((Integer)i);
+		}	
+	
+		return result;
+	}
+	
+	
 	
 	// Potenzmenge
 	// die Mächtigkeit der Menge wird als int angenommen, wäre diese auch Bigint
@@ -121,22 +141,6 @@ public class IntegerSet {
 		}
 		stringRep.append("]");
 		return (stringRep.toString());
-	}
-
-
-
-	public static void main(String[] args) {
-		IntegerSet a = new IntegerSet();
-		IntegerSet b = new IntegerSet();
-		IntegerSet c = new IntegerSet();
-		
-		for (int k = 0 ; k < 20 ; k++) {
-			a.insert(k);
-		}
-		
-		System.out.println(a);
-		a.getPowerset();
-	}
-	
+	}	
 
 }
