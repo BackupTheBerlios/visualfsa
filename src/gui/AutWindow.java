@@ -12,15 +12,17 @@
   without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   See the GNU General Public License for more details.
   
-  You should have received a copy of the GNU General Public License along with Foobar;
+  You should have received a copy of the GNU General Public License along with visualfsa;
   if not, write to the Free Software Foundation, Inc., 
   59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
 
 package src.gui;
 
+import src.datastructs.Transition;
 import src.datastructs.FSA;
 
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -62,7 +64,7 @@ public class AutWindow extends JLayeredPane {
     }
 
 
-    public void addState(Point position) {
+    public JState addState(Point position) {
 	JState newState;
 		
 	newState = new JState(getComponentCountInLayer(STATE_LAYER), this);
@@ -70,6 +72,7 @@ public class AutWindow extends JLayeredPane {
 			
 	add(newState);
 	setLayer(newState, STATE_LAYER);
+	return newState;
     }
 
 
@@ -287,7 +290,14 @@ public class AutWindow extends JLayeredPane {
     // erzeugt aus einem FSA Objekt die GUI Darstellung
     public void insertAut(FSA aut) {
 	Iterator stateIt;
-	
+	Integer currentStateNum;
+	JState currentState, destState;
+	LinkedHashMap<Integer,JState> stateMap = new LinkedHashMap<Integer,JState>();
+	LinkedList<Transition> currTransList;
+	ListIterator<Transition> transIt;
+	Transition currTrans;
+	Vector<Character> transChars;
+
 	// Zeichenfenster zurücksetzen
 	this.removeAll();
 	markedState = null;
@@ -295,7 +305,35 @@ public class AutWindow extends JLayeredPane {
 	stateIt = aut.getStates().iterator();
 
 	while (stateIt.hasNext()) {
-	    addState(aut.getPosition((Integer)stateIt.next()));
+	    currentStateNum = (Integer)stateIt.next();
+	    currentState = addState(aut.getPosition(currentStateNum));
+	    // Zuordnung Referenz JState nach Zustandsnummer merken
+	    // damit man gleich die Transitionen einfacher zuordnen/einfüge kann
+	    stateMap.put(currentStateNum, currentState);
+	}
+
+	stateIt = stateMap.keySet().iterator();
+
+	while (stateIt.hasNext()) {
+	    currentStateNum = (Integer)stateIt.next();
+	    currTransList = aut.getStateTransitions(currentStateNum);
+	    
+	    if (currTransList!=null) {
+
+		transIt = currTransList.listIterator();
+	    
+		// Referenz für diese Nummer holen
+		currentState = stateMap.get(currentStateNum);
+		
+		while (transIt.hasNext()) {
+		    currTrans = transIt.next();
+		    destState = stateMap.get(currTrans.getEndState());
+		    transChars = null; // gc
+		    transChars = new Vector<Character>();
+		    transChars.add(currTrans.getChar());
+		    currentState.insertTransition(destState, transChars);
+		}
+	    }
 	}
 
 	repaint();
@@ -324,7 +362,6 @@ public class AutWindow extends JLayeredPane {
 	    while (tData.hasNext()) {
 		cTrans = tData.next();
 		toState = cTrans.getEndState().getNumber();
-
 		tChar = cTrans.getChars().listIterator();
 		while (tChar.hasNext()) {
 		    result.addTransition(fromState, toState, tChar.next().charValue());

@@ -12,7 +12,7 @@
   without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   See the GNU General Public License for more details.
   
-  You should have received a copy of the GNU General Public License along with Foobar;
+  You should have received a copy of the GNU General Public License along with visualfsa;
   if not, write to the Free Software Foundation, Inc., 
   59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
@@ -22,6 +22,8 @@ package src.gui;
 import src.datastructs.FSA;
 
 import java.util.LinkedList;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.Point;
 import java.awt.BorderLayout;
 import javax.swing.JPanel;
@@ -29,6 +31,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JList;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
 import javax.swing.DefaultListModel;
 import javax.swing.ListSelectionModel;
@@ -46,6 +49,9 @@ public class Sidebar extends JPanel {
     private int lastSel;
     private AutWindow autWin;
 
+    // pro Datei und oder Liste MAX_AUT Automaten
+    public static final int MAX_AUT = 50;
+
     public Sidebar(AutWindow _autWin) {
 	super();
 
@@ -60,6 +66,10 @@ public class Sidebar extends JPanel {
 	newAut = new JButton(new ImageIcon("src/images/stock_new.png"));
 	renAut = new JButton(new ImageIcon("src/images/stock_edit.png"));
 	delAut = new JButton(new ImageIcon("src/images/stock_cancel.png"));
+
+	newAut.setToolTipText("neuen Automaten einfügen");
+	renAut.setToolTipText("gewählten Automat umbennen");
+	delAut.setToolTipText("gewählten Automat entfernen");
 		
 	autList = new JList();
 	autList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -97,6 +107,57 @@ public class Sidebar extends JPanel {
 	this.setLayout(new BorderLayout());
 	this.add(splitter, BorderLayout.CENTER);
 
+	// entfernen den gewählten Automaten
+	delAut.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    int lastSelCopy = lastSel;
+		    if (lastSelCopy!=-1) {
+			lastSel = -1;
+			listData.remove(lastSelCopy);
+			listModel.removeElementAt(lastSelCopy);
+			autList.setSelectedIndex(listModel.getSize()-1);
+			if (listModel.getSize()<=1)
+			    delAut.setEnabled(false);
+		    }
+		}
+	    });
+	
+	// zeigt ein Dialogfenster mit dem der Automatenname geändert werden kann
+	renAut.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    String newName;
+
+		    if (lastSel!=-1) {
+			newName = JOptionPane.showInputDialog(autWin, "neuer Name:", 
+						    listModel.elementAt(lastSel));
+			newName = newName.trim();
+			for (int i = 0 ; i <  newName.length()  ; i++ ) {
+			    if (!Character.isLetterOrDigit(newName.charAt(i))) {
+				JOptionPane.showMessageDialog(autWin,
+							      "Ungültige Zeichen, für den Automatennamen sind nur Zahlen oder Buchstaben zulässig.", 
+							      "Fehler", JOptionPane.ERROR_MESSAGE);
+				return;
+			    }
+			}
+			listModel.setElementAt(newName, lastSel);
+		    }
+		}
+	    });
+
+
+	// füge einen neuen Automaten in die Liste ein, bis zur Obergrenze
+	newAut.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    if (listModel.getSize()<MAX_AUT) {
+			insertNewAut();
+		    }
+		    else {
+			newAut.setEnabled(false);
+		    }
+		}
+	    });
+
+
 	autList.addListSelectionListener(new ListSelectionListener() {
 		public void valueChanged(ListSelectionEvent ev) {
 		    int selection = autList.getSelectedIndex();
@@ -120,6 +181,9 @@ public class Sidebar extends JPanel {
 	newAut.setName(generateName());
 	newAut.setPosition(0, new Point(30,30));
 	listData.add(newAut);
+	if (listModel.getSize()>1)
+	    delAut.setEnabled(true);
+	autList.setSelectedIndex(listModel.getSize()-1);
     }
     
 

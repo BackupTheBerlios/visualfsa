@@ -12,7 +12,7 @@
   without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   See the GNU General Public License for more details.
   
-  You should have received a copy of the GNU General Public License along with Foobar;
+  You should have received a copy of the GNU General Public License along with visualfsa;
   if not, write to the Free Software Foundation, Inc., 
   59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
@@ -30,7 +30,7 @@ public class BottomBar extends JPanel {
 
     
     private JTextField testWord, autoCharacters;
-    private JButton doTest;
+    private JButton doTest, autInfo;
     private JCheckBox autoTransition;
     private VFSAGUI topLevel;
 
@@ -46,9 +46,11 @@ public class BottomBar extends JPanel {
 	leftPanel = new JPanel(new BorderLayout());
 	rightPanel = new JPanel(new BorderLayout());
 		
+	autInfo = new JButton("Info");
 	testWord = new JTextField(30);
 	doTest = new JButton("w in L(/A) ?");
 		
+	leftPanel.add(autInfo, BorderLayout.WEST);
 	leftPanel.add(testWord, BorderLayout.CENTER);
 	leftPanel.add(doTest, BorderLayout.EAST);
 		
