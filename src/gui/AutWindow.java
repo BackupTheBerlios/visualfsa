@@ -3,6 +3,7 @@ package src.gui;
 
 import src.datastructs.FSA;
 
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.ListIterator;
@@ -84,7 +85,6 @@ public class AutWindow extends JLayeredPane {
 
     // füge bei Doppelklick einen neuen Zustand ein
     public void processMouseEvent(MouseEvent ev) {
-	System.out.println(toFSA());
 	if (ev.getClickCount()==2 && ev.getButton()==MouseEvent.BUTTON1
 	    && ev.getID()==MouseEvent.MOUSE_PRESSED) {
 	    addState(ev.getPoint());
@@ -266,9 +266,25 @@ public class AutWindow extends JLayeredPane {
 	return parseTransChars(result);
     }
 
+    // erzeugt aus einem FSA Objekt die GUI Darstellung
+    public void insertAut(FSA aut) {
+	Iterator stateIt;
+	
+	// Zeichenfenster zurücksetzen
+	this.removeAll();
+	markedState = null;
+
+	stateIt = aut.getStates().iterator();
+
+	while (stateIt.hasNext()) {
+	    addState(aut.getPosition((Integer)stateIt.next()));
+	}
+
+	repaint();
+    }
 
     // wandelt die gui infos in einen FSA um
-    private FSA toFSA() {
+    public FSA toFSA() {
 	Object[] states;
 	ListIterator<TransitionData> tData;
 	ListIterator<Character> tChar;
@@ -282,7 +298,9 @@ public class AutWindow extends JLayeredPane {
 	for (int i = 0 ; i < states.length ; i++ ) {
 	    // nimm einen Zustand her
 	    current = (JState)states[i];
+	    // speichere seine Position
 	    fromState = current.getNumber();
+	    result.setPosition((Integer)fromState, current.getLocation());
 	    // durchlaufe seine Transitionen und füge diese in den Aut. ein
 	    tData = current.getTransList().listIterator();
 	    while (tData.hasNext()) {

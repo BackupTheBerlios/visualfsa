@@ -33,9 +33,13 @@ public class VFSAGUI extends JFrame {
 		bottom = new BottomBar(this);
 		getContentPane().add(bottom, BorderLayout.SOUTH);
 
-		side = new Sidebar();
-		
 		autPane = new AutWindow(this);
+
+		side = new Sidebar(autPane);
+
+		side.insertNewAut();
+		side.insertNewAut();
+		side.insertNewAut();
 		
 		top = new TopBar();
 		getContentPane().add(top, BorderLayout.NORTH);
