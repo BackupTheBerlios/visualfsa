@@ -7,7 +7,7 @@
  *
 */
 
-package datastructs;
+package src.datastructs;
 
 public class Transition
 {
