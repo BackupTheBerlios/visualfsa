@@ -12,7 +12,7 @@
   without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   See the GNU General Public License for more details.
   
-  You should have received a copy of the GNU General Public License along with Foobar;
+  You should have received a copy of the GNU General Public License along with visualfsa;
   if not, write to the Free Software Foundation, Inc., 
   59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
@@ -57,6 +57,10 @@ public class FSA {
 
     public void setPosition(Integer state, Point p) {
 	posTable.put(state, p);
+    }
+
+    public LinkedList<Transition> getStateTransitions(int k) {
+	return transitionTable.get(k);
     }
 	
     /* 	addTransition, füge eine Transition in den Automaten ein 
