@@ -2,205 +2,348 @@
  *  FSA.java - 21-08-2004
  *
  *  Implementierung eines endlichen Automaten
+ *  (finite state automaton)
  *
- *  fester Startzustand (0)
  */
 
 package src.datastructs;
 
-import java.util.*;
+
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Vector;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 public class FSA {
+
+	private LinkedHashMap<Integer,LinkedList<Transition>> transitionTable;
+	private IntegerSet finalStateSet;
+	private int globalStart;
+
+	public FSA() {
+		transitionTable = new LinkedHashMap<Integer,LinkedList<Transition>>();
+		finalStateSet = new IntegerSet();
+	}    
     
-    private int maxState;
-    private LinkedList[] table; // Transitionstabelle
-    private boolean[] finalStates; // welche Zustände sind Endzustände
-    
-    /* Konstruktoren */
-    public FSA(int numOfStates) {
-        maxState = numOfStates;
-        
-        table = new LinkedList[maxState];
-        finalStates = new boolean[maxState];
-        
-        for (int i = 0 ; i < maxState ; i++ )
-            table[i] = new LinkedList();
-        
-    }
-    
-    public FSA(FSA aut) {
-        // TODO
-    }
-    
-    
-    
-    /* fügt dem Automat eine Transition hinzu */
-    public void addTransition(int ss, int es, char c) {
-        Transition newTrans;
-        LinkedList transList;
-        
-        // nur Buchstaben und Ziffern sind als Transitionzeichen erlaubt
-        if (!Character.isLetter(c) && !Character.isDigit(c))
-            throw new IllegalArgumentException("ungültiges Transitionszeichen: "+c);
-        
-        if (isValidState(ss) && isValidState(es)) {
-            newTrans = new Transition(ss,es,c);
-            // Referenz auf die Transitionsliste dieses Zustands holen
-            transList = table[ss];
-            if (!transList.contains(newTrans))
-                transList.add(newTrans);
-        }
-        else {
-            throw new IllegalArgumentException("ungültiger Zustand: "+ss+"/"+es);
-        }
-    }
-    
-    /* Zustand als endzustand markieren */
-    public void setFinalState(int state, boolean flag) {
-        if (!isValidState(state)) {
-            throw new IllegalArgumentException("ungültiger Zustand: "+state);
-        }
-        else {
-            finalStates[state] = flag;
-        }
-    }
-    
-    
-    /* Worderkennung */
-    public boolean accepts(String word) {
-        // je nach Art (DFA/NFA) die passende Methode wählen
-        if (isDeterministic()) {
-            dfaAccepts(word);
-        }
-        else {
-            // TODO
-        }
-        return true;
-    }
-    
-    
-    /* prüft ob dieser Automat deterministisch ist */
-    public boolean isDeterministic() {
-        HashSet alphabet = (HashSet)getAlphabet();
-        HashSet alphacopy;
-        ListIterator it;
-        Character currentChar;
-        
-        // für jeden Zustand wird eine Kopie des Arbeitsalphabet angelegt
-        // alle Transitionszeichen eines Zustandes werden aus dieser entfernt
-        // am Ende des Durchlaufs muss die Kopie leer sein
-        
-        for (int i = 0 ; i < maxState ; i++) {
-            alphacopy = new HashSet(alphabet);
-            it = table[i].listIterator();
-            
-            while (it.hasNext()) {
-                currentChar = new Character(((Transition)it.next()).getChar());
-                if (alphacopy.contains(currentChar)) {
-                    alphacopy.remove(currentChar);
-                }
-                else {
-                    // dieses Zeichen wurde mehrfach bedient -> NFA
-                    return false;
-                }
-            }
-            // nicht alle Zeichen wurden bedient -> NFA
-            if (!alphacopy.isEmpty()) return false;
-        }
-        return true;
-    }
-    
-    
-    /* erzeugt eine mehrzeilige String-Repräsentation diese Automaten */
-    public String toString() {
-        String stringRep = new String();
-        ListIterator it;
-        
-        // arbeitsalphabet rein
-        stringRep = stringRep + getAlphabet().toString() + "\n";
-        for (int i = 0 ; i < maxState ; i++) {
-            it = table[i].listIterator();
-            while (it.hasNext()) {
-                // jede Transition rein
-                stringRep = stringRep + ((Transition)it.next()).toString() + "\n";
-            }
-        }
-        // am Ende noch die Info ob DFA/NFA
-        stringRep = stringRep + (isDeterministic() ? "DFA" : "NFA");
-        return stringRep;
-    }
-    
-    
-    
-    /* Transition für den Zustand n liefern */
-    public LinkedList getTransitions(int n) {
-        if (!isValidState(n))
-            throw new IllegalArgumentException(" ungültiger Zustand: "+n);
-        
-        // ** TODO deep copy ** 
-        return table[n];
-    }
-    
-    /* zustandsanzahl liefern */
-    public int getStateCount() {
-        return maxState;
-    }
-   
-    
-     
-    /* Arbeitsalphabet des Automaten bestimmen */
-    public HashSet getAlphabet() {
-        HashSet alpha = new HashSet();
-        ListIterator it;
-        
-        // alle auftauchenden Transitionszeichen werden einfach blind in das
-        // Set getan, welches Doppelte automatisch ausfiltert
-        for (int i = 0 ; i < maxState ; i++ ) {
-            it = table[i].listIterator();
-            while (it.hasNext()) {
-                alpha.add(new Character(((Transition)it.next()).getChar()));
-            }
-        }
-        return alpha;
-    }
-    
-    
-    
-    /* Worterkennung für DFAs */
-    private boolean dfaAccepts(String word) {
-        LinkedList currentTransList;
-        Transition t;
-        char[] charArray;
-        int nextState = -1;
-        ListIterator it;
-        
-        charArray = word.toCharArray();
-        currentTransList = table[0];
-        
-        for (int i = 0 ; i < charArray.length ; i++) {
-            it = currentTransList.listIterator();
-            nextState = -1;
-            while (it.hasNext()) {
-                t = (Transition)it.next();
-                if (t.getChar()==charArray[i]) {
-                    nextState = t.getEndState();
-                    break; // weiter zum nächsten Zeichen
-                }
-            }
-            // tritt dieser Fall auf muss das Wort Zeichen enthalten
-            // haben die gar nicht im Arbeitsalphabet enthalten waren
-            if (nextState==-1) return false;
-        }
-        return finalStates[nextState];
-    }
-    
-    
-    
-    /* Rangecheck für Zustände */
-    private boolean isValidState(int state) {
-        return (state>=0 && state<maxState);
-    }
-   
-    
-    
+	
+	/* 	addTransition, füge eine Transition in den Automaten ein 
+		Rückgabewert gibt an ob die Transitio wirklich neu war */
+	public boolean addTransition(int startState, int finalState, char transChar) {
+	
+		LinkedList<Transition> transList, endList;
+		Integer key = (Integer)startState;
+		Integer endKey = (Integer)finalState;
+		Transition newTransition;
+	
+		// prüfe alles auf seine Richtigkeit
+		if (startState<0 || finalState<0 || !(Character.isLetterOrDigit(transChar))) {
+			throw new IllegalArgumentException(startState+","+transChar+","+finalState);
+		}
+	
+		newTransition = new Transition(startState, finalState, transChar);	
+	
+		// enthält die Transitionstabelle noch keine Liste für diesen
+		// Zustand dann füge sie ein
+		
+		/* erzeuge auch eine möglicherweise noch nicht vorhandene Transitions-
+			liste für den Endzustand */
+		if (!transitionTable.containsKey(endKey)) {
+			endList = new LinkedList<Transition>();
+			transitionTable.put(endKey,endList);
+		}
+		
+		if (transitionTable.containsKey(key)) {
+			transList = transitionTable.get(key);
+			if (transList.contains(newTransition)) {
+				return false;
+			}
+			else {
+				transList.add(newTransition);
+				return true;
+			}
+		}
+		else {
+			transList = new LinkedList<Transition>();
+			transList.add(newTransition);
+			transitionTable.put(key, transList);
+			return true;
+		}
+
+	}
+	
+
+	// setzt den Anfangszustand des Automaten
+	public void setStartState(int q0) {
+		globalStart = q0;
+	}
+
+	
+	
+	// akzeptiert der Automat das Wort word
+	public boolean accepts(String word) {
+		if (this.isDeterministic()) {
+			return this.dfaAccepts(word);
+		}
+		else {
+			return this.nfaAccepts(word);
+		}
+	}
+	
+
+	// der Startzustand bei nfa ist die menge die nur
+	// den Startzustand enthält
+	private boolean nfaAccepts(String w) {
+		IntegerSet startSet;
+		IntegerSet endSet;
+		ListIterator<Integer> finalSetIt;
+		
+		startSet = new IntegerSet();
+		startSet.insert(globalStart);
+		endSet = nfaDelta(startSet, w);
+		// schaue nun, ob die Endzustandsmenge einen akzeptierenden Zustand
+		// enthält, schön das wir dafür unser IntSet haben
+		System.out.println(endSet);
+		endSet.intersect(finalStateSet);
+		return (!endSet.isEmpty());
+	}
+
+	
+	private boolean dfaAccepts(String w) {
+		Integer reachedState;		
+		reachedState = dfaDelta(globalStart, w);
+		return (finalStateSet.contains(reachedState));
+	}
+	
+
+	/* Rekursion, die [n] - siehe Rekursion :-)
+		(Worterkennung DFA)
+	
+		Wir betrachten nur totale Transitionsfunktionen
+		
+		q - Zustand, ax Wort über Sigma*
+		delta : Q x Sigma* -> Q
+		delta(q,epsilon) = q
+		delta(q,ax) = delta(delta(q,a),x)
+		
+		mit ax = a_1 ... a_n
+		
+		q_i+1 = delta(q_i,a_i+1) für i aus 1...n-1
+		
+		Zustandsfolge q0,...,qn ist Lauf vom Automaten (A) für ax 
+		ist qn aus F, folgt ax in L(A).
+		
+		dfaDelta implementiert genau das Verhalten oben beschriebener
+		Funktion delta
+	*/		
+	private Integer dfaDelta(Integer state, CharSequence ax) {
+		ListIterator<Transition> transIt;
+		LinkedList<Transition> transList;
+		Transition current;
+		char a;
+		CharSequence newax;
+		
+		// wenn das Wort leer ist, sind wir fertig
+		// ansonsten spalte das erste Zeichen ab
+		if (ax.length()==0) {
+			return state;
+		}
+		else {
+			a  = ax.charAt(0);
+		}
+		
+		transList = transitionTable.get((Integer)state);
+		
+		transIt = transList.listIterator();
+		
+		while (transIt.hasNext()) {
+			current = (Transition)transIt.next();
+			
+			// eine passende Transititon gefunden 
+			if (current.getChar()==a) {
+				if (ax.length()==1) {
+					return current.getEndState();
+				}
+				
+				newax = ax.subSequence(1,ax.length());
+				return dfaDelta(current.getEndState(), newax);
+			}
+		}
+		
+		return state;
+	}
+	
+	
+	/*
+		nfaDelta arbeitet analog zu dfaDelta, nur mit dem
+		Unterschied das es auf Mengen von Zuständen operiert.
+	 	Ist das Ende der Eingabe erreicht und es befindet
+		sich ein akzeptierender Zustand in der letzten Zustands
+		menge so existiert ein akzeptierender Lauf, also ist w in L(A)
+	*/
+	private IntegerSet nfaDelta(IntegerSet stateSet, CharSequence ax) {
+		ListIterator<Transition> transIt;
+		ListIterator<Integer> setIt;
+		LinkedList<Transition> transList;
+		Vector<Integer> setVec;
+		IntegerSet newStateSet;
+		Transition current;
+		char a;
+		CharSequence newax;
+
+		newStateSet = new IntegerSet();
+
+		// extrahiere das aktuelle Zeichen
+		if (ax.length()==0) {
+			return stateSet;
+		}
+		else {
+			a  = ax.charAt(0);
+		}
+		
+		// hole die Elemente der aktuellen Zustandsmenge
+		setVec = stateSet.pureElements();
+		setIt = setVec.listIterator();
+		
+		// für jeden Zustand in der Menge...
+		while (setIt.hasNext()) {
+		
+			// hole seine Transitionenliste
+			transList = transitionTable.get((Integer)setIt.next());
+			transIt = transList.listIterator();
+		
+			// durchlaufe seine Transition und prüfe ob man mit a
+			// einen anderen Zustand erreichen würde
+			while (transIt.hasNext()) {
+				current = (Transition)transIt.next();
+			
+				// eine passende Transititon gefunden 
+				if (current.getChar()==a) {
+					newStateSet.insert(current.getEndState());
+				}
+			}
+		}
+		
+		// nun da wir alle Elemente der neuen Zustandsmenge haben...
+		// prüfe ob wir fertig sind...
+		if (ax.length()==1) {
+			return newStateSet;
+		}
+		
+		// oder bilde das verbleibende Restwort		
+		newax = ax.subSequence(1,ax.length());
+		return nfaDelta(newStateSet, newax);						
+	}
+	
+	
+	
+	/* teste ob der Automat deterministisch ist */
+	public boolean isDeterministic() {
+		Vector<Character> alpha, alphaCopy;
+		Collection<LinkedList<Transition>> coll;
+		Iterator<LinkedList<Transition>> tableIt;
+		ListIterator transIt;
+		LinkedList<Transition> currList;
+		Character curr;	
+		Transition t;	
+			
+		coll = transitionTable.values();
+		tableIt = coll.iterator();
+
+		// Bestimme zunächst das Arbeitsalphabet
+		alpha = this.getAlphabet();
+		
+		
+		// Prüfe nun, ob jeder Zustand mit seinen Transitionen alle
+		// Zeichen des Arbeitsalphabets bedient
+		
+		while (tableIt.hasNext()) {
+			currList = (LinkedList<Transition>)tableIt.next();
+			transIt = currList.listIterator();
+		
+			alphaCopy = null;
+			alphaCopy = new Vector<Character>(alpha);
+		
+			while (transIt.hasNext()) {
+				t = (Transition)transIt.next();
+				curr = (Character)t.getChar();
+				if (alphaCopy.contains(curr)) {
+					alphaCopy.remove(curr);
+				}
+				else {
+					// das Zeichen wird gar nicht bedient oder wurde schon bedient
+					// -> nicht deterministisch
+					return false;
+				}
+			}
+			
+			// ist das Alphabet nach dem Durchlauf != leer, wurden Zeichen nicht bedient
+			// -> nicht deterministisch
+			if (!alphaCopy.isEmpty()) return false;
+		}
+		return true;
+	}
+	
+	
+	public Vector<Character> getAlphabet() {
+		Collection<LinkedList<Transition>> coll;
+		Iterator<LinkedList<Transition>> tableIt;
+		ListIterator<Transition> transIt;
+		LinkedList<Transition> currList;
+		Vector<Character> res = new Vector<Character>();
+		Character curr;	
+		Transition t;	
+			
+		coll = transitionTable.values();
+		tableIt = coll.iterator();
+		
+		while (tableIt.hasNext()) {
+			currList = (LinkedList<Transition>)tableIt.next();
+			transIt = currList.listIterator();
+			
+			while (transIt.hasNext()) {
+				t = (Transition)transIt.next();
+				curr = (Character)t.getChar();
+				if (!res.contains(curr)) res.add(curr);
+			}		
+		}
+		return res;
+	}
+	
+	
+	/* setze den Endzustands-flag für einen zustand */
+	public void setFinalFlag(int st, boolean flag) {
+		if (!flag && finalStateSet.contains(st)) {
+			finalStateSet.remove(st);
+		}
+		else if (flag && !finalStateSet.contains(st)) {
+			finalStateSet.insert(st);
+		}
+	}
+	
+	
+	public String toString() {
+		return transitionTable.toString();
+	}
+	
+	
+	public static void main(String[] args) {
+		FSA myfsa = new FSA();
+	
+			
+		myfsa.addTransition(0,0,'1');
+		myfsa.addTransition(0,1,'1');
+		myfsa.addTransition(1,0,'0');
+		
+		myfsa.setFinalFlag(1,true);
+		
+		System.out.println(myfsa);
+		System.out.println(myfsa.isDeterministic());
+		
+		System.out.println(myfsa.accepts("1111111111111101"));
+		
+	}
+	
+	
 }
