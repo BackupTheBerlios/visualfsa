@@ -9,7 +9,7 @@ package src.datastructs;
 
 import java.util.Vector;
 
-public class IntegerSet {
+public class IntegerSet implements Cloneable {
 
 	private int size; // fixe Mengengroesse
 	private int vectorSize;
@@ -27,7 +27,7 @@ public class IntegerSet {
 		// ein Int speichert 32 Elemente
 		setBits = new Vector<Integer>();
 		
-		int vecSize = (_size/32)+1; // einer mehr kann nicht schaden
+		int vecSize = (_size/32)+1;
 		
 		vectorSize = vecSize;
 		size = _size;
@@ -133,7 +133,7 @@ public class IntegerSet {
 		
 		// hatte unsere Menge mehr bit-ints als b, setze diese 0
 		// für den Durchschnittfall
-		// bei Vereinigung werd einfach die überzähligen Elemente von b
+		// bei Vereinigung werden einfach die überzähligen Elemente von b
 		// eingefügt.
 		if (mode==MODE_INTERSECT) {
 			for (int i = bVector.size() ; i < vectorSize ; i++) {
@@ -152,32 +152,203 @@ public class IntegerSet {
 
 
 
-	// Potenzmenge, array mit allen Teilmengen
-	public IntegerSet[] getPowerset() {
-		return null;
+	// Vector mit den eigentlichen Elementen
+	private Vector<Integer> contentVector() {
+		Vector<Integer> result = new Vector<Integer>();
+		for (int i = 0 ; i <= size ; i++ ) {
+			if (this.contains(i)) {
+				result.add((Integer)i);
+			}
+		}
+		return result;
 	}
+
+
+
+	// Potenzmenge, array mit allen Teilmengen
+	// astronmische Laufzeit, aber :wayne:
+	public IntegerSet[] getPowerset() {
+
+		Vector<Integer> myElements, remainElements;
+		
+		int cardinality; 
+		
+		int step, stepcount; // schrittweite, wieviele Elemente halten wir fest?
+		int current, elem; // derzeitges Element das mit den festen Elementen kombiniert wird
+		IntegerSet remain, fixed, newTM, empty, single;
+		Vector<Vector> result;
+		Vector<IntegerSet> tmSet;
+		
+		// Zur Vereinfachung wird die Menge zunächst auf ihre eigentlichen Elemente
+		// reduziert, um ewiges Gesuche und contains-geteste zu sparen
+
+		myElements = contentVector();
+		cardinality = myElements.size();
+
+		// Arrayindex n enthält die n-elementigen Teilmengen
+		// hinzu kommt, die leere Menge
+		result = new Vector<Vector>();
+		
+		empty = new IntegerSet(size);
+		
+		tmSet = new Vector<IntegerSet>(); tmSet.add(empty);
+		result.add(tmSet);
+		
+		tmSet = new Vector<IntegerSet>();
+		
+		// die einelementigen Mengen kann man per Hand berechnen
+		for (int i = 0 ; i < cardinality ; i++ ) {
+			single = new IntegerSet(size);
+			single.insert(myElements.elementAt(i));
+			tmSet.add(single);
+		}
+
+		result.add(tmSet);
+
+		for (step = 1 ; step < (cardinality-1) ; step++ ) {
+		
+			// für die step-elementigen mengen füge den vector ein
+			tmSet = new Vector<IntegerSet>();
+		
+			for (current = 0 ; current < cardinality ; current++ ) {
+				
+				// halte current fix
+				fixed = new IntegerSet(size);
+				fixed.insert(myElements.elementAt(current));
+				
+				stepcount = 1;
+				elem = current+1;
+	
+				// packe step-viele elemente dazu			
+				while (stepcount < step) {
+					if (elem>=cardinality) elem = 0;
+					
+					fixed.insert(myElements.elementAt(elem));
+					stepcount++;
+					elem++;
+				}
+	
+	
+				// bilde den rest (also this minus fixed)
+				remain = (IntegerSet)this.clone();
+				remain.minus(fixed);
+				remainElements = remain.contentVector();
+				
+				// kombiniere jedes Element von remain nun mit fixed
+				// die dabei entstehende Menge ist eine neue Teilmenge
+				for (int k = 0 ; k < remainElements.size() ; k++) {
+					newTM = (IntegerSet)fixed.clone();
+					newTM.insert(remainElements.elementAt(k));
+					if (!tmSet.contains(newTM))
+						tmSet.add(newTM);
+				}
+				
+				// in den entsprechend teilmengen vektor damit
+				
+
+			}
+			result.add(tmSet);
+				
+		}
+		
+		// die gesamte Menge
+		tmSet = new Vector<IntegerSet>(); tmSet.add((IntegerSet)this.clone());
+		result.add(tmSet);
+		
+		int cc = 0;
+
+		for (int i = 0 ; i < result.size() ; i++ ) {
+			cc += result.elementAt(i).size();
+			System.out.println(result.elementAt(i));
+			System.out.println();
+		}
+		
+		System.out.println(cc+" Teilmengen");
+
+		return null;
+
+	}
+
+
+	// this und b sind gleich wenn sie dieselben Elemente enthalten
+	// die referenzgleichheit wird nicht geprüft
+	public boolean equals(Object other) {
+		Vector<Integer> bVector;
+		IntegerSet b;
+		int m, aBits, bBits;
+		
+		if (other instanceof IntegerSet) {
+
+			b = (IntegerSet)other;
+			bVector = b.getVector();
+
+
+			m = Math.min(bVector.size(), setBits.size());
+			
+			for (int i = 0 ; i < m ; i++ ) {
+				bBits = bVector.elementAt(i);
+				aBits = setBits.elementAt(i);
+				
+				if (aBits!=bBits) return false;
+			}
+			
+			// hat eines der Sets mehr bit-ints
+			// wird geprüft ob diese alle null sind
+			if (bVector.size()>setBits.size()) {
+				for (int i = setBits.size() ; i < bVector.size() ; i++) {
+					if (bVector.elementAt(i)!=0) return false;
+				}
+				return true;
+			}
+			else if (setBits.size()>bVector.size()) {
+				for (int i = bVector.size() ; i < setBits.size() ; i++) {
+					if (setBits.elementAt(i)!=0) return false;
+				}
+				return true;
+			}
+			else {
+				return true;
+			}
+		}
+		return false;	
+	}
+
 
 	public String toString() {
 		int mask;
-		System.out.print("[");
+		String stringRep;
+		
+		stringRep = "[";
 		for (int i = 0 ; i < setBits.size() ; i++) {
 			for (int k = 0 ; k < 32 ; k++) {
 				mask = 1 << k;
 				if ((mask & (int)setBits.elementAt(i))!=0) {
-					System.out.print(" "+(k+(i*32)));
+					stringRep += " "+(k+(i*32));
 				}
 			}
 		}
-		System.out.println(" ]");
-		return "";
+		stringRep += " ]";
+		return stringRep;
 	}
 
 
-	// liefert eine Kopie des int-Vectors
+	public Object clone() {
+		IntegerSet c;
+		Vector<Integer> newVec = new Vector<Integer>(setBits);
+		c = new IntegerSet(size);
+		c.setVector(newVec);
+		return c;		
+	}
+
+	// liefert eine den int-Vectors
 	private Vector<Integer> getVector() {
 		return (setBits);
 	}
 
+
+	private void setVector(Vector<Integer> vec) {
+		setBits = vec;
+	}
 	
 	public static void main(String[] args) {
 		IntegerSet[] mengen;
@@ -187,24 +358,21 @@ public class IntegerSet {
 		
 		// STRESSTESTING!!! :-)
 		
-		/* M = new IntegerSet(20);
-		N = new IntegerSet(40);
+		M = new IntegerSet(9);
 		
-		M.insert(10);
-		M.insert(5);
-		M.insert(15);
+		M.insert(0);
+		M.insert(1);
 		M.insert(2);
+		M.insert(3);
+		M.insert(4);
+		M.insert(5);
+		M.insert(6);
+
 		
-		N.insert(2);
-		N.insert(1);
-		N.insert(19);
-		N.insert(15);
+		M.getPowerset();
 		
-		System.out.println(M); System.out.println(N);
-		M.minus(N);
-		System.out.println(M);
-		 */
-		mengen = new IntegerSet[100];
+		
+/* 		mengen = new IntegerSet[100];
 		
 		for (int i = 0 ; i < 100 ; i++) {
 			msize = ((int)(Math.random()*200));
@@ -218,7 +386,7 @@ public class IntegerSet {
 			a = (int)(Math.random()*100);
 			b = (int)(Math.random()*100);
 			mengen[a].minus(mengen[b]);		
-		} 
+		}  */
 		
 	}
 
