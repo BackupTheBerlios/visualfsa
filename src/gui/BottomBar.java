@@ -1,9 +1,9 @@
 /*
-	BottomBar.java
-
-	Untere Toolbar unserer GUI, enthält ein Textfeld inkl. Button
-	für Worterkennung
+  BottomBar.java
 	
+  Untere Toolbar unserer GUI, enthält ein Textfeld inkl. Button
+  für Worterkennung
+  
 */
 
 package src.gui;
@@ -17,41 +17,51 @@ import javax.swing.JCheckBox;
 
 public class BottomBar extends JPanel {
 
+    
+    private JTextField testWord, autoCharacters;
+    private JButton doTest;
+    private JCheckBox autoTransition;
+    private VFSAGUI topLevel;
 
-	private JTextField testWord, autoCharacters;
-	private JButton doTest;
-	private JCheckBox autoTransition;
+    public BottomBar(VFSAGUI _topLevel) {
+	super();
+		
+	JPanel leftPanel, rightPanel;
+		
+	topLevel = _topLevel;
 
-	public BottomBar() {
-		super();
+	this.setLayout(new GridLayout(1,2));
 		
-		JPanel leftPanel, rightPanel;
+	leftPanel = new JPanel(new BorderLayout());
+	rightPanel = new JPanel(new BorderLayout());
 		
-		this.setLayout(new GridLayout(1,2));
+	testWord = new JTextField(30);
+	doTest = new JButton("w in L(/A) ?");
 		
-		leftPanel = new JPanel(new BorderLayout());
-		rightPanel = new JPanel(new BorderLayout());
+	leftPanel.add(testWord, BorderLayout.CENTER);
+	leftPanel.add(doTest, BorderLayout.EAST);
 		
-		testWord = new JTextField(30);
-		doTest = new JButton("w in L(/A) ?");
+	autoTransition = new JCheckBox("Auto-Transition");
+	autoCharacters = new JTextField(30);
 		
-		leftPanel.add(testWord, BorderLayout.CENTER);
-		leftPanel.add(doTest, BorderLayout.EAST);
+	rightPanel.add(autoTransition, BorderLayout.WEST);
+	rightPanel.add(autoCharacters, BorderLayout.CENTER);
 		
-		autoTransition = new JCheckBox("Auto-Transition");
-		autoCharacters = new JTextField(30);
+	this.add(leftPanel);
+	this.add(rightPanel);
+    }
 		
-		rightPanel.add(autoTransition, BorderLayout.WEST);
-		rightPanel.add(autoCharacters, BorderLayout.CENTER);
 		
-		this.add(leftPanel);
-		this.add(rightPanel);
+		
+
+    public String getAutoTransition() {
+	if (autoTransition.isSelected()) {
+	    return autoCharacters.getText();
 	}
-		
-		
-		
-
-
+	else {
+	    return "";
+	}
+    }
 
 
 

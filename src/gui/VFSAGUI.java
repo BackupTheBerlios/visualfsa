@@ -30,12 +30,12 @@ public class VFSAGUI extends JFrame {
 	
 		getContentPane().setLayout(new BorderLayout());
 	
-		bottom = new BottomBar();
+		bottom = new BottomBar(this);
 		getContentPane().add(bottom, BorderLayout.SOUTH);
 
 		side = new Sidebar();
 		
-		autPane = new AutWindow();
+		autPane = new AutWindow(this);
 		
 		top = new TopBar();
 		getContentPane().add(top, BorderLayout.NORTH);
@@ -65,5 +65,13 @@ public class VFSAGUI extends JFrame {
 			}		
 		});
 	}
+
+    // eigentlich hässlich, jede Menge Dispatchmethoden :/
+
+    public String getAutoTransition() {
+	return bottom.getAutoTransition();
+    }
+
+
 
 }
