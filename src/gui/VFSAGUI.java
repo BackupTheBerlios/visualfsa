@@ -6,6 +6,7 @@
 
 package src.gui;
 
+import java.awt.Point;
 import java.awt.BorderLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.JFrame;
