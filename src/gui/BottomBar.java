@@ -21,6 +21,8 @@ package src.gui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
@@ -45,23 +47,42 @@ public class BottomBar extends JPanel {
 		
 	leftPanel = new JPanel(new BorderLayout());
 	rightPanel = new JPanel(new BorderLayout());
-		
+
 	autInfo = new JButton("Info");
 	testWord = new JTextField(30);
-	doTest = new JButton("w in L(/A) ?");
-		
+	doTest = new JButton("w in L(A) ?");
+
+	autInfo.setToolTipText("Informationen über den Automaten anzeigen");
+	doTest.setToolTipText("Testet ob das eingegebene Wort vom Automaten erkannt wird");
+	
 	leftPanel.add(autInfo, BorderLayout.WEST);
 	leftPanel.add(testWord, BorderLayout.CENTER);
 	leftPanel.add(doTest, BorderLayout.EAST);
 		
 	autoTransition = new JCheckBox("Auto-Transition");
 	autoCharacters = new JTextField(30);
+
+	autoTransition.setToolTipText("Wenn aktiviert, werden neue Transitionen automatischen"+
+				      "mit den rechts eingegebenen Zeichen versehen");
 		
 	rightPanel.add(autoTransition, BorderLayout.WEST);
 	rightPanel.add(autoCharacters, BorderLayout.CENTER);
 		
 	this.add(leftPanel);
 	this.add(rightPanel);
+
+	/* einige ActionHandler */
+	autInfo.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent ev) {
+		    topLevel.autInfo();
+		}
+	    });
+
+	doTest.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent ev) {
+		    topLevel.wInL(testWord.getText());
+		}
+	    });
     }
 		
 		
