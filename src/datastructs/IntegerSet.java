@@ -74,73 +74,82 @@ public class IntegerSet {
 	public void minus(IntegerSet b) {
 		content = content.andNot(b.content);
 	}
+
+
+    /* liefere das erste Element der Menge */
+    public int getFirst() {
+	int maxIt = content.bitLength();
+	for (int i = 0 ; i < maxIt ; i++) {
+	    if (content.testBit(i)) return i;
+	}
+	throw new RuntimeException("unerwartete leere Menge");
+    }
 	
-	
-	/* breche die Menge auf ihre eigentlichen Elemente runter
+    /* breche die Menge auf ihre eigentlichen Elemente runter
 		und packe diese in einen Vector */
-	public Vector<Integer> pureElements() {
-		int maxIt = content.bitLength();
-		Vector<Integer> result = new Vector<Integer>();
-		
-		for (int i = 0 ; i < maxIt ; i++) {
-			if (content.testBit(i))
-				result.add((Integer)i);
-		}	
+    public Vector<Integer> pureElements() {
+	int maxIt = content.bitLength();
+	Vector<Integer> result = new Vector<Integer>();
 	
-		return result;
+	for (int i = 0 ; i < maxIt ; i++) {
+	    if (content.testBit(i))
+		result.add((Integer)i);
+	}	
+	
+	return result;
+    }
+    
+	
+	
+    // Potenzmenge
+    // die Mächtigkeit der Menge wird als int angenommen, wäre diese auch Bigint
+    // ist das ganze absolut nicht mehr sinnig (|m| = n => |pot(m)| = 2^n)
+    public IntegerSet[] getPowerset() {
+	BigInteger subSetCount, idx, help;
+	int i, card = this.cardinality();
+	
+	// wieviele Teilmengen haben wir?
+	subSetCount = new BigInteger("1");
+	subSetCount = subSetCount.shiftLeft(card);
+	
+	System.out.println(subSetCount+" teilmengen");
+	
+	idx = new BigInteger("0");
+	
+	// simulierte for schleife mit BigInts
+	
+	do {
+	    idx = idx.add(BigInteger.ONE);
+	    
+	    for (i = 0 ; i < card ; i++ ) {
+		help = BigInteger.ONE.shiftLeft(i);
+		help = help.and(idx);
+		if (!help.equals(BigInteger.ZERO)) {
+		    
+		}				
+	    }
+	    
+	} while (!(idx.equals(subSetCount)));
+	
+	return null;
+    }
+    
+    public boolean equals(Object b) {
+	IntegerSet other;
+	if (b instanceof IntegerSet) {
+	    other = (IntegerSet)b;
+	    return (content.equals(other.content));
 	}
+	return false;
+    }
+    
+    
+    // hauptsächlich zu testzwecken
+    public String toString() {
+	StringBuffer stringRep = new StringBuffer();
+	stringRep.append("[ ");
+	int maxIt = content.bitLength();
 	
-	
-	
-	// Potenzmenge
-	// die Mächtigkeit der Menge wird als int angenommen, wäre diese auch Bigint
-	// ist das ganze absolut nicht mehr sinnig (|m| = n => |pot(m)| = 2^n)
-	public IntegerSet[] getPowerset() {
-		BigInteger subSetCount, idx, help;
-		int i, card = this.cardinality();
-		
-		// wieviele Teilmengen haben wir?
-		subSetCount = new BigInteger("1");
-		subSetCount = subSetCount.shiftLeft(card);
-		
-		System.out.println(subSetCount+" teilmengen");
-		
-		idx = new BigInteger("0");
-		
-		// simulierte for schleife mit BigInts
-		
-		do {
-			idx = idx.add(BigInteger.ONE);
-			
-			for (i = 0 ; i < card ; i++ ) {
-				help = BigInteger.ONE.shiftLeft(i);
-				help = help.and(idx);
-				if (!help.equals(BigInteger.ZERO)) {
-		
-				}				
-			}
-
-		} while (!(idx.equals(subSetCount)));
-		
-		return null;
-	}
-	
-	public boolean equals(Object b) {
-		IntegerSet other;
-		if (b instanceof IntegerSet) {
-			other = (IntegerSet)b;
-			return (content.equals(other.content));
-		}
-		return false;
-	}
-
-	
-	// hauptsächlich zu testzwecken
-	public String toString() {
-		StringBuffer stringRep = new StringBuffer();
-		stringRep.append("[ ");
-		int maxIt = content.bitLength();
-		
 		for (int i = 0 ; i < maxIt ; i++) {
 			if (content.testBit(i)) {
 				stringRep.append(i+" ");
