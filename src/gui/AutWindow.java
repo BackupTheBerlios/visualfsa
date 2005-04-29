@@ -49,6 +49,7 @@ public class AutWindow extends JLayeredPane {
     private JState edgeState;
     private boolean drawingEdge;
 
+    private String currentName; // name des angezeigten Automaten
     private VFSAGUI topLevel;
     private StatePopup statePopup;
 
@@ -164,6 +165,19 @@ public class AutWindow extends JLayeredPane {
 	while (current.hasNext()) {
 	    currTrans = current.next();
 	    endState = currTrans.getEndState();
+
+	    // Transition ist eine Schlinge
+	    if (endState==startState) {
+		// zeichne einen  'dreiviertel bogen'
+		g.drawArc(startLoc.x-STATE_SIZE, startLoc.y-STATE_SIZE, STATE_SIZE, STATE_SIZE, 0, 270);
+		// die Transititionszeichen werden oberhalb des
+		// Kreisbogens dargestellt
+		mp.x = startLoc.x-STATE_SIZE;
+		mp.y = startLoc.y-STATE_SIZE-10;
+		g.drawString(currTrans.getChars().toString(), mp.x, mp.y);
+		continue;
+	    }
+	    
 	    // aktueller Zielzustand, linke obere Ecke, Mittelpunkt berechnen
 	    endLoc = endState.getLocation();
 	    endLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
@@ -256,14 +270,9 @@ public class AutWindow extends JLayeredPane {
     public void endEdge(JState end) {
 	Vector<Character> autoTrans;
 
-	if (end==edgeState) {
-	    System.out.println("Schlingenfoo not implemented yet :-)");
-	}
-	else {
-	    // prüfe ob der Nutzer das Autotransitions feature nutzt
-	    autoTrans = parseTransChars(topLevel.getAutoTransition());
+	// prüfe ob der Nutzer das Autotransitions feature nutzt
+	autoTrans = parseTransChars(topLevel.getAutoTransition());
 	    edgeState.insertTransition(end, autoTrans);
-	}
 
 	edgeState.setMode(JState.MODE_MARK);
 	markedState = edgeState;
@@ -307,6 +316,10 @@ public class AutWindow extends JLayeredPane {
 	while (stateIt.hasNext()) {
 	    currentStateNum = (Integer)stateIt.next();
 	    currentState = addState(aut.getPosition(currentStateNum));
+
+	    currentState.setFinalState(aut.isFinalState(currentStateNum));
+	    currentState.setStartState(aut.isStartState(currentStateNum));
+
 	    // Zuordnung Referenz JState nach Zustandsnummer merken
 	    // damit man gleich die Transitionen einfacher zuordnen/einfüge kann
 	    stateMap.put(currentStateNum, currentState);
@@ -336,6 +349,8 @@ public class AutWindow extends JLayeredPane {
 	    }
 	}
 
+	currentName = aut.getName();
+
 	repaint();
     }
 
@@ -356,6 +371,8 @@ public class AutWindow extends JLayeredPane {
 	    current = (JState)states[i];
 	    // speichere seine Position
 	    fromState = current.getNumber();
+	    if (current.isFinalState()) result.setFinalFlag(fromState, true);
+	    if (current.isStartState()) result.setStartFlag(fromState, true);
 	    result.setPosition((Integer)fromState, current.getLocation());
 	    // durchlaufe seine Transitionen und füge diese in den Aut. ein
 	    tData = current.getTransList().listIterator();
@@ -369,7 +386,17 @@ public class AutWindow extends JLayeredPane {
 		
 	    }
 	}
+	result.setName(currentName);
 	return result;
+    }
+
+
+    public String getCurrentName() {
+	return currentName;
+    }
+
+    public void setCurrentName(String _n) {
+	currentName = _n;
     }
 
 
