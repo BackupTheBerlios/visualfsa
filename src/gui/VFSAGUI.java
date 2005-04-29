@@ -35,7 +35,7 @@ public class VFSAGUI extends JFrame {
 	private MainMenu menubar;
 
 	public VFSAGUI() {
-		super("visualFSA pre-alpha");
+		super("visualFSA");
 	}
 
 	public void showGUI() {
@@ -67,6 +67,7 @@ public class VFSAGUI extends JFrame {
 		pack();
 		setLocation(30,30);
 		setVisible(true);
+		side.insertResults("Welcome!");
 	}
 
 
@@ -87,6 +88,24 @@ public class VFSAGUI extends JFrame {
 	return bottom.getAutoTransition();
     }
 
+    // der User hat in der BottomBar den Infobutton gedrückt
+    // es wird in das Ausgabefenster eine textuelle Zusammenfassung
+    // über den Automaten ausgegeben
+    public void autInfo() {
+	side.insertResults(autPane.toFSA().infoString());
+    }
 
+    // der User hat den Worterkennungs-button gedrpckt
+    // das Wort wird dem Automaten übergeben, das Ergebnis
+    // im Resultfenster angezeigt
+    public void wInL(String w) {
+	if (autPane.toFSA().accepts(w)) {
+	    side.insertResults(w+" ist in L("+autPane.getCurrentName()+")");
+	}
+	else {
+	    side.insertResults(w+" wird nicht erkannt");
+	}
+    }
 
 }
+
