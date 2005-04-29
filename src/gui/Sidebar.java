@@ -29,6 +29,7 @@ import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JList;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
@@ -42,15 +43,18 @@ import src.datastructs.FSA;
 
 public class Sidebar extends JPanel {
 
-    private JList autList, results;
+    private JList autList;
     private JButton newAut, renAut, delAut;
     private DefaultListModel listModel;
     private LinkedList<FSA> listData;
     private int lastSel;
     private AutWindow autWin;
+    private JTextArea results;
 
     // pro Datei und oder Liste MAX_AUT Automaten
     public static final int MAX_AUT = 50;
+    // die Ausgabe enthält maximal MAX_RESULT Zeilen
+    public static final int MAX_RESULT = 1000;
 
     public Sidebar(AutWindow _autWin) {
 	super();
@@ -93,9 +97,10 @@ public class Sidebar extends JPanel {
 
 	upperPanel.add(buttonPanel, BorderLayout.SOUTH);
 		
-	results = new JList();
+	results = new JTextArea();
+	results.setEditable(false);
 	resultScroller = new JScrollPane(results);
-		
+
 	lowerPanel = new JPanel(new BorderLayout());
 		
 	lowerPanel.add(resultScroller, BorderLayout.CENTER);
@@ -140,6 +145,7 @@ public class Sidebar extends JPanel {
 			    }
 			}
 			listModel.setElementAt(newName, lastSel);
+			autWin.setCurrentName(newName);
 		    }
 		}
 	    });
@@ -172,6 +178,14 @@ public class Sidebar extends JPanel {
 	    });
     }
 
+
+
+    // füge neuen Text in das Ausgabefenster ein
+    public void insertResults(String resText) {
+	if (results.getLineCount()>MAX_RESULT) results.setText("");
+	results.append("\n---------------------------------------------\n");
+	results.append(resText);
+    }
 
     /*
       Fügt einen leeren Automaten in die Liste ein 
