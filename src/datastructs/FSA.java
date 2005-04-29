@@ -34,8 +34,7 @@ public class FSA {
     private LinkedHashMap<Integer,LinkedList<Transition>> transitionTable;
     private LinkedHashMap<Integer,Point> posTable; // koor der Zustände
     
-    private IntegerSet finalStateSet;
-    private int globalStart;
+    private IntegerSet finalStateSet, startStateSet;
 
     private String name;
     
@@ -43,6 +42,7 @@ public class FSA {
 	transitionTable = new LinkedHashMap<Integer,LinkedList<Transition>>();
 	posTable = new LinkedHashMap<Integer,Point>();
 	finalStateSet = new IntegerSet();
+	startStateSet = new IntegerSet();
     }    
     
     /* diverse erweiterungen für die gui anbindung */
@@ -109,13 +109,6 @@ public class FSA {
     }
 	
 
-    // setzt den Anfangszustand des Automaten
-    public void setStartState(int q0) {
-	globalStart = q0;
-    }
-
-	
-	
     // akzeptiert der Automat das Wort word
     public boolean accepts(String word) {
 	if (this.isDeterministic()) {
@@ -135,7 +128,7 @@ public class FSA {
 	ListIterator<Integer> finalSetIt;
 		
 	startSet = new IntegerSet();
-	startSet.insert(globalStart);
+	startSet = startStateSet;
 	endSet = nfaDelta(startSet, w);
 	// schaue nun, ob die Endzustandsmenge einen akzeptierenden Zustand
 	// enthält, schön das wir dafür unser IntSet haben
@@ -146,8 +139,12 @@ public class FSA {
 
 	
     private boolean dfaAccepts(String w) {
-	Integer reachedState;		
-	reachedState = dfaDelta(globalStart, w);
+	Integer reachedState;
+	// da geprüft wurde ob der Automat deterministisch ist, muss
+	// gelten das das Startzustandsset nur ein Element enthält
+	// welches getFirst findet (dabei liefert IntegerSet.getFirst
+	// das kleinste element in der Menge
+	reachedState = dfaDelta(startStateSet.getFirst(), w);
 	return (finalStateSet.contains(reachedState));
     }
 	
@@ -289,6 +286,9 @@ public class FSA {
 	// Bestimme zunächst das Arbeitsalphabet
 	alpha = this.getAlphabet();
 		
+
+	// prüfe zunächst ob wir mehr als einen Startzustand haben
+	if (startStateSet.cardinality()!=1) return false;
 		
 	// Prüfe nun, ob jeder Zustand mit seinen Transitionen alle
 	// Zeichen des Arbeitsalphabets bedient
@@ -356,7 +356,53 @@ public class FSA {
 	    finalStateSet.insert(st);
 	}
     }
+
+    /* setze den Startzustands-Flag für einen Zustand */
+    public void setStartFlag(int st, boolean flag) {
+	if (!flag && startStateSet.contains(st)) {
+	    startStateSet.remove(st);
+	}
+	else if (flag && !startStateSet.contains(st)) {
+	    startStateSet.insert(st);
+	}
+    }
+
+    public boolean isFinalState(int st) {
+	return finalStateSet.contains(st);
+    }
+
+    public boolean isStartState(int st) {
+	return startStateSet.contains(st);
+    }
 	
+    // erzeugt eine ausführliche textuelle Beschreibung des Automaten
+    public String infoString() {
+	StringBuffer str = new StringBuffer();
+	Collection<LinkedList<Transition>> coll;
+	Iterator<LinkedList<Transition>> tableIt;
+	ListIterator<Transition> listIt;
+
+	str.append("- Automateninformation -\n");
+	str.append("name: "+name+"\n");
+	str.append("Automattyp: "+(this.isDeterministic() ? "DFA\n\n": "NFA\n\n"));
+	str.append("Startzustände: "+startStateSet+"\n");
+	str.append("Endzustände: "+finalStateSet+"\n");
+	str.append("Eingabealphabet: "+getAlphabet()+"\n");
+	
+	str.append("Transitionen:\n");
+
+	coll = transitionTable.values();
+	tableIt = coll.iterator();
+	
+	while (tableIt.hasNext()) {
+	    listIt = ((LinkedList<Transition>)tableIt.next()).listIterator();
+	    while (listIt.hasNext()) {
+		str.append(((Transition)listIt.next())+"\n");
+	    }
+	}
+
+	return str.toString();
+    }
 
     public void setName(String _name) {
 	name = _name;
