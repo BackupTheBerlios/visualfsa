@@ -27,7 +27,6 @@ import javax.swing.JSplitPane;
 
 public class VFSAGUI extends JFrame {
 
-	
 	private BottomBar bottom;
 	private Sidebar side;
 	private AutWindow autPane;
@@ -59,7 +58,7 @@ public class VFSAGUI extends JFrame {
 		centerSplitter.setResizeWeight(0.95);
 		getContentPane().add(centerSplitter, BorderLayout.CENTER);
 		
-		menubar = new MainMenu();
+		menubar = new MainMenu(this, side);
 		this.setJMenuBar(menubar);
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

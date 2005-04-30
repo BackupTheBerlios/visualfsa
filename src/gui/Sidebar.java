@@ -178,6 +178,14 @@ public class Sidebar extends JPanel {
 	    });
     }
 
+    /* gebe die Liste mit allen Automaten zurück, vorher wird der aktuell
+       angezeigte Automat nochmal in der Liste aktualisiert */
+    public LinkedList<FSA> getList() {
+	if (lastSel!=-1) {
+	    listData.set(lastSel, autWin.toFSA());
+	}
+	return listData;
+    }
 
 
     // füge neuen Text in das Ausgabefenster ein
