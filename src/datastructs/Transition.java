@@ -19,7 +19,9 @@
 
 package src.datastructs;
 
-public class Transition
+import java.io.Serializable;
+
+public class Transition implements Serializable
 {
     
     private int startState, endState;

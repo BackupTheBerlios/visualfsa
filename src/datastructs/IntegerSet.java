@@ -19,10 +19,11 @@
 
 package src.datastructs;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Vector;
 
-public class IntegerSet {
+public class IntegerSet implements Serializable {
 
 	private BigInteger content;
 	private int cardinality;

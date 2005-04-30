@@ -20,6 +20,7 @@
 package src.datastructs;
 
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -29,7 +30,7 @@ import java.util.Iterator;
 import java.util.ListIterator;
 import java.awt.Point;
 
-public class FSA {
+public class FSA implements Serializable {
 
     private LinkedHashMap<Integer,LinkedList<Transition>> transitionTable;
     private LinkedHashMap<Integer,Point> posTable; // koor der Zustände
