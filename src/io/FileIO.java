@@ -22,9 +22,13 @@ package src.io;
 import src.datastructs.FSA;
 import java.awt.Component;
 import java.util.LinkedList;
-import java.io.*;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.File;
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 
 public class FileIO {
 
@@ -32,44 +36,61 @@ public class FileIO {
     /* eine Liste von Automatenobjekten wird in die Datei 'filename'
        geschrieben
     */
-    public static void fsaListToFile(LinkedList<FSA> fsaList, String filename) {
+    public static String fsaListToFile(LinkedList<FSA> fsaList, String filename) {
 	ObjectOutputStream objectStream;
 
 	try {
 	    objectStream = new ObjectOutputStream(new FileOutputStream(filename));
 	    objectStream.writeObject(fsaList);
 	    objectStream.close();
+	    return null; // kein fehler
 	}
-	catch(InvalidClassException icEx) {
-	    System.out.println("ICEX: "+icEx.getMessage());
+	catch (IOException ioEx) {
+	    return "IO Fehler";
 	}
-	catch(NotSerializableException nsEx) {
-	    System.out.println("NSEX: "+nsEx.getMessage());
+	catch (Exception generalEx) {
+	    // möglich sind hier, NotSerializable und InvalidClass, beide
+	    // Ausnahmen sind im Endbenutzerbetrieb praktisch nicht möglich
+	    return "Interner Fehler -> "+generalEx.getMessage();
 	}
-	catch(IOException ioEx) {
-	    System.out.println("IOEX: "+ioEx.getMessage());
-	}
-	
     }
 
-    public static LinkedList fileToFsaList(String filename) throws Exception {
+    public static LinkedList fileToFsaList(String filename)
+    throws Exception {
 	ObjectInputStream objectStream;
 	LinkedList content;
-
+	
 	objectStream = new ObjectInputStream(new FileInputStream(filename));
 	content = ((LinkedList)(objectStream.readObject()));
 	objectStream.close();
-	return content;
+	return content; // kein Fehler
+
     }
 
+
+    public static String getSaveFilename(Component owner, String initial) {
+	JFileChooser fileDlg;
+
+	fileDlg = new JFileChooser();
+	fileDlg.setDialogTitle("Datei speichern");
+	fileDlg.setSelectedFile(new File(initial));
+
+	if (fileDlg.showSaveDialog(owner)==JFileChooser.APPROVE_OPTION) {
+	    return fileDlg.getSelectedFile().toString();
+	}
+	else {
+	    return null;
+	}
+    }
 
     public static String getOpenFilename(Component owner) {
 	JFileChooser fileDlg;
 
 	fileDlg = new JFileChooser();
 	fileDlg.setDialogTitle("Datei öffnen");
+	fileDlg.setMultiSelectionEnabled(false);
 	if (fileDlg.showOpenDialog(owner)==JFileChooser.APPROVE_OPTION) {
-	    return fileDlg.getName(fileDlg.getSelectedFile());
+	    return fileDlg.getSelectedFile().toString();
 	}
 	else {
 	    return null;

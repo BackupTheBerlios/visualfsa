@@ -21,6 +21,7 @@ package src.gui;
 
 import src.datastructs.FSA;
 
+import java.util.ListIterator;
 import java.util.LinkedList;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -188,6 +189,29 @@ public class Sidebar extends JPanel {
     }
 
 
+    // füge (aus einer geöffneten Datei) eine neue Liste mit Automaten ein
+    // Eingabe ist die eingelesene Liste aus einer Datei
+    public void insertList(LinkedList list) throws Exception {
+	ListIterator it;
+	FSA currentFSA;
+	
+	it = list.listIterator();
+
+	lastSel = -1;
+	listModel.clear();
+	listData.clear();
+
+	while (it.hasNext()) {
+	    // auf FSA casten, den Namen entnehmen und in die Liste schreiben
+	    // insertList kann eine Exception werfen, da die Datei, obwohl richtig eingelesen, immer
+	    // noch fehlerhafte Daten (zb LinkedList<Objekt!=FSA>) enthalten kann
+	    currentFSA = (FSA)it.next();
+	    listModel.addElement(currentFSA.getName());
+	    listData.add(currentFSA);
+	}
+	autList.setSelectedIndex(listModel.getSize()-1);
+    }
+
     // füge neuen Text in das Ausgabefenster ein
     public void insertResults(String resText) {
 	if (results.getLineCount()>MAX_RESULT) results.setText("");
@@ -208,6 +232,18 @@ public class Sidebar extends JPanel {
 	autList.setSelectedIndex(listModel.getSize()-1);
     }
     
+
+    // aufgerufen bei neuer Datei 
+    // Automatenliste wird gelöscht, ein Dummyautomat eingefügt
+    // das Ausgabefenster wird zurückgesetzt
+    public void reset() {
+	lastSel = -1; // verhindert excep. im SelectionListener
+	listModel.clear();
+	listData.clear();
+	results.setText("");
+	insertResults("Welcome!");
+	insertNewAut();
+    }
 
 
     private String generateName() {

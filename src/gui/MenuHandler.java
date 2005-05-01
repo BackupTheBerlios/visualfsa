@@ -48,9 +48,18 @@ public class MenuHandler implements ActionListener {
 
 	switch (val) {
 	case FILE_NEW:
-	    System.out.println("neue datei");
+	    /* Datei -> Neu, prüfen ob die aktuelle Datei gespeichert werden soll */
+	    if (guiMain.checkSave(false))
+		guiMain.newFile();
 	    break;
-	    
+	case FILE_OPEN:
+	    /* Datei -> Öffnen, prüfen ob aktuelle Datei gespeichert werden soll */
+	    if (guiMain.checkSave(false))
+		guiMain.openFile();
+	    break;
+	case FILE_SAVEAS:
+	    guiMain.checkSave(true);
+	    break;
 	default:
 	    System.out.println("m00h");
 	}
