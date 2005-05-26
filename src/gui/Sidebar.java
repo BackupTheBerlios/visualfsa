@@ -17,9 +17,9 @@
   59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
 
-package src.gui;
+package gui;
 
-import src.datastructs.FSA;
+import datastructs.FSA;
 
 import java.util.ListIterator;
 import java.util.LinkedList;
@@ -39,8 +39,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import src.datastructs.FSA;
 
 public class Sidebar extends JPanel {
 

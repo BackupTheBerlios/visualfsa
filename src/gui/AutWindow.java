@@ -17,10 +17,10 @@
   59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
 
-package src.gui;
+package gui;
 
-import src.datastructs.Transition;
-import src.datastructs.FSA;
+import datastructs.Transition;
+import datastructs.FSA;
 
 import java.util.LinkedHashMap;
 import java.util.Iterator;

@@ -17,14 +17,14 @@
   59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 */
 
-package src.gui;
+package gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
 import javax.swing.JMenuItem;
 
-import static src.gui.MainMenu.MenuID;
+import static gui.MainMenu.MenuID;
 
 /* Eventhandler für das Anwendungsmenü */
 
