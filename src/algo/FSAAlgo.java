@@ -21,15 +21,92 @@ package algo;
 
 import datastructs.FSA;
 import datastructs.Transition;
+import datastructs.IntegerSet;
 
 import java.util.*;
 
-public class FSAAlgo {
+public class FSAAlgo  {
     
     public FSAAlgo() {
     }
     
-   
+
+    /*
+        guessLang versucht die Sprache die ein Automat erkennt zu identifzieren,
+        dabei werden aus dem Eingabealphabet alle Wörter gebildet deren Länge
+        kleiner 'step' ist (da die Sprachen potentiell unendlich sind (sein können))
+        Mit jedem erzeugten Wort wird aut.accepts aufgerufen
+    */
+    public static synchronized HashSet<String> guessLang(FSA aut, int step) {
+        Vector<Character> alpha;
+
+        alpha = aut.getAlphabet();
+        
+        Vector<String> words;
+        Vector<String> newWords;
+        HashSet<String> lang;
+        
+        words = new Vector<String>();
+        String newWord;
+        lang = new HashSet<String>();
+        String curr;
+        
+        boolean autType = aut.isDeterministic();
+        
+        /*
+            words ist die Menge aller Strings aus denen wir noch neue
+            Kombinationen bilden können, anfangs wird jeder einzelne Buchstabe
+            des Eingabealphabets dort hineingetan
+        */
+        for ( Iterator<Character> it = alpha.iterator(); it.hasNext(); ) {
+            words.add(it.next().toString());
+        }
+        
+        for (int i = 0 ; i < step ; i++ ) {
+            
+            /* teste die aktuelle Wortliste */
+            
+            for ( Iterator<String> strIt = words.iterator(); strIt.hasNext(); ) {
+                curr = strIt.next();
+                
+                /* da der Automat während des Sprachtests nicht verändert
+                   wird kann der in FSA.java eingebaute Determinismustest
+                   übersprungen werden 
+                */
+                
+                if (aut.accepts(curr, true, autType)) {
+                    lang.add(curr);
+                }
+            }
+            
+            newWords = new Vector<String>();
+            
+            /* hinter jedes Wort der aktuellen Wortliste wird jeder Buchstabe
+               des Eingabealphabets gehängt, die neu enstandenen Wörter ersetzen
+               die alten wodurch nie alle Wörter im Speicher gehalten werden müssen
+            */
+            
+            for ( Iterator<String> strIt = words.iterator(); strIt.hasNext(); ) {
+                    
+                newWord = strIt.next();
+                
+                
+                    for ( Iterator<Character> alphaIt = alpha.iterator(); alphaIt.hasNext(); ) {
+                        newWords.add(newWord+alphaIt.next().toString());
+            
+                }
+                
+            }
+
+            System.out.println(newWords.size());
+            
+            words.clear();
+            words.addAll(newWords);
+
+        }
+        
+        return lang;
+    }
     
     
     
