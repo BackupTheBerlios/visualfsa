@@ -105,34 +105,43 @@ public class IntegerSet implements Serializable {
     // Potenzmenge
     // die Mächtigkeit der Menge wird als int angenommen, wäre diese auch Bigint
     // ist das ganze absolut nicht mehr sinnig (|m| = n => |pot(m)| = 2^n)
-    public IntegerSet[] getPowerset() {
+    public Vector<IntegerSet> getPowerset() {
 	BigInteger subSetCount, idx, help;
-	int i, card = this.cardinality();
+	Vector<IntegerSet> result;
+        Vector<Integer> pElem;
+        int i, card = this.cardinality();
 	
 	// wieviele Teilmengen haben wir?
 	subSetCount = new BigInteger("1");
 	subSetCount = subSetCount.shiftLeft(card);
 	
-	System.out.println(subSetCount+" teilmengen");
-	
 	idx = new BigInteger("0");
 	
 	// simulierte for schleife mit BigInts
 	
+        IntegerSet newSubSet;
+        pElem = this.pureElements();
+        result = new Vector<IntegerSet>();
+        
+        
 	do {
 	    idx = idx.add(BigInteger.ONE);
 	    
+            newSubSet = new IntegerSet();
+            
 	    for (i = 0 ; i < card ; i++ ) {
 		help = BigInteger.ONE.shiftLeft(i);
 		help = help.and(idx);
 		if (!help.equals(BigInteger.ZERO)) {
-		    
+		    newSubSet.insert(pElem.get(i));
 		}				
 	    }
+            
+            result.add(newSubSet);
 	    
 	} while (!(idx.equals(subSetCount)));
 	
-	return null;
+	return result;
     }
     
     public boolean equals(Object b) {
