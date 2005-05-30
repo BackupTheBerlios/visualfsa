@@ -30,7 +30,9 @@ import javax.swing.ImageIcon;
 public class MainMenu extends JMenuBar {
 
      public static enum MenuID 
-    { FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT }
+    { FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT,
+      ALGO_LANG
+        }
 
     private MenuHandler genericHandler;
 
@@ -87,6 +89,19 @@ public class MainMenu extends JMenuBar {
 		
 	add(file);
 
+        JMenu algo = new JMenu("Algorithmen");
+        algo.setMnemonic(KeyEvent.VK_M);
+        
+        JMenuItem algo_lang = new JMenuItem("Sprache angeben");
+        
+        algo_lang.setMnemonic(KeyEvent.VK_S);
+        
+        entries.put(algo_lang, MenuID.ALGO_LANG);
+        
+        algo.add(algo_lang);
+        
+        add(algo);
+        
 	genericHandler = new MenuHandler(topLevel, guiSide, entries);
 	
 	// registriere für alle Menüeinträge den EventHandler
