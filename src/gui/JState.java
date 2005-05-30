@@ -47,7 +47,8 @@ public class JState extends JComponent {
     public static final int MODE_EDGE = 3;
 
     private Point initial;
-
+    private boolean transDrawn;
+    
     public JState(int _num, AutWindow _parent) {
 	super();
 	setDoubleBuffered(true);
@@ -259,7 +260,35 @@ public class JState extends JComponent {
 	return outgoingTransList;
     }
 	
+    // prüft ob der Zustand eine Transition zu dest hat
+    public boolean hasTransTo(JState dest) {
+        ListIterator<TransitionData> lIt;
+        TransitionData current;
+        
+        lIt = outgoingTransList.listIterator();
+        
+        while (lIt.hasNext()) {
+            current = lIt.next();
+            if (current.getEndState()==dest) return true;
+        }
+        
+        return false;
+    }
+    
+    // get/set transDrawn
+    // transDrawn gibt an ob im letzten Durchlauf von drawTransitions in AutWindow
+    // die Transitionen dieses Zustands gezeichnet wurden, dadurch wird verhindert
+    // das bei beidseitigen Transitionen beide Transitionen verschoben werden
+    
+    public boolean getTransDrawn() {
+        return transDrawn;
+    }
 		
+    public void setTransDrawn(boolean td) {
+        transDrawn = td;
+    }
+    
+    
     // (de)Markiere den Knoten als ab/ausgewählt
     public void setMode(int flag) {
 	switch(flag) {

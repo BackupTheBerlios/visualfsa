@@ -31,8 +31,11 @@ import java.util.LinkedList;
 import java.awt.event.MouseEvent;
 import java.awt.AWTEvent;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 
@@ -53,6 +56,7 @@ public class AutWindow extends JLayeredPane {
     private VFSAGUI topLevel;
     private StatePopup statePopup;
 
+      
     public AutWindow(VFSAGUI _topLevel) {
 	super();
 	topLevel = _topLevel;
@@ -61,7 +65,7 @@ public class AutWindow extends JLayeredPane {
 	setOpaque(true);
 	setBackground(Color.WHITE);
 	enableEvents(AWTEvent.MOUSE_EVENT_MASK);
-	statePopup = new StatePopup();
+	statePopup = new StatePopup();                
     }
 
 
@@ -130,8 +134,14 @@ public class AutWindow extends JLayeredPane {
 
 	for (int i = 0 ; i < numstate ; i++ ) {
 	    current = (JState)states[i];
-	    drawTransitions(current, g);
+            current.setTransDrawn(false);
 	}
+        
+        for (int i = 0 ; i < numstate ; i++ ) {
+            current = (JState)states[i];
+            drawTransitions(current, g);
+            current.setTransDrawn(true);
+        }
     }
 
     public void showPopup(JState who) {
@@ -141,13 +151,24 @@ public class AutWindow extends JLayeredPane {
     }
 
 
-    protected void drawTransitions(JState startState, Graphics g) {
+    protected void drawTransitions(JState startState, Graphics graph) {
 	Point startLoc, endLoc;
 	LinkedList<TransitionData> transList;
 	ListIterator<TransitionData> current;
 	JState endState;
 	TransitionData currTrans;
-
+        Polygon spitze;
+        
+        // für die Pfeilspitzen
+        double width = 5.0, length = 20.0;
+        
+        Graphics2D g = (Graphics2D)graph.create();
+        
+           
+        // AA an, gut aussehen soll es ja auch
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                              RenderingHints.VALUE_ANTIALIAS_ON);
+      
 	Point mp = new Point(), endPoint;
 	int xsize,ysize;
 
@@ -156,9 +177,6 @@ public class AutWindow extends JLayeredPane {
 	double winkel, cosine, sine;
 	int schnittx, schnitty;
 
-	startLoc = startState.getLocation();
-	startLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
-	
 	transList = startState.getTransList();
 	current = transList.listIterator();
 
@@ -168,7 +186,9 @@ public class AutWindow extends JLayeredPane {
 
 	    // Transition ist eine Schlinge
 	    if (endState==startState) {
-		// zeichne einen  'dreiviertel bogen'
+                startLoc = startState.getLocation();	
+                startLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
+                // zeichne einen  'dreiviertel bogen'
 		g.drawArc(startLoc.x-STATE_SIZE, startLoc.y-STATE_SIZE, STATE_SIZE, STATE_SIZE, 0, 270);
 		// die Transititionszeichen werden oberhalb des
 		// Kreisbogens dargestellt
@@ -178,9 +198,27 @@ public class AutWindow extends JLayeredPane {
 		continue;
 	    }
 	    
+            
+            
 	    // aktueller Zielzustand, linke obere Ecke, Mittelpunkt berechnen
 	    endLoc = endState.getLocation();
-	    endLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
+	    
+            // hat der aktuelle Zielzustand auch eine Transition zu uns,
+            // wird eine der beiden Transition leicht nach unten verschoben
+            // wurden die Transitionen des Zielzustands noch nicht gezeichnet
+            // wird unsere Transition zu ihm verschoben, der Zielzustand
+            // seinerseits wird seine dann nicht verschieben
+        
+            startLoc = startState.getLocation();
+                        
+            if (endState.hasTransTo(startState) && endState.getTransDrawn()) {
+                startLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE-12);
+                endLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE-12);
+            }
+            else {
+                startLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
+                endLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
+            }
 	    
 
 	    // für die Beschriftung mit den Transitionszeichen die Mitte der Linie bestimmen
@@ -216,36 +254,77 @@ public class AutWindow extends JLayeredPane {
 	    // u ist die x koor des Schnittpunkts
 	    // analog für y
 
-	    schnittx = (int)(cosine*30);
-	    schnitty = (int)(sine*30);
+	    schnittx = (int)(cosine*25);
+	    schnitty = (int)(sine*25);
 
 	    endPoint = new Point(endLoc);
 
+            
 	    // abhängig wie die Zustände zueinander liegen wird dieser Punkt nun
 	    // auf den Mittelpunkt draufaddiert/subtrahiert
 
+            // TODO --- das geht besser :)
+            
+                       
 	    if (endLoc.x <= startLoc.x) {
 		mp.x = endLoc.x + xsize;
 		endPoint.x += schnittx;
-	    }
+
+            }
 	    else {
 		mp.x = startLoc.x + xsize;
 		endPoint.x -= schnittx;
-	    }
+
+            }
 
 	    if (endLoc.y <= startLoc.y) {
 		mp.y = endLoc.y + ysize;
 		endPoint.y += schnitty;
-	    }
+                
+            }
 	    else {
 		mp.y = startLoc.y + ysize;
 		endPoint.y -= schnitty;
-	    }
 
-	    g.drawString(currTrans.getChars().toString(), mp.x, mp.y-4); 
-	    g.drawLine(startLoc.x,startLoc.y,endPoint.x,endPoint.y);
+            }
+
+            g.setColor(Color.RED);
+            g.drawString(currTrans.getChars().toString(), mp.x, mp.y-4); 
+	    g.setColor(Color.GRAY);
+            g.drawLine(startLoc.x,startLoc.y,endPoint.x,endPoint.y);
+            
+            
+            // nicht 100% sauber, Pfeilspitze
+            double e_x, e_y;
+            
+            Point a, b, c;
+            
+            e_x = (endPoint.x - startLoc.x) / hypo;
+            e_y = (endPoint.y - startLoc.y) / hypo;
+           
+            a = new Point(); b = new Point(); c = new Point();
+            
+            a.x = endPoint.x - (int) Math.round(length/2*e_x);
+            a.y = endPoint.y - (int) Math.round(length/2*e_y);
+            
+            spitze = new Polygon();
+            
+            spitze.addPoint(endPoint.x, endPoint.y);
+            
+            spitze.addPoint(a.x - (int) Math.round(width*e_y),
+                            a.y + (int) Math.round(width*e_x));
+            
+            spitze.addPoint(a.x + (int) Math.round(width*e_y),
+                            a.y - (int) Math.round(width*e_x));
+            
+            
+            g.fillPolygon(spitze);
+                      
+	    
 	}
 	
+        // Speicher für das erzeugte Graphics2D freigeben
+        g.dispose();
     }
 
 
