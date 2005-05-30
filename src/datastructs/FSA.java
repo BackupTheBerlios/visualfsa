@@ -111,8 +111,19 @@ public class FSA implements Serializable {
 	
 
     // akzeptiert der Automat das Wort word
-    public boolean accepts(String word) {
-	if (this.isDeterministic()) {
+    // wegen Performancezwecken, wie zb in FSAAlog wo accepts viele hunderte
+    // bis tausende Male aufgerufen wird, kann der isDeterm... Test übersprungen
+    // werden, solange sichergestellt wird das der Automat nicht verändert wurde
+    // isDFA gibt an ob es sich um einen DFA handelt
+    public boolean accepts(String word, boolean override, boolean isDFA) {
+	boolean autType;
+        
+        if (override)
+            autType = isDFA;
+        else
+            autType = this.isDeterministic();
+                
+        if (autType) {
 	    return this.dfaAccepts(word);
 	}
 	else {
@@ -133,7 +144,6 @@ public class FSA implements Serializable {
 	endSet = nfaDelta(startSet, w);
 	// schaue nun, ob die Endzustandsmenge einen akzeptierenden Zustand
 	// enthält, schön das wir dafür unser IntSet haben
-	System.out.println(endSet);
 	endSet.intersect(finalStateSet);
 	return (!endSet.isEmpty());
     }
