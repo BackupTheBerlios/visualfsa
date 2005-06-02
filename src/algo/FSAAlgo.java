@@ -20,24 +20,23 @@
 package algo;
 
 import datastructs.FSA;
-import datastructs.Transition;
-import datastructs.IntegerSet;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Vector;
+import java.util.Iterator;
 
-public class FSAAlgo  {
+public class FSAAlgo {
     
-    public FSAAlgo() {
-    }
     
-
     /*
         guessLang versucht die Sprache die ein Automat erkennt zu identifzieren,
         dabei werden aus dem Eingabealphabet alle Wörter gebildet deren Länge
         kleiner 'step' ist (da die Sprachen potentiell unendlich sind (sein können))
         Mit jedem erzeugten Wort wird aut.accepts aufgerufen
+     
+        Errors werfen ist keine gute Praxis :-)
     */
-    public static synchronized HashSet<String> guessLang(FSA aut, int step) {
+    public static synchronized HashSet<String> guessLang(FSA aut, int step) throws OutOfMemoryError {
         Vector<Character> alpha;
 
         alpha = aut.getAlphabet();
@@ -97,8 +96,6 @@ public class FSAAlgo  {
                 }
                 
             }
-
-            System.out.println(newWords.size());
             
             words.clear();
             words.addAll(newWords);
