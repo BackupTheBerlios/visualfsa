@@ -21,71 +21,102 @@ package gui.dialogs;
 
 import javax.swing.JDialog;
 import javax.swing.JButton;
-import javax.swing.JTextArea;
 import javax.swing.JProgressBar;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
+import javax.swing.SwingConstants;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.Frame;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
 public class LangDialog extends JDialog {
-
-    private JProgressBar pBar;
+    
+    // größe des Eingabealphabets des Automaten, beschränkt
+    // die maximale Wortlänge
+    private int alphaSize;
+    
+    // ausgewählte Wortlänge
+    private int wLen = 0;
+    
     private JSpinner spin;
-    private SpinnerNumberModel spinModel;
     
     public LangDialog(Frame parent, String title, boolean modal) {
         super(parent,title,modal);
     }
     
+    public void setAlphaSize(int n) {
+        alphaSize = n;
+    }
+
+    public int getWordLength() {
+        return wLen;
+    }
     
     public void run() {
+        int max = 0;
+
+        
+        SpinnerNumberModel spinModel;
+
         getContentPane().setLayout(new BorderLayout());
         
         JPanel lowerPan = new JPanel();
-        lowerPan.setLayout(new GridLayout(2,3));
+        lowerPan.setLayout(new GridLayout(1,3));
         
-        JTextArea caution = new JTextArea("Hinweis: Der (Versuch) die erkannte Sprache des Automaten anzugeben arbeitet " +
-                "in visualFSA wie folgt: Das Programm erzeugt alle Wörter über dem Eingabealpha bis zur einer festen Länge n. " +
-                "Da dabei extrem viele Wörter entstehen und auch gespeichert werden müssen (das Programm erstellt aus denn " +
-                "Wörter der Länge k-1 die Wörter der Länge k) wird die maximale Wörtlänge limitiert. (Ein Alpabet mit k Zeichen " +
-                "erzeugt bei Wortlänge m k^m viele Wörter.)"
-          );
+        add(new JLabel("Maximale Wortlänge angeben:", SwingConstants.CENTER), BorderLayout.CENTER);
         
-        caution.setLineWrap(true);
-        caution.setWrapStyleWord(true);
-        caution.setEditable(false);
+        // hier wird die Wortlänge begrenzt, bei mehr als 500k Wörter wird es kritisch mit dem Heap :/
+        for (int k = 0 ; k < 50 ; k++) {
+            ++max;
+            if (Math.pow((double)alphaSize, (double)max) >= 400000) {
+                --max;
+                break;
+            }
+              
+        }
         
-        getContentPane().add(caution, BorderLayout.CENTER);
-        
-        JLabel current = new JLabel(" ");
-        
-        pBar = new JProgressBar(JProgressBar.HORIZONTAL);
-        pBar.setMinimum(0); pBar.setMaximum(100); pBar.setValue(0);
-        
-        lowerPan.add(new JLabel("Fortschritt:"));
-        lowerPan.add(current);
-        lowerPan.add(pBar, BorderLayout.WEST);
-
-        spinModel = new SpinnerNumberModel(3,1,10,1);
+        spinModel = new SpinnerNumberModel(1,1,max,1);
         spin = new JSpinner(spinModel);
                 
-        JButton start = new JButton("Start");
+        JButton start = new JButton("Ok");
         JButton cancel = new JButton("Abbruch");
         
         lowerPan.add(spin);
-        lowerPan.add(start, BorderLayout.SOUTH);
-        lowerPan.add(cancel, BorderLayout.SOUTH);
+        lowerPan.add(start);
+        lowerPan.add(cancel);
+        
+        start.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                dispose();
+            }
+        });
+        
+        cancel.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ev) {
+                wLen = -1;
+                dispose();
+            }
+        });
+        
+        spin.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent ev) {
+                wLen = (int)((Integer)spin.getValue());
+            }
+        });
         
         getContentPane().add(lowerPan, BorderLayout.SOUTH);
         
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        setLocation(40,40);
-        setSize(400,200);
+        setLocation(90,90);
+
+        pack();
         setVisible(true);
     }
     
