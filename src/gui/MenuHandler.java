@@ -27,6 +27,7 @@ import javax.swing.JMenuItem;
 import gui.dialogs.LangDialog;
 
 import static gui.MainMenu.MenuID;
+import datastructs.FSA;
 
 /* Eventhandler für das Anwendungsmenü */
 
@@ -48,6 +49,8 @@ public class MenuHandler implements ActionListener {
         JMenuItem eventSource = (JMenuItem)event.getSource();
         MainMenu.MenuID val = entries.get(eventSource);
         
+        FSA currAut;
+        
         switch (val) {
             case FILE_NEW:
                 /* Datei -> Neu, prüfen ob die aktuelle Datei gespeichert werden soll */
@@ -63,8 +66,7 @@ public class MenuHandler implements ActionListener {
                 guiMain.checkSave(true);
                 break;
             case ALGO_LANG:
-                LangDialog langDlg = new LangDialog(guiMain, "Sprache bestimmen", true);
-                langDlg.run();
+                guiMain.guessLang();
                 break;
             default:
                 System.out.println("m00h");
