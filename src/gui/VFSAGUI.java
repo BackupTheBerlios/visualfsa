@@ -30,6 +30,7 @@ import java.io.IOException;
 
 import io.FileIO;
 import gui.dialogs.*;
+import datastructs.AppOptions;
 import datastructs.FSA;
 import algo.FSAAlgo;
 import threads.LanguageThread;
@@ -44,6 +45,8 @@ public class VFSAGUI extends JFrame {
     
     private String filename;
     
+    public static AppOptions options;
+    
     public static final String verString = "visualFSA";
     
     public VFSAGUI() {
@@ -52,6 +55,9 @@ public class VFSAGUI extends JFrame {
     
     public void showGUI() {
         JSplitPane centerSplitter;
+        
+        options = new AppOptions();
+        options.loadOptions();
         
         getContentPane().setLayout(new BorderLayout());
         
@@ -69,6 +75,7 @@ public class VFSAGUI extends JFrame {
         
         centerSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, autPane, side);
         centerSplitter.setResizeWeight(0.95);
+        centerSplitter.setOneTouchExpandable(true); 
         getContentPane().add(centerSplitter, BorderLayout.CENTER);
         
         menubar = new MainMenu(this, side);
@@ -127,7 +134,7 @@ public class VFSAGUI extends JFrame {
     public boolean checkSave(boolean justSave) {
         int res;
         String newFilename;
-        
+
         if (justSave) {
             res = JOptionPane.YES_OPTION;
         } else {
@@ -153,6 +160,23 @@ public class VFSAGUI extends JFrame {
         }
         return false; // implizit der cancel fall
     }
+    
+    
+    /*
+     * Öffnet den Optionsdialog, übergibt dem Dialog ein Optionen Objekt
+     * mit den aktuellen durch den Benutzer gesetzten Optionen
+     */
+    public void showOptions() {
+        OptionDlg optDlg;
+        
+        optDlg = new OptionDlg(this, "Optionen", options);
+        options = optDlg.run();
+        autPane.setBackground(options.getBackCol());
+        autPane.repaint();
+        autPane.paintComponents(autPane.getGraphics());
+        options.saveOptions();
+    }
+    
     
     /**
      * Öffnet einen Dateidialog in dem der Benutzer eine Datei auswählen kann.

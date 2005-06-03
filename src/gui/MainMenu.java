@@ -30,7 +30,7 @@ import javax.swing.ImageIcon;
 public class MainMenu extends JMenuBar {
 
      public static enum MenuID 
-    { FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT,
+    { FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT, FILE_OPTIONS,
       ALGO_LANG
         }
 
@@ -65,6 +65,9 @@ public class MainMenu extends JMenuBar {
 					   new ImageIcon("src/images/filesave.png"));
 	JMenuItem saveasFile = new JMenuItem("Speichern als...",
 					     new ImageIcon("src/images/filesaveas.png"));
+        JMenuItem options = new JMenuItem("Optionen...",
+                                        new ImageIcon("src/images/options.png"));
+        
 	JMenuItem quit = new JMenuItem("Beenden",
 				       new ImageIcon("src/images/exit.png"));
 
@@ -72,18 +75,22 @@ public class MainMenu extends JMenuBar {
 	openFile.setMnemonic(KeyEvent.VK_F);
  	saveFile.setMnemonic(KeyEvent.VK_S);
  	saveasFile.setMnemonic(KeyEvent.VK_A);
+        options.setMnemonic(KeyEvent.VK_O);
 	quit.setMnemonic(KeyEvent.VK_B);
 
 	entries.put(newFile, MenuID.FILE_NEW);
 	entries.put(openFile, MenuID.FILE_OPEN);
 	entries.put(saveFile, MenuID.FILE_SAVE);
 	entries.put(saveasFile, MenuID.FILE_SAVEAS);
+        entries.put(options, MenuID.FILE_OPTIONS);
 	entries.put(quit, MenuID.FILE_QUIT);
 
 	file.add(newFile);
 	file.add(openFile);
 	file.add(saveFile);
 	file.add(saveasFile);
+        file.addSeparator();
+        file.add(options);
 	file.addSeparator();
 	file.add(quit);
 		
@@ -92,7 +99,8 @@ public class MainMenu extends JMenuBar {
         JMenu algo = new JMenu("Algorithmen");
         algo.setMnemonic(KeyEvent.VK_M);
         
-        JMenuItem algo_lang = new JMenuItem("Sprache angeben");
+        JMenuItem algo_lang = new JMenuItem("Sprache angeben",
+                            new ImageIcon("src/images/lang.png"));
         
         algo_lang.setMnemonic(KeyEvent.VK_S);
         

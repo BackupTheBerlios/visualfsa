@@ -54,22 +54,36 @@ public class MenuHandler implements ActionListener {
         switch (val) {
             case FILE_NEW:
                 /* Datei -> Neu, prüfen ob die aktuelle Datei gespeichert werden soll */
-                if (guiMain.checkSave(false))
+                if (guiMain.options.getAskSave()) {
+                    if (guiMain.checkSave(false))
+                        guiMain.newFile();    
+                }
+                else {
                     guiMain.newFile();
+                }
+                
                 break;
             case FILE_OPEN:
                 /* Datei -> Öffnen, prüfen ob aktuelle Datei gespeichert werden soll */
-                if (guiMain.checkSave(false))
+                if (guiMain.options.getAskSave()) {
+                    if (guiMain.checkSave(false))
+                        guiMain.openFile();
+                }
+                else {
                     guiMain.openFile();
+                }
                 break;
             case FILE_SAVEAS:
                 guiMain.checkSave(true);
+                break;
+            case FILE_OPTIONS:
+                guiMain.showOptions();
                 break;
             case ALGO_LANG:
                 guiMain.guessLang();
                 break;
             default:
-                System.out.println("m00h");
+                System.out.println("not implemented yet");
         }
     }
     

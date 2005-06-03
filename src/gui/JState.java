@@ -56,7 +56,7 @@ public class JState extends JComponent {
 	num = _num;
 	initial = new Point();
 	outgoingTransList = new LinkedList<TransitionData>();
-	currentColor = Color.WHITE;
+	currentColor = VFSAGUI.options.getBackCol();
 	parent = _parent;
 	enableEvents(AWTEvent.MOUSE_MOTION_EVENT_MASK|AWTEvent.MOUSE_EVENT_MASK);
     }
@@ -72,7 +72,7 @@ public class JState extends JComponent {
 	
 	// Rand
 	if (!finalState) {
-	    g.setColor(Color.BLACK);
+	    g.setColor(VFSAGUI.options.getLineCol());
 	}
 	else {
 	    g.setColor(Color.RED);
@@ -88,9 +88,9 @@ public class JState extends JComponent {
 	    g.fillPolygon(edge);
 	}
 
-	g.setColor(Color.BLACK);
 	xPos = SwingUtilities.computeStringWidth(g.getFontMetrics(),name);
 	
+        g.setColor(VFSAGUI.options.getLineCol());
 	g.drawString(name,(AutWindow.STATE_HALFSIZE)-(xPos/2),AutWindow.STATE_HALFSIZE+5);
     }
 
@@ -294,17 +294,17 @@ public class JState extends JComponent {
 	switch(flag) {
 	    
 	case MODE_MARK:
-	    currentColor = Color.YELLOW;
+	    currentColor = VFSAGUI.options.getMarkCol();
 	    marked = true;
 	    repaint();
 	    break;
 	case MODE_NOMARK:
-	    currentColor = Color.WHITE;
+	    currentColor = VFSAGUI.options.getBackCol();
 	    marked = false;
 	    repaint();
 	    break;
 	case MODE_EDGE:
-	    currentColor= Color.RED;
+	    currentColor= VFSAGUI.options.getTransCol();
 	    repaint();
 	    
 	    

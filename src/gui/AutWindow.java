@@ -56,6 +56,7 @@ public class AutWindow extends JLayeredPane {
     private VFSAGUI topLevel;
     private StatePopup statePopup;
 
+    private Color lineColour, charColour;
       
     public AutWindow(VFSAGUI _topLevel) {
 	super();
@@ -63,7 +64,7 @@ public class AutWindow extends JLayeredPane {
 	setLayout(null);
 	setDoubleBuffered(true);
 	setOpaque(true);
-	setBackground(Color.WHITE);
+	setBackground(VFSAGUI.options.getBackCol());
 	enableEvents(AWTEvent.MOUSE_EVENT_MASK);
 	statePopup = new StatePopup();                
     }
@@ -137,6 +138,11 @@ public class AutWindow extends JLayeredPane {
             current.setTransDrawn(false);
 	}
         
+        // wir holen uns bereits hier die Farben aus dem Optionsobjekt
+        // um unnötigen Methodenaufruf-Overhead in drawTransitions zu vermeiden
+        charColour = VFSAGUI.options.getCharCol();
+        lineColour = VFSAGUI.options.getLineCol();
+        
         for (int i = 0 ; i < numstate ; i++ ) {
             current = (JState)states[i];
             drawTransitions(current, g);
@@ -189,12 +195,14 @@ public class AutWindow extends JLayeredPane {
                 startLoc = startState.getLocation();	
                 startLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
                 // zeichne einen  'dreiviertel bogen'
+                g.setColor(lineColour);
 		g.drawArc(startLoc.x-STATE_SIZE, startLoc.y-STATE_SIZE, STATE_SIZE, STATE_SIZE, 0, 270);
 		// die Transititionszeichen werden oberhalb des
 		// Kreisbogens dargestellt
 		mp.x = startLoc.x-STATE_SIZE;
 		mp.y = startLoc.y-STATE_SIZE-10;
-		g.drawString(currTrans.getChars().toString(), mp.x, mp.y);
+		g.setColor(charColour);
+                g.drawString(currTrans.getChars().toString(), mp.x, mp.y);
 		continue;
 	    }
 	    
@@ -288,9 +296,9 @@ public class AutWindow extends JLayeredPane {
 
             }
 
-            g.setColor(Color.RED);
+            g.setColor(charColour);
             g.drawString(currTrans.getChars().toString(), mp.x, mp.y-4); 
-	    g.setColor(Color.GRAY);
+	    g.setColor(lineColour);
             g.drawLine(startLoc.x,startLoc.y,endPoint.x,endPoint.y);
             
             
