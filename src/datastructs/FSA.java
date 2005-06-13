@@ -156,7 +156,8 @@ public class FSA implements Serializable {
 	// welches getFirst findet (dabei liefert IntegerSet.getFirst
 	// das kleinste element in der Menge
 	reachedState = dfaDelta(startStateSet.getFirst(), w);
-	return (finalStateSet.contains(reachedState));
+	if (reachedState == -1) return false;
+        return (finalStateSet.contains(reachedState));
     }
 	
 
@@ -195,7 +196,8 @@ public class FSA implements Serializable {
 	else {
 	    a  = ax.charAt(0);
 	}
-		
+	
+        
 	transList = transitionTable.get((Integer)state);
 		
 	transIt = transList.listIterator();
@@ -214,7 +216,7 @@ public class FSA implements Serializable {
 	    }
 	}
 		
-	return state;
+	return -1;
     }
 	
 	
