@@ -197,7 +197,21 @@ public class Sidebar extends JPanel {
         return result;
     }
     
-    
+    // füge einen neuen (nicht leeren, vgl. insertNewAut) in die Liste ein
+    public void insertAut(FSA aut) {
+        
+        if (listModel.contains(aut.getName())) {
+            JOptionPane.showMessageDialog(autWin, "Es existiert bereits ein Automat mit" +
+                    " diesem Namen in der Liste\nDer Automat wurde nicht eingefügt.");
+            return;
+        }
+        
+        listData.add(aut);
+        listModel.addElement(aut.getName()); // das ein Name vorhanden ist nehmen wir an
+        if (listModel.getSize()>1)
+            delAut.setEnabled(true);
+        autList.setSelectedIndex(listModel.getSize()-1);
+    }
     
     // füge (aus einer geöffneten Datei) eine neue Liste mit Automaten ein
     // Eingabe ist die eingelesene Liste aus einer Datei
