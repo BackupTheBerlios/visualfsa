@@ -245,6 +245,7 @@ public class VFSAGUI extends JFrame {
     /* automat determinisieren */
     public void determ() {
         FSA myAut;
+        FSA result;
         
         /* gui infos synchr. */
         myAut = side.getCurrentAut();
@@ -254,8 +255,12 @@ public class VFSAGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "Automat ist bereits vom Typ DFA!");
             return;
         }
+       
+        result = FSAAlgo.determ(myAut);
         
-        autPane.insertAut(FSAAlgo.determ(myAut));
+        result.setName(myAut.getName()+"_dfa");
+        
+        side.insertAut( result );
     }
     
     
