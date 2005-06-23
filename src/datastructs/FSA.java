@@ -48,7 +48,7 @@ public class FSA implements Serializable {
     
     /* diverse erweiterungen für die gui anbindung */
 
-    public Set getStates() {
+    public Set<Integer> getStates() {
 	return posTable.keySet();
     }
 

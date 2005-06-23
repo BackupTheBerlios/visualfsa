@@ -82,6 +82,9 @@ public class MenuHandler implements ActionListener {
             case ALGO_LANG:
                 guiMain.guessLang();
                 break;
+            case ALGO_DETERM:
+                guiMain.determ();
+                break;
             default:
                 System.out.println("not implemented yet");
         }

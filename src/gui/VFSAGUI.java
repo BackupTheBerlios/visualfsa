@@ -242,6 +242,22 @@ public class VFSAGUI extends JFrame {
     }
     
     
+    /* automat determinisieren */
+    public void determ() {
+        FSA myAut;
+        
+        /* gui infos synchr. */
+        myAut = side.getCurrentAut();
+        
+        // nichts zu tun
+        if (myAut.isDeterministic()) {
+            JOptionPane.showMessageDialog(this, "Automat ist bereits vom Typ DFA!");
+            return;
+        }
+        
+        autPane.insertAut(FSAAlgo.determ(myAut));
+    }
+    
     
     public void newFile() {
         filename = "unbenannt.fsa";
