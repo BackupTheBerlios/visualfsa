@@ -52,6 +52,10 @@ public class FSA implements Serializable {
 	return posTable.keySet();
     }
 
+    public Set<Integer> getNonGuiStates() {
+        return transitionTable.keySet();
+    }
+    
     public Point getPosition(Integer state) {
 	return posTable.get(state);
     }
@@ -428,6 +432,13 @@ public class FSA implements Serializable {
     public String toString() {
 	return transitionTable.toString();
     }
-	
+
+    public IntegerSet getFinalSet() {
+        return finalStateSet;
+    }
+    
+    public IntegerSet getStartSet() {
+        return startStateSet;
+    }
 	
 }
