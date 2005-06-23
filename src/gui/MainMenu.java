@@ -102,7 +102,8 @@ public class MainMenu extends JMenuBar {
         JMenuItem algo_lang = new JMenuItem("Sprache angeben",
                             new ImageIcon("src/images/lang.png"));
         
-        JMenuItem algo_determ = new JMenuItem("NFA -> DFA");
+        JMenuItem algo_determ = new JMenuItem("NFA -> DFA",
+                            new ImageIcon("src/images/determ.png"));
         
         algo_lang.setMnemonic(KeyEvent.VK_S);
         algo_determ.setMnemonic(KeyEvent.VK_F);
