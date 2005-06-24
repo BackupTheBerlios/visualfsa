@@ -32,10 +32,10 @@ public class StatePopup extends JPopupMenu {
     private JState invoker;
 
     public StatePopup() {
-	edit = new JMenuItem("Transitionen editieren", new ImageIcon("src/images/edit.png"));
-	delete = new JMenuItem("Entfernen", new ImageIcon("src/images/edit_remove.png"));
-	startst = new JCheckBoxMenuItem("Startzustand", new ImageIcon("src/images/start.png"));
-	finalst = new JCheckBoxMenuItem("Endzustand", new ImageIcon("src/images/final.png"));
+	edit = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("editTrans"), new ImageIcon("src/images/edit.png"));
+	delete = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("remove"), new ImageIcon("src/images/edit_remove.png"));
+	startst = new JCheckBoxMenuItem(java.util.ResourceBundle.getBundle("global").getString("Startstate"), new ImageIcon("src/images/start.png"));
+	finalst = new JCheckBoxMenuItem(java.util.ResourceBundle.getBundle("global").getString("finalState"), new ImageIcon("src/images/final.png"));
 
 	add(edit);
 	add(delete);

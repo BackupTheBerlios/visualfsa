@@ -188,8 +188,6 @@ public class FSAAlgo {
             // (TODO?) IntegerSet implementiert (noch) nicht Iterator
             currentSet = currentIntSet.pureElements();
             
-            System.out.println("Untersuche Zustandsmenge "+currentSet);
-            
             // eine spezielle Teilmenge der Potenzmenge, nämlich die leere
             // Menge, wird gesondert behandelt, sie dient gewissermaßen
             // als Fangzustand
@@ -207,35 +205,25 @@ public class FSAAlgo {
             // Annahme ist natürlich das es sich um DFAs handelt, die nur einen Startzustand
             // haben dürfen
             if (currentIntSet.cardinality()==1 && aut.isStartState(currentIntSet.getFirst())) {
-                System.out.println("  --> "+currentIntSet+" ist das StartStateSet");
                 dfaResult.setStartFlag(statePowerSet.indexOf(currentIntSet), true);
             }
             
+            // durchlaufe für diesen Zustand alle Buchstaben des Eingabealphabets
             for ( Iterator<Character> alphaIt = alpha.iterator(); alphaIt.hasNext(); ) {
                 
-                
-                  currChar = alphaIt.next();
-                  // lege eine neue (zunächst) leere Menge an, hier kommen
-                  // alle Zustände hinein die von stateId mit currChar aus erreichbar sind
-                  destSet = new IntegerSet();
+                currChar = alphaIt.next();
+                // lege eine neue (zunächst) leere Menge an, hier kommen
+                // alle Zustände hinein die von stateId mit currChar aus erreichbar sind
+                destSet = new IntegerSet();
                 
                 // durchlaufe die aktuelle Menge (=Zustand) ....
                 for ( Iterator<Integer> setIt = currentSet.iterator(); setIt.hasNext(); ) {
                     
                     stateId = setIt.next();
                     
-                    System.out.println("Betrachte "+stateId+" aus "+currentSet);
-                    
                     // besorge alle Transitionen dieses (alten) Zustands aus dem
                     // alten Automaten
                     transList = aut.getStateTransitions(stateId);
-                    
-                    // durchlaufe für diesen Zustand alle Buchstaben des Eingabealphabets
-                    
-                    
-                  
-                    
-                  
                     
                     // betrachte nun die ausgehenden Transition dieses ZUstands im alten Aut.
                     for ( Iterator<Transition> transIt = transList.iterator(); transIt.hasNext(); ) {
@@ -246,25 +234,20 @@ public class FSAAlgo {
                         // irgendwo anders hin, füge den jeweiligen Zielzustand in die
                         // neue Zielzustandsmenge ein
                         if (currTrans.getChar() == currChar && currTrans.getStartState()==stateId) {
-                            System.out.println("passende transition "+currTrans+" für "+stateId+
-                                    "aus "+currentIntSet);
                             destSet.insert(currTrans.getEndState());
                             
                         }
                         
                     }
                     
-                    System.out.println(currentIntSet+" erreicht mit "+currChar+" "+destSet);
-                    
                     // über den Index im Vector der Potenzmenge werden die einzelnen
                     // Menge eindeutig identifiziert, hier wird die endgültige Transition eingefügt
-                 
                     
                 }
-                  
-                     dfaResult.addTransition(statePowerSet.indexOf(currentIntSet),
-                            statePowerSet.indexOf(destSet),
-                            currChar);
+                
+                dfaResult.addTransition(statePowerSet.indexOf(currentIntSet),
+                        statePowerSet.indexOf(destSet),
+                        currChar);
             }
             
         }
@@ -286,9 +269,6 @@ public class FSAAlgo {
                 dfaResult.setFinalFlag(statePowerSet.indexOf(currentIntSet),  true);
             }
         }
-        
-        // TODO
-        dfaResult.setName("myName");
         
         // erzeuge die noch nicht vorhandenen Pixelpositionen der Zustände
         dfaResult = generatePositions(dfaResult);

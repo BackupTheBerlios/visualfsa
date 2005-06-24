@@ -64,10 +64,9 @@ public class OptionDlg extends JDialog {
         
         content.setLayout(new BorderLayout());
         
-        askSave = new JCheckBox("Bei Dateioperation immer nachfragen");
+        askSave = new JCheckBox(java.util.ResourceBundle.getBundle("global").getString("askSave"));
         
-        askSave.setToolTipText("Diese Option gibt an, ob bei 'Neu', 'Öffnen' etc." +
-                "jeweils gefragt wird, ob die aktuelle Datei gespeichert werden soll.");
+        askSave.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("askSaveTT"));
 
         askSave.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -77,7 +76,7 @@ public class OptionDlg extends JDialog {
         
         // Panel erzeugen, Border hinzufügen, allgemeine Optionen
         genOpts = new JPanel();
-        genOpts.setBorder(new TitledBorder("Allgemeines"));
+        genOpts.setBorder(new TitledBorder(java.util.ResourceBundle.getBundle("global").getString("common")));
         genOpts.setLayout(new GridLayout(1,1));
         
         genOpts.add(askSave);
@@ -85,31 +84,30 @@ public class OptionDlg extends JDialog {
         // Panel für die Farboptionen
         
         colours = new JPanel();
-        colours.setBorder(new TitledBorder("Farben"));
+        colours.setBorder(new TitledBorder(java.util.ResourceBundle.getBundle("global").getString("colors")));
         colours.setLayout(new GridLayout(5,2));
         
         JButton lineCol, backCol, charCol, markCol, transCol;
 
-        lineCol = new JButton("Linienfarbe");
-        lineCol.setToolTipText("Farbe für die Zustandsboxen und Transitionslinien");
+        lineCol = new JButton(java.util.ResourceBundle.getBundle("global").getString("lineColor"));
+        lineCol.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("lineColorTT"));
         currLineCol = new JPanel();
         currLineCol.setBackground(opt.getLineCol());
         
-        backCol = new JButton("Hintergrund");
-        backCol.setToolTipText("Hintergrundfarbe der Zeichenfläche");
+        backCol = new JButton(java.util.ResourceBundle.getBundle("global").getString("bg"));
+        backCol.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("bgTT"));
         currBackCol = new JPanel();
         
-        charCol = new JButton("Trans.zeichen");
-        charCol.setToolTipText("Farbe für die Transitionszeichen");
+        charCol = new JButton(java.util.ResourceBundle.getBundle("global").getString("transChars"));
+        charCol.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("transCharsTT"));
         currCharCol = new JPanel();
         
-        markCol = new JButton("Markierte Zustände");
-        markCol.setToolTipText("Farbe in der markierte Zustände erscheinen");
+        markCol = new JButton(java.util.ResourceBundle.getBundle("global").getString("markedState"));
+        markCol.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("markedStateTT"));
         currMarkCol = new JPanel();
         
-        transCol = new JButton("Spezielle Markierung");
-        transCol.setToolTipText("Farbe in der zb. Zustände erscheinen von denen aktuell " +
-                "eine Transition gezeichnet wird.");
+        transCol = new JButton(java.util.ResourceBundle.getBundle("global").getString("specMark"));
+        transCol.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("specMarkTT"));
         currTransCol = new JPanel();
         
         colours.add(lineCol); colours.add(currLineCol);
@@ -189,9 +187,9 @@ public class OptionDlg extends JDialog {
         // Optionen anzeigen
         update();
         
-        okButton = new JButton("OK");
-        defaultButton = new JButton("Standard");
-        cancelButton = new JButton("Abbrechen");
+        okButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("OK"));
+        defaultButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("default"));
+        cancelButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("cancel"));
 
         
         defaultButton.addActionListener(new ActionListener() {
@@ -238,7 +236,7 @@ public class OptionDlg extends JDialog {
     }
     
     private Color getColor(Color init) {
-        return ( JColorChooser.showDialog(this, "Farbe wählen", init) );
+        return ( JColorChooser.showDialog(this, java.util.ResourceBundle.getBundle("global").getString("chooseColor"), init) );
     }
     
     // aktualisiert den Dialog mit den aktuellen Wert aus opt

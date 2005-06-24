@@ -399,14 +399,14 @@ public class FSA implements Serializable {
 	Iterator<LinkedList<Transition>> tableIt;
 	ListIterator<Transition> listIt;
 
-	str.append("- Automateninformation -\n");
-	str.append("name: "+name+"\n");
-	str.append("Automattyp: "+(this.isDeterministic() ? "DFA\n\n": "NFA\n\n"));
-	str.append("Startzustände: "+startStateSet+"\n");
-	str.append("Endzustände: "+finalStateSet+"\n");
-	str.append("Eingabealphabet: "+getAlphabet()+"\n");
+	str.append(java.util.ResourceBundle.getBundle("global").getString("autInfo"));
+	str.append(java.util.ResourceBundle.getBundle("global").getString("name")+name+"\n");
+	str.append(java.util.ResourceBundle.getBundle("global").getString("autType")+(this.isDeterministic() ? "DFA\n" : "NFA\n"));
+	str.append(java.util.ResourceBundle.getBundle("global").getString("startStateS")+startStateSet+"\n");
+	str.append(java.util.ResourceBundle.getBundle("global").getString("finalStateS")+finalStateSet+"\n");
+	str.append(java.util.ResourceBundle.getBundle("global").getString("inpAlpha")+getAlphabet()+"\n");
 	
-	str.append("Transitionen:\n");
+	str.append(java.util.ResourceBundle.getBundle("global").getString("trans"));
 
 	coll = transitionTable.values();
 	tableIt = coll.iterator();

@@ -121,9 +121,9 @@ public class VFSAGUI extends JFrame {
     // im Resultfenster angezeigt
     public void wInL(String w) {
         if (autPane.toFSA().accepts(w, false, false)) {
-            side.insertResults(w+" ist in L("+autPane.getCurrentName()+")");
+            side.insertResults(w+" in L("+autPane.getCurrentName()+")");
         } else {
-            side.insertResults(w+" wird nicht erkannt");
+            side.insertResults(w+" "+java.util.ResourceBundle.getBundle("global").getString("notAccept"));
         }
     }
     
@@ -139,8 +139,8 @@ public class VFSAGUI extends JFrame {
             res = JOptionPane.YES_OPTION;
         } else {
             res = JOptionPane.showConfirmDialog(this,
-                    "Diese Aktion verwirft die aktuelle Datei, vorher speichern?",
-                    "Hinweis", JOptionPane.YES_NO_CANCEL_OPTION);
+                    java.util.ResourceBundle.getBundle("global").getString("discardWarn"),
+                    java.util.ResourceBundle.getBundle("global").getString("Hint"), JOptionPane.YES_NO_CANCEL_OPTION);
         }
         
         switch(res) {
@@ -169,7 +169,7 @@ public class VFSAGUI extends JFrame {
     public void showOptions() {
         OptionDlg optDlg;
         
-        optDlg = new OptionDlg(this, "Optionen", options);
+        optDlg = new OptionDlg(this, java.util.ResourceBundle.getBundle("global").getString("options"), options);
         options = optDlg.run();
         autPane.setBackground(options.getBackCol());
         autPane.repaint();
@@ -201,13 +201,13 @@ public class VFSAGUI extends JFrame {
                 // Daten in der Liste -> Exception
                 side.insertList(inData);
             } catch(IOException ioEx) {
-                JOptionPane.showMessageDialog(this,"IO-Fehler: ("+ioEx.getMessage()+")",
-                        "Fehler", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,java.util.ResourceBundle.getBundle("global").getString("ioErr")+ioEx.getMessage()+")",
+                        java.util.ResourceBundle.getBundle("global").getString("Error"), JOptionPane.ERROR_MESSAGE);
             } catch (Exception generalEx) {
                 generalEx.printStackTrace();
                 JOptionPane.showMessageDialog(this,
-                        "Lesefehler, meist falsches Dateiformat ("+
-                        generalEx.getMessage()+")","Fehler",
+                        java.util.ResourceBundle.getBundle("global").getString("readErr")+
+                        generalEx.getMessage()+java.util.ResourceBundle.getBundle("global").getString(")"),java.util.ResourceBundle.getBundle("global").getString("Error"),
                         JOptionPane.ERROR_MESSAGE);
             }
             
@@ -225,7 +225,7 @@ public class VFSAGUI extends JFrame {
         final int wL;
         LanguageThread langThread;
         
-        LangDialog langDlg = new LangDialog(this, "Maximale Wortlänge", true);
+        LangDialog langDlg = new LangDialog(this, java.util.ResourceBundle.getBundle("global").getString("maxWordLen"), true);
         
         // den aktuellen Automaten bestimmen
         currAut = side.getCurrentAut();
@@ -252,7 +252,7 @@ public class VFSAGUI extends JFrame {
         
         // nichts zu tun
         if (myAut.isDeterministic()) {
-            JOptionPane.showMessageDialog(this, "Automat ist bereits vom Typ DFA!");
+            JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("global").getString("isDFA"));
             return;
         }
        
@@ -265,7 +265,7 @@ public class VFSAGUI extends JFrame {
     
     
     public void newFile() {
-        filename = "unbenannt.fsa";
+        filename = "noname.fsa";
         setTitle(verString+" - "+filename);
         side.reset();
     }

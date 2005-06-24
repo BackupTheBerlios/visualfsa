@@ -52,23 +52,23 @@ public class MainMenu extends JMenuBar {
 	
 	entries = new Hashtable<JMenuItem, MenuID>();
 
-	JMenu file = new JMenu("Datei");
+	JMenu file = new JMenu(java.util.ResourceBundle.getBundle("global").getString("file"));
 	file.setMnemonic(KeyEvent.VK_D);
 
 	/* Menü - Datei - */
-	JMenuItem newFile = new JMenuItem("Neu",
+	JMenuItem newFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("new"),
 					  new ImageIcon("src/images/filenew.png"));
 
-	JMenuItem openFile = new JMenuItem("Öffnen...",
+	JMenuItem openFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("open"),
 					   new ImageIcon("src/images/fileopen.png"));
-	JMenuItem saveFile = new JMenuItem("Speichern",
+	JMenuItem saveFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("save"),
 					   new ImageIcon("src/images/filesave.png"));
-	JMenuItem saveasFile = new JMenuItem("Speichern als...",
+	JMenuItem saveasFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("saveas"),
 					     new ImageIcon("src/images/filesaveas.png"));
-        JMenuItem options = new JMenuItem("Optionen...",
+        JMenuItem options = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("options"),
                                         new ImageIcon("src/images/options.png"));
         
-	JMenuItem quit = new JMenuItem("Beenden",
+	JMenuItem quit = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("quit"),
 				       new ImageIcon("src/images/exit.png"));
 
 	newFile.setMnemonic(KeyEvent.VK_N);
@@ -96,13 +96,13 @@ public class MainMenu extends JMenuBar {
 		
 	add(file);
 
-        JMenu algo = new JMenu("Algorithmen");
+        JMenu algo = new JMenu(java.util.ResourceBundle.getBundle("global").getString("algo"));
         algo.setMnemonic(KeyEvent.VK_M);
         
-        JMenuItem algo_lang = new JMenuItem("Sprache angeben",
+        JMenuItem algo_lang = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("guessLang"),
                             new ImageIcon("src/images/lang.png"));
         
-        JMenuItem algo_determ = new JMenuItem("NFA -> DFA",
+        JMenuItem algo_determ = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("determ"),
                             new ImageIcon("src/images/determ.png"));
         
         algo_lang.setMnemonic(KeyEvent.VK_S);
