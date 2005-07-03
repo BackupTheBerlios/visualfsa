@@ -38,5 +38,13 @@ public class TransitionData {
     public Vector<Character> getChars() {
 	return chars;
     }
+    
+    public void setChars(Vector<Character> _ch) {
+        chars = _ch;
+    }
+    
+    public String toString() {
+        return chars.toString()+" -> "+endState.getNumber();
+    }
 
 }

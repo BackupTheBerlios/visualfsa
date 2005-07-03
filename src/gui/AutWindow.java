@@ -66,7 +66,7 @@ public class AutWindow extends JLayeredPane {
 	setOpaque(true);
 	setBackground(VFSAGUI.options.getBackCol());
 	enableEvents(AWTEvent.MOUSE_EVENT_MASK);
-	statePopup = new StatePopup();                
+	statePopup = new StatePopup(_topLevel);                
     }
 
 
@@ -157,7 +157,7 @@ public class AutWindow extends JLayeredPane {
     }
 
 
-    protected void drawTransitions(JState startState, Graphics graph) {
+    protected void drawTransitions(JState startState, Graphics g) {
 	Point startLoc, endLoc;
 	LinkedList<TransitionData> transList;
 	ListIterator<TransitionData> current;
@@ -167,14 +167,7 @@ public class AutWindow extends JLayeredPane {
         
         // für die Pfeilspitzen
         double width = 5.0, length = 20.0;
-        
-        Graphics2D g = (Graphics2D)graph.create();
-        
-           
-        // AA an, gut aussehen soll es ja auch
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                              RenderingHints.VALUE_ANTIALIAS_ON);
-      
+              
 	Point mp = new Point(), endPoint;
 	int xsize,ysize;
 
@@ -330,9 +323,7 @@ public class AutWindow extends JLayeredPane {
                       
 	    
 	}
-	
-        // Speicher für das erzeugte Graphics2D freigeben
-        g.dispose();
+
     }
 
 
@@ -501,7 +492,7 @@ public class AutWindow extends JLayeredPane {
     }
 
 
-    private Vector<Character> parseTransChars(String inp) {
+    public static Vector<Character> parseTransChars(String inp) {
 	StringTokenizer strTok;
 	String ctok;
 	Character currChar;
