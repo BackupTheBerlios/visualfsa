@@ -85,6 +85,9 @@ public class MenuHandler implements ActionListener {
             case ALGO_DETERM:
                 guiMain.determ();
                 break;
+            case VIEW_FITWINDOW:
+                guiMain.fitWindow();
+                break;
             default:
                 System.out.println("not implemented yet");
         }

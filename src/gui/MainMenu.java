@@ -31,7 +31,8 @@ public class MainMenu extends JMenuBar {
 
      public static enum MenuID 
     { FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT, FILE_OPTIONS,
-      ALGO_LANG, ALGO_DETERM
+      ALGO_LANG, ALGO_DETERM,
+        VIEW_FITWINDOW
         }
 
     private MenuHandler genericHandler;
@@ -116,8 +117,18 @@ public class MainMenu extends JMenuBar {
         
         add(algo);
         
+        JMenu view_menu = new JMenu("Ansicht");
+        
+        JMenuItem view_fitwin = new JMenuItem("An Fenster anpassen");
+        
+        view_menu.add(view_fitwin);
+        
+        add(view_menu);
+        
+        entries.put(view_fitwin, MenuID.VIEW_FITWINDOW);
+        
 	genericHandler = new MenuHandler(topLevel, guiSide, entries);
-	
+	        
 	// registriere für alle Menüeinträge den EventHandler
 	Enumeration<JMenuItem> menuEnum = entries.keys();
 	

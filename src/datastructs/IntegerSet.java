@@ -121,12 +121,13 @@ public class IntegerSet implements Serializable {
 	
         IntegerSet newSubSet;
         pElem = this.pureElements();
+        
         result = new Vector<IntegerSet>();
         
         
 	do {
 	    idx = idx.add(BigInteger.ONE);
-	    
+            
             newSubSet = new IntegerSet();
             
 	    for (i = 0 ; i < card ; i++ ) {

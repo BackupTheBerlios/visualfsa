@@ -159,9 +159,9 @@ public class FSAAlgo {
         
         // Potenzmenge davon berechnen
         Vector<IntegerSet> statePowerSet;
-        
+        System.out.println("hole pset");        
         statePowerSet = stateSet.getPowerset();
-        
+
         // aktuelle teilmenge der Potenzmenge
         Vector<Integer> currentSet;
         IntegerSet currentIntSet;
@@ -179,6 +179,8 @@ public class FSAAlgo {
         // der neue Zustand (==Zustandsmenge) im neuen Automaten
         IntegerSet destSet;
         int stateId; // der aktuell untersuchte (alte) Zustand
+        
+        int cc = 0;
         
         // nimm einen Zustand des neuen Automaten her... (also eine Teilmenge der Potmenge)
         for ( Iterator<IntegerSet> psIt = statePowerSet.iterator(); psIt.hasNext();) {
@@ -224,6 +226,8 @@ public class FSAAlgo {
                     // besorge alle Transitionen dieses (alten) Zustands aus dem
                     // alten Automaten
                     transList = aut.getStateTransitions(stateId);
+                    
+                    if (transList==null) continue;
                     
                     // betrachte nun die ausgehenden Transition dieses ZUstands im alten Aut.
                     for ( Iterator<Transition> transIt = transList.iterator(); transIt.hasNext(); ) {

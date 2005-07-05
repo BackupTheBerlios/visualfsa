@@ -64,8 +64,9 @@ public class VFSAGUI extends JFrame {
         bottom = new BottomBar(this);
         getContentPane().add(bottom, BorderLayout.SOUTH);
         
-        autPane = new AutWindow(this);
         
+        autPane = new AutWindow(this);
+  
         side = new Sidebar(autPane);
         
         side.insertNewAut();
@@ -263,6 +264,9 @@ public class VFSAGUI extends JFrame {
         side.insertAut( result );
     }
     
+    public void fitWindow() {
+        Utilities.fitToWindow(side.getCurrentAut(), autPane);
+    }
     
     public void newFile() {
         filename = "noname.fsa";
