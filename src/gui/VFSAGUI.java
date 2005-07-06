@@ -66,17 +66,16 @@ public class VFSAGUI extends JFrame {
         
         
         autPane = new AutWindow(this);
-  
+        
         side = new Sidebar(autPane);
         
         side.insertNewAut();
         
-        top = new TopBar();
-        getContentPane().add(top, BorderLayout.NORTH);
+        
         
         centerSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, autPane, side);
-        centerSplitter.setResizeWeight(0.95);
-        centerSplitter.setOneTouchExpandable(true); 
+        centerSplitter.setResizeWeight(0.8f);
+        centerSplitter.setOneTouchExpandable(true);
         getContentPane().add(centerSplitter, BorderLayout.CENTER);
         
         menubar = new MainMenu(this, side);
@@ -121,7 +120,13 @@ public class VFSAGUI extends JFrame {
     // das Wort wird dem Automaten übergeben, das Ergebnis
     // im Resultfenster angezeigt
     public void wInL(String w) {
-        if (autPane.toFSA().accepts(w, false, false)) {
+        boolean status = autPane.toFSA().accepts(w, false, false);
+        
+        // für das leere Wort wähle eine spezielle Darstellung
+        if (w.length()==0)
+            w = "\\epsilon";
+        
+        if (status) {
             side.insertResults(w+" in L("+autPane.getCurrentName()+")");
         } else {
             side.insertResults(w+" "+java.util.ResourceBundle.getBundle("global").getString("notAccept"));
@@ -132,10 +137,11 @@ public class VFSAGUI extends JFrame {
     // checkSave, fragt ob der user die aktuelle Datei speichern will
     // Rückgabewert gibt an ob die Aktion weiterhin ausgeführt werden soll (also im Fall != cancel)
     // mit justSave fungiert diese Methode als 'Speichern als'
-    public boolean checkSave(boolean justSave) {
+    // needFileName gibt an ob ein Dialog zur Auswahl eines Dateinamen geöffnet werden soll
+    public boolean checkSave(boolean justSave, boolean needFileName) {
         int res;
         String newFilename;
-
+        
         if (justSave) {
             res = JOptionPane.YES_OPTION;
         } else {
@@ -147,13 +153,17 @@ public class VFSAGUI extends JFrame {
         switch(res) {
             case JOptionPane.YES_OPTION:
                 // speichern (als), dann $aktion
-                newFilename = FileIO.getSaveFilename(this, filename);
-                
-                if (newFilename!=null) {
-                    filename = newFilename;
-                    FileIO.fsaListToFile(side.getList(), filename);
-                    setTitle(verString+" - "+filename);
+                if (!needFileName && filename.length()==0) needFileName = true;
+                if (needFileName) {
+                    newFilename = FileIO.getSaveFilename(this, filename);
+                    if (newFilename!=null)
+                        filename = newFilename;
+                    else
+                        return true;
                 }
+                
+                FileIO.fsaListToFile(side.getList(), filename);
+                setTitle(verString+" - "+filename);
                 return true;
             case JOptionPane.NO_OPTION:
                 // nicht speichern, dann $aktion
@@ -225,17 +235,21 @@ public class VFSAGUI extends JFrame {
         final FSA currAut;
         final int wL;
         LanguageThread langThread;
+
+        // den aktuellen Automaten bestimmen
+        currAut = side.getCurrentAut();
         
         LangDialog langDlg = new LangDialog(this, java.util.ResourceBundle.getBundle("global").getString("maxWordLen"), true);
         
-        // den aktuellen Automaten bestimmen
-        currAut = side.getCurrentAut();
         langDlg.setAlphaSize(currAut.getAlphabet().size());
         langDlg.run();
         wL = langDlg.getWordLength();
         
+        // User hat cancel gedrückt
+        if (wL==-1) return;
+        
         final BusyDialog busyDlg = new BusyDialog(this, "", true);
-
+        
         langThread = new LanguageThread(currAut, wL, busyDlg, side);
         
         busyDlg.setWork(langThread);
@@ -256,7 +270,7 @@ public class VFSAGUI extends JFrame {
             JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("global").getString("isDFA"));
             return;
         }
-       
+        
         result = FSAAlgo.determ(myAut);
         
         result.setName(myAut.getName()+"_dfa");
@@ -269,7 +283,7 @@ public class VFSAGUI extends JFrame {
     }
     
     public void newFile() {
-        filename = "noname.fsa";
+        filename = "";
         setTitle(verString+" - "+filename);
         side.reset();
     }

@@ -43,10 +43,11 @@ import javax.swing.event.ListSelectionListener;
 public class Sidebar extends JPanel {
     
     private JList autList;
-    private JButton newAut, renAut, delAut;
+    private JButton newAut, renAut, delAut, resetResults;
     private DefaultListModel listModel;
     private LinkedList<FSA> listData;
     private int lastSel;
+    private JScrollPane resultScroller;
     private AutWindow autWin;
     private JTextArea results;
     
@@ -59,7 +60,7 @@ public class Sidebar extends JPanel {
         super();
         
         JSplitPane splitter;
-        JScrollPane listScroller, resultScroller;
+        JScrollPane listScroller;
         JPanel upperPanel, buttonPanel, lowerPanel;
         
         autWin = _autWin;
@@ -102,14 +103,24 @@ public class Sidebar extends JPanel {
         
         lowerPanel = new JPanel(new BorderLayout());
         
+        resetResults = new JButton(java.util.ResourceBundle.getBundle("global").getString("resetOut"));
+        
         lowerPanel.add(resultScroller, BorderLayout.CENTER);
-        lowerPanel.add(new JButton(java.util.ResourceBundle.getBundle("global").getString("resetOut")), BorderLayout.SOUTH);
+        lowerPanel.add(resetResults, BorderLayout.SOUTH);
         
         splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, upperPanel, lowerPanel);
         splitter.setResizeWeight(0.55);
         
         this.setLayout(new BorderLayout());
         this.add(splitter, BorderLayout.CENTER);
+        
+        // das Ausgabefenster wird zurückgesetzt
+        resetResults.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                results.setText("");
+                insertResults("Welcome!");
+            }
+        });
         
         // entfernen den gewählten Automaten
         delAut.addActionListener(new ActionListener() {
@@ -238,7 +249,7 @@ public class Sidebar extends JPanel {
     // füge neuen Text in das Ausgabefenster ein
     public void insertResults(String resText) {
         if (results.getLineCount()>MAX_RESULT) results.setText("");
-        results.append("\n---------------------------------------------\n");
+        results.append("\n---------------------------------------\n");
         results.append(resText);
     }
     

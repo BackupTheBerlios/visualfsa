@@ -55,7 +55,7 @@ public class MenuHandler implements ActionListener {
             case FILE_NEW:
                 /* Datei -> Neu, prüfen ob die aktuelle Datei gespeichert werden soll */
                 if (guiMain.options.getAskSave()) {
-                    if (guiMain.checkSave(false))
+                    if (guiMain.checkSave(false, true))
                         guiMain.newFile();    
                 }
                 else {
@@ -66,18 +66,27 @@ public class MenuHandler implements ActionListener {
             case FILE_OPEN:
                 /* Datei -> Öffnen, prüfen ob aktuelle Datei gespeichert werden soll */
                 if (guiMain.options.getAskSave()) {
-                    if (guiMain.checkSave(false))
+                    if (guiMain.checkSave(false, true))
                         guiMain.openFile();
                 }
                 else {
                     guiMain.openFile();
                 }
                 break;
+            case FILE_SAVE:
+                guiMain.checkSave(true,false);
+                break;
             case FILE_SAVEAS:
-                guiMain.checkSave(true);
+                guiMain.checkSave(true,true);
                 break;
             case FILE_OPTIONS:
                 guiMain.showOptions();
+                break;
+            case FILE_QUIT:
+                if (guiMain.options.getAskSave()) {
+                    if (guiMain.checkSave(false, true))
+                      guiMain.dispose();
+                }
                 break;
             case ALGO_LANG:
                 guiMain.guessLang();

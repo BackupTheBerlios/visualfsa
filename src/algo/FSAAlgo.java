@@ -159,7 +159,7 @@ public class FSAAlgo {
         
         // Potenzmenge davon berechnen
         Vector<IntegerSet> statePowerSet;
-        System.out.println("hole pset");        
+   
         statePowerSet = stateSet.getPowerset();
 
         // aktuelle teilmenge der Potenzmenge
@@ -179,9 +179,7 @@ public class FSAAlgo {
         // der neue Zustand (==Zustandsmenge) im neuen Automaten
         IntegerSet destSet;
         int stateId; // der aktuell untersuchte (alte) Zustand
-        
-        int cc = 0;
-        
+                
         // nimm einen Zustand des neuen Automaten her... (also eine Teilmenge der Potmenge)
         for ( Iterator<IntegerSet> psIt = statePowerSet.iterator(); psIt.hasNext();) {
             
@@ -206,9 +204,10 @@ public class FSAAlgo {
             // identifiziere die einelementige Menge die den alten Startzustand enthält
             // Annahme ist natürlich das es sich um DFAs handelt, die nur einen Startzustand
             // haben dürfen
-            if (currentIntSet.cardinality()==1 && aut.isStartState(currentIntSet.getFirst())) {
+            /*if (currentIntSet.cardinality()==1 && aut.isStartState(currentIntSet.getFirst())) {
                 dfaResult.setStartFlag(statePowerSet.indexOf(currentIntSet), true);
-            }
+            }*/
+             
             
             // durchlaufe für diesen Zustand alle Buchstaben des Eingabealphabets
             for ( Iterator<Character> alphaIt = alpha.iterator(); alphaIt.hasNext(); ) {
@@ -256,6 +255,11 @@ public class FSAAlgo {
             
         }
         
+        // bestimme den neuen Startzustand des Automaten
+        // der neue Startzustand ist jene Zustandsmenge, welche alle alten
+        // Startzustände enthält, die Potenzmenge wird danach durchsucht
+        // wird auch in der schleife weiter unten getan
+        IntegerSet oldStartSet = aut.getStartSet();
         
         // abschließend bestimmen wir nun noch die neuen Endzustände des Automaten
         // dazu nehmen wir die ursprüngliche Endzustandsmenge und schneiden mit
@@ -268,6 +272,13 @@ public class FSAAlgo {
         
         for ( Iterator<IntegerSet> it = statePowerSet.iterator(); it.hasNext(); ) {
             currentIntSet = it.next();
+
+            // bevor wir hier rumschneiden, erst schauen ob das nicht
+            // der neue Startzustand ist
+            if (currentIntSet.equals(oldStartSet)) {
+                dfaResult.setStartFlag(statePowerSet.indexOf(currentIntSet), true);
+            }
+            
             currentIntSet.intersect(oldFinalSet);
             if (!currentIntSet.isEmpty()) {
                 dfaResult.setFinalFlag(statePowerSet.indexOf(currentIntSet),  true);
