@@ -143,12 +143,15 @@ public class FSA implements Serializable {
 	IntegerSet endSet;
 	ListIterator<Integer> finalSetIt;
 		
-	startSet = new IntegerSet();
 	startSet = startStateSet;
 	endSet = nfaDelta(startSet, w);
 	// schaue nun, ob die Endzustandsmenge einen akzeptierenden Zustand
 	// enthält, schön das wir dafür unser IntSet haben
-	endSet.intersect(finalStateSet);
+        
+        // nfaDelta liefert uU zb die Originalreferenz auf das StartStateSet
+        // zurück, deshalb hier clone
+        endSet = (IntegerSet)endSet.clone();
+        endSet.intersect(finalStateSet);
 	return (!endSet.isEmpty());
     }
 
