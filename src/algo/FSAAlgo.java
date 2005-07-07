@@ -59,7 +59,6 @@ public class FSAAlgo {
         
         // der Wortbaum ist zwar toll, erwischt aber das leere Wort nicht...
         // soviel Zeit haben wir dann aber auch noch, dieses explizit zu testen
-        System.out.println(aut.getStartSet());
         
         if (aut.accepts("",  true, autType)) {
             lang.add("\\epsilon");
@@ -78,10 +77,7 @@ public class FSAAlgo {
             
             while (currWord!=null) {
                 // prüfe ob der automat akzeptiert
-                //System.out.println("Teste: "+currWord);
-                    System.out.println(aut.accepts(currWord, true,  autType));
                 if (aut.accepts(currWord, true,  autType)) {
-             
                     lang.add(currWord);
                 }
                 currWord = wordGenerator.nextWord();
