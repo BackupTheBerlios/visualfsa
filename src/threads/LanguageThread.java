@@ -21,7 +21,7 @@ package threads;
 
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import java.util.HashSet;
+import java.util.Vector;
 import java.util.Iterator;
 
 import gui.Sidebar;
@@ -34,7 +34,7 @@ public class LanguageThread implements Runnable {
     private int wordLength;
     private JDialog pleaseWaitDlg;
     private Sidebar sideBar;
-    private HashSet<String> result;
+    private Vector<String> result;
     
     public LanguageThread(FSA _aut, int _wordLength, JDialog _pleaseWaitDlg, Sidebar _sideBar) {
         aut = _aut;
