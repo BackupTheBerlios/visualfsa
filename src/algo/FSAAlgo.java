@@ -19,6 +19,7 @@
 
 package algo;
 
+import datastructs.WordTree;
 import datastructs.Transition;
 import datastructs.IntegerSet;
 import datastructs.FSA;
@@ -43,73 +44,55 @@ public class FSAAlgo {
         kleiner 'step' ist (da die Sprachen potentiell unendlich sind (sein können))
         Mit jedem erzeugten Wort wird aut.accepts aufgerufen
      
-        Errors werfen ist keine gute Praxis :-)
      */
-    public static synchronized HashSet<String> guessLang(FSA aut, int step) throws OutOfMemoryError {
+    public static synchronized Vector<String> guessLang(FSA aut, int step) throws OutOfMemoryError {
         Vector<Character> alpha;
+        Vector<String> lang;
+        boolean autType;
+        WordTree wordGenerator;
+        String currWord;
         
+        autType = aut.isDeterministic();
         alpha = aut.getAlphabet();
         
-        Vector<String> words;
-        Vector<String> newWords;
-        HashSet<String> lang;
+        lang = new Vector<String>();
         
-        words = new Vector<String>();
-        String newWord;
-        lang = new HashSet<String>();
-        String curr;
+        // der Wortbaum ist zwar toll, erwischt aber das leere Wort nicht...
+        // soviel Zeit haben wir dann aber auch noch, dieses explizit zu testen
+        System.out.println(aut.getStartSet());
         
-        boolean autType = aut.isDeterministic();
+        if (aut.accepts("",  true, autType)) {
+            lang.add("\\epsilon");
+        }
         
-        /*
-            words ist die Menge aller Strings aus denen wir noch neue
-            Kombinationen bilden können, anfangs wird jeder einzelne Buchstabe
-            des Eingabealphabets dort hineingetan
-         */
+        // der Wortbaum bekommt bei jedem Durchlauf den nächsten
+        // Buchstaben des Eingabealphabets als Wurzel
+        
+        wordGenerator = new WordTree(alpha, step);
+        
         for ( Iterator<Character> it = alpha.iterator(); it.hasNext(); ) {
-            words.add(it.next().toString());
+            // setze die Wurzel des Baumes
+            wordGenerator.setRootData(it.next());
+            
+            currWord = wordGenerator.nextWord();
+            
+            while (currWord!=null) {
+                // prüfe ob der automat akzeptiert
+                //System.out.println("Teste: "+currWord);
+                    System.out.println(aut.accepts(currWord, true,  autType));
+                if (aut.accepts(currWord, true,  autType)) {
+             
+                    lang.add(currWord);
+                }
+                currWord = wordGenerator.nextWord();
+            }
+            
+            // Um den Baum nicht neu erzeugen zu müssen, werden
+            // alle Knoten als unbesucht gesetzt
+            wordGenerator.resetVisited();
         }
         
-        for (int i = 0 ; i < step ; i++ ) {
-            
-            /* teste die aktuelle Wortliste */
-            
-            for ( Iterator<String> strIt = words.iterator(); strIt.hasNext(); ) {
-                curr = strIt.next();
-                
-                /* da der Automat während des Sprachtests nicht verändert
-                   wird kann der in FSA.java eingebaute Determinismustest
-                   übersprungen werden
-                 */
-                
-                if (aut.accepts(curr, true, autType)) {
-                    lang.add(curr);
-                }
-            }
-            
-            newWords = new Vector<String>();
-            
-            /* hinter jedes Wort der aktuellen Wortliste wird jeder Buchstabe
-               des Eingabealphabets gehängt, die neu enstandenen Wörter ersetzen
-               die alten wodurch nie alle Wörter im Speicher gehalten werden müssen
-             */
-            
-            for ( Iterator<String> strIt = words.iterator(); strIt.hasNext(); ) {
-                
-                newWord = strIt.next();
-                
-                
-                for ( Iterator<Character> alphaIt = alpha.iterator(); alphaIt.hasNext(); ) {
-                    newWords.add(newWord+alphaIt.next().toString());
-                    
-                }
-                
-            }
-            
-            words.clear();
-            words.addAll(newWords);
-            
-        }
+        System.out.println(lang);
         
         return lang;
     }
@@ -159,9 +142,9 @@ public class FSAAlgo {
         
         // Potenzmenge davon berechnen
         Vector<IntegerSet> statePowerSet;
-   
+        
         statePowerSet = stateSet.getPowerset();
-
+        
         // aktuelle teilmenge der Potenzmenge
         Vector<Integer> currentSet;
         IntegerSet currentIntSet;
@@ -179,7 +162,7 @@ public class FSAAlgo {
         // der neue Zustand (==Zustandsmenge) im neuen Automaten
         IntegerSet destSet;
         int stateId; // der aktuell untersuchte (alte) Zustand
-                
+        
         // nimm einen Zustand des neuen Automaten her... (also eine Teilmenge der Potmenge)
         for ( Iterator<IntegerSet> psIt = statePowerSet.iterator(); psIt.hasNext();) {
             
@@ -207,7 +190,7 @@ public class FSAAlgo {
             /*if (currentIntSet.cardinality()==1 && aut.isStartState(currentIntSet.getFirst())) {
                 dfaResult.setStartFlag(statePowerSet.indexOf(currentIntSet), true);
             }*/
-             
+            
             
             // durchlaufe für diesen Zustand alle Buchstaben des Eingabealphabets
             for ( Iterator<Character> alphaIt = alpha.iterator(); alphaIt.hasNext(); ) {
@@ -272,7 +255,7 @@ public class FSAAlgo {
         
         for ( Iterator<IntegerSet> it = statePowerSet.iterator(); it.hasNext(); ) {
             currentIntSet = it.next();
-
+            
             // bevor wir hier rumschneiden, erst schauen ob das nicht
             // der neue Startzustand ist
             if (currentIntSet.equals(oldStartSet)) {
