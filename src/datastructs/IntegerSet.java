@@ -154,6 +154,11 @@ public class IntegerSet implements Serializable {
 	return false;
     }
     
+    public Object clone() {
+        IntegerSet myClone = new IntegerSet();
+        myClone.unite(this);
+        return myClone;
+    }
     
     // hauptsächlich zu testzwecken
     public String toString() {
