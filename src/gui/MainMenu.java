@@ -59,27 +59,27 @@ public class MainMenu extends JMenuBar {
         
         /* Menü - Datei - */
         JMenuItem newFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("new"),
-                new ImageIcon("src/images/filenew.png"));
+                new ImageIcon("images/filenew.png"));
         
         newFile.setAccelerator(KeyStroke.getKeyStroke('N',InputEvent.CTRL_MASK));
         
         JMenuItem openFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("open"),
-                new ImageIcon("src/images/fileopen.png"));
+                new ImageIcon("images/fileopen.png"));
         
         openFile.setAccelerator(KeyStroke.getKeyStroke('O',InputEvent.CTRL_MASK));
         
         JMenuItem saveFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("save"),
-                new ImageIcon("src/images/filesave.png"));
+                new ImageIcon("images/filesave.png"));
         
         saveFile.setAccelerator(KeyStroke.getKeyStroke('S',InputEvent.CTRL_MASK));
         
         JMenuItem saveasFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("saveas"),
-                new ImageIcon("src/images/filesaveas.png"));
+                new ImageIcon("images/filesaveas.png"));
         JMenuItem options = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("options"),
-                new ImageIcon("src/images/options.png"));
+                new ImageIcon("images/options.png"));
         
         JMenuItem quit = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("quit"),
-                new ImageIcon("src/images/exit.png"));
+                new ImageIcon("images/exit.png"));
         
         quit.setAccelerator(KeyStroke.getKeyStroke('Q',InputEvent.CTRL_MASK));
         
@@ -104,10 +104,10 @@ public class MainMenu extends JMenuBar {
         JMenu algo = new JMenu(java.util.ResourceBundle.getBundle("global").getString("algo"));
         
         JMenuItem algo_lang = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("guessLang"),
-                new ImageIcon("src/images/lang.png"));
+                new ImageIcon("images/lang.png"));
         
         JMenuItem algo_determ = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("determ"),
-                new ImageIcon("src/images/determ.png"));
+                new ImageIcon("images/determ.png"));
         
         entries.put(algo_lang, MenuID.ALGO_LANG);
         entries.put(algo_determ, MenuID.ALGO_DETERM);
@@ -120,7 +120,7 @@ public class MainMenu extends JMenuBar {
         JMenu view_menu = new JMenu("Ansicht");
         
         JMenuItem view_fitwin = new JMenuItem("An Fenster anpassen",
-                new ImageIcon("src/images/fitinwindow.png"));
+                new ImageIcon("images/fitinwindow.png"));
         
         view_fitwin.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));
         

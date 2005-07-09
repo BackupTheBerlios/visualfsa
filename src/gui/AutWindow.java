@@ -69,7 +69,7 @@ public class AutWindow extends JLayeredPane {
         topLevel = _topLevel;
         setLayout(null);
         setDoubleBuffered(true);
-        setOpaque(false);
+        setOpaque(true);
         setBackground(VFSAGUI.options.getBackCol());
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
         statePopup = new StatePopup(_topLevel);

@@ -67,9 +67,9 @@ public class Sidebar extends JPanel {
         
         upperPanel = new JPanel(new BorderLayout());
         
-        newAut = new JButton(new ImageIcon("src/images/stock_new.png"));
-        renAut = new JButton(new ImageIcon("src/images/stock_edit.png"));
-        delAut = new JButton(new ImageIcon("src/images/stock_cancel.png"));
+        newAut = new JButton(new ImageIcon("images/stock_new.png"));
+        renAut = new JButton(new ImageIcon("images/stock_edit.png"));
+        delAut = new JButton(new ImageIcon("images/stock_cancel.png"));
         
         newAut.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("insAut"));
         renAut.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("renAut"));
