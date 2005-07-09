@@ -44,7 +44,7 @@ public class TransitionData {
     }
     
     public String toString() {
-        return chars.toString()+" -> "+endState.getNumber();
+        return chars.toString()+"->"+endState.getNumber();
     }
 
 }

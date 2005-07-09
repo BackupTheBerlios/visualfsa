@@ -50,7 +50,7 @@ public class TransEdit extends JDialog {
     private LinkedList<TransitionData> data;
     
     public TransEdit(Frame owner) {
-        super(owner, "Transitionen editieren", true);
+        super(owner, java.util.ResourceBundle.getBundle("global").getString("editTrans"), true);
     }
     
     public void run() {
@@ -80,9 +80,9 @@ public class TransEdit extends JDialog {
         
         buttonPanel.setLayout(new GridLayout(1,3));
         
-        delButton = new JButton("Entfernen");
-        updateButton = new JButton("Aktualisieren");
-        okButton = new JButton("OK");
+        delButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("remove"));
+        updateButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("update"));
+        okButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("OK"));
         
         buttonPanel.add(okButton);
         buttonPanel.add(updateButton);

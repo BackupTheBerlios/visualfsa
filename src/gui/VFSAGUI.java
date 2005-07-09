@@ -47,7 +47,7 @@ public class VFSAGUI extends JFrame {
     
     public static AppOptions options;
     
-    public static final String verString = "visualFSA";
+    public static final String verString = "visualFSA 0.1b";
     
     public VFSAGUI() {
         super();
@@ -163,7 +163,7 @@ public class VFSAGUI extends JFrame {
                 }
                 
                 FileIO.fsaListToFile(side.getList(), filename);
-                setTitle(verString+" - "+filename);
+                setTitle(verString+java.util.ResourceBundle.getBundle("global").getString("_-_")+filename);
                 return true;
             case JOptionPane.NO_OPTION:
                 // nicht speichern, dann $aktion
@@ -207,12 +207,12 @@ public class VFSAGUI extends JFrame {
                 // Daten einlesen, eventuell hier Exceptions
                 inData = FileIO.fileToFsaList(newFilename);
                 filename = newFilename;
-                setTitle(verString+" - "+filename);
+                setTitle(verString+java.util.ResourceBundle.getBundle("global").getString("_-_")+filename);
                 // die eingelesene Liste mit Automaten einfügen, bei fehlerhaften
                 // Daten in der Liste -> Exception
                 side.insertList(inData);
             } catch(IOException ioEx) {
-                JOptionPane.showMessageDialog(this,java.util.ResourceBundle.getBundle("global").getString("ioErr")+ioEx.getMessage()+")",
+                JOptionPane.showMessageDialog(this,java.util.ResourceBundle.getBundle("global").getString("ioErr")+ioEx.getMessage()+java.util.ResourceBundle.getBundle("global").getString(")"),
                         java.util.ResourceBundle.getBundle("global").getString("Error"), JOptionPane.ERROR_MESSAGE);
             } catch (Exception generalEx) {
                 generalEx.printStackTrace();
@@ -273,7 +273,7 @@ public class VFSAGUI extends JFrame {
         
         result = FSAAlgo.determ(myAut);
         
-        result.setName(myAut.getName()+"_dfa");
+        result.setName(myAut.getName()+java.util.ResourceBundle.getBundle("global").getString("_dfa"));
         
         side.insertAut( result );
     }
@@ -283,7 +283,7 @@ public class VFSAGUI extends JFrame {
     }
     
     public void newFile() {
-        filename = "";
+        filename = "noname.fsa";
         setTitle(verString+" - "+filename);
         side.reset();
     }

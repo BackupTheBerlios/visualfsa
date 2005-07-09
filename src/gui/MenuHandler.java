@@ -98,7 +98,7 @@ public class MenuHandler implements ActionListener {
                 guiMain.fitWindow();
                 break;
             default:
-                System.out.println("not implemented yet");
+                System.out.println(java.util.ResourceBundle.getBundle("global").getString("not_implemented_yet"));
         }
     }
     

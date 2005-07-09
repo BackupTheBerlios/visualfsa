@@ -116,13 +116,13 @@ public class AppOptions implements Serializable {
 	    outStream.close();
 	}
 	catch (IOException ioEx) {
-	    System.err.println("Fatal: Optionen konnten nicht geschrieben werden!");
+	    System.err.println(java.util.ResourceBundle.getBundle("global").getString("optionsWriteError"));
             System.err.println(ioEx.getMessage());
 	}
 	catch (Exception generalEx) {
 	    // möglich sind hier, NotSerializable und InvalidClass, beide
 	    // Ausnahmen sind im Endbenutzerbetrieb praktisch nicht möglich
-            System.err.println("Fatal: Fehlerhaftes Optionenobjekt!");
+            System.err.println(java.util.ResourceBundle.getBundle("global").getString("optionsWrongObject"));
 	}
     }
     
@@ -146,7 +146,7 @@ public class AppOptions implements Serializable {
         }
         catch (Exception genEx) {
             System.err.println(genEx.getMessage());
-            System.err.println("Fatal: Fehler beim Lesen der Optionsdatei");
+            System.err.println(java.util.ResourceBundle.getBundle("global").getString("optionsReadError"));
         }
     }
     

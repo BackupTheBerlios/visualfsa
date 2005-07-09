@@ -27,7 +27,6 @@ public class TopBar extends JToolBar {
 
 	public TopBar() {
 		super();
-		this.add(new JButton("ich bin ein Toolbarbutton"));
 	}
 
 

@@ -117,9 +117,9 @@ public class MainMenu extends JMenuBar {
         
         add(algo);
         
-        JMenu view_menu = new JMenu("Ansicht");
+        JMenu view_menu = new JMenu(java.util.ResourceBundle.getBundle("global").getString("view"));
         
-        JMenuItem view_fitwin = new JMenuItem("An Fenster anpassen",
+        JMenuItem view_fitwin = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("fittowindowMenu"),
                 new ImageIcon("images/fitinwindow.png"));
         
         view_fitwin.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));

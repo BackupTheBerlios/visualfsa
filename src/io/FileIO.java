@@ -46,12 +46,12 @@ public class FileIO {
 	    return null; // kein fehler
 	}
 	catch (IOException ioEx) {
-	    return "IO Fehler";
+	    return java.util.ResourceBundle.getBundle("global").getString("IO_Fehler");
 	}
 	catch (Exception generalEx) {
 	    // möglich sind hier, NotSerializable und InvalidClass, beide
 	    // Ausnahmen sind im Endbenutzerbetrieb praktisch nicht möglich
-	    return "Interner Fehler -> "+generalEx.getMessage();
+	    return java.util.ResourceBundle.getBundle("global").getString("error")+generalEx.getMessage();
 	}
     }
 
@@ -72,7 +72,7 @@ public class FileIO {
 	JFileChooser fileDlg;
 
 	fileDlg = new JFileChooser();
-	fileDlg.setDialogTitle("Datei speichern");
+	fileDlg.setDialogTitle(java.util.ResourceBundle.getBundle("global").getString("saveFileIO"));
 	fileDlg.setSelectedFile(new File(initial));
 
 	if (fileDlg.showSaveDialog(owner)==JFileChooser.APPROVE_OPTION) {
@@ -87,7 +87,7 @@ public class FileIO {
 	JFileChooser fileDlg;
 
 	fileDlg = new JFileChooser();
-	fileDlg.setDialogTitle("Datei öffnen");
+	fileDlg.setDialogTitle(java.util.ResourceBundle.getBundle("global").getString("openFileIO"));
 	fileDlg.setMultiSelectionEnabled(false);
 	if (fileDlg.showOpenDialog(owner)==JFileChooser.APPROVE_OPTION) {
 	    return fileDlg.getSelectedFile().toString();

@@ -44,7 +44,7 @@ public class BusyDialog extends JDialog{
     
     public void run() {
         
-        getContentPane().add(new JLabel("      Etwas Geduld...      ", SwingConstants.CENTER));
+        getContentPane().add(new JLabel(java.util.ResourceBundle.getBundle("global").getString("patience"), SwingConstants.CENTER));
         
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         

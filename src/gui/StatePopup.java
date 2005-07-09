@@ -58,7 +58,7 @@ public class StatePopup extends JPopupMenu {
             public void actionPerformed(ActionEvent event) {
                 // starte den transedit Dialog
                 if (invoker.getTransList().isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "Keine Transition vorhanden","Fehler",
+                    JOptionPane.showMessageDialog(null, java.util.ResourceBundle.getBundle("global").getString("noTransFound"),java.util.ResourceBundle.getBundle("global").getString("Error"),
                                     JOptionPane.WARNING_MESSAGE);
                     return;
                 }

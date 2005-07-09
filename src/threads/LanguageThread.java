@@ -64,8 +64,8 @@ public class LanguageThread implements Runnable {
             
         } catch (OutOfMemoryError memErr) {
             JOptionPane.showMessageDialog(pleaseWaitDlg.getParent(),
-                                "Zu wenig Speicher für die Sprachbestimmung.\nReduzieren Sie die Wortlänge!",
-                                "Fehler",
+                                java.util.ResourceBundle.getBundle("global").getString("insuffMem"),
+                                java.util.ResourceBundle.getBundle("global").getString("Error"),
                                 JOptionPane.ERROR_MESSAGE);
         }
         
