@@ -30,6 +30,7 @@ public class Utilities {
         taken from swp project at the unversity kiel
         thx to ssm :)
      */
+    
     public static void fitToWindow(FSA aut, AutWindow autWin) {
         int xdim, ydim, vpWidth, vpHeight;
         int leftmost    = 0;
