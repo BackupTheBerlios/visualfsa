@@ -273,7 +273,7 @@ public class VFSAGUI extends JFrame {
         
         result = FSAAlgo.determ(myAut);
         
-        result.setName(myAut.getName()+java.util.ResourceBundle.getBundle("global").getString("_dfa"));
+        result.setName(myAut.getName()+"_dfa");
         
         side.insertAut( result );
     }
