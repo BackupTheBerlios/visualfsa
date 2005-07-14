@@ -32,7 +32,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
-public class JState extends JComponent {
+public class JState extends JComponent implements Comparable {
     
     private boolean startState;
     private boolean finalState;
@@ -56,9 +56,15 @@ public class JState extends JComponent {
         num = _num;
         initial = new Point();
         outgoingTransList = new LinkedList<TransitionData>();
-        currentColor = VFSAGUI.options.getBackCol();
         parent = _parent;
-        enableEvents(AWTEvent.MOUSE_MOTION_EVENT_MASK|AWTEvent.MOUSE_EVENT_MASK);
+        if (!parent.isStatic()) {
+            currentColor = VFSAGUI.options.getBackCol();
+            enableEvents(AWTEvent.MOUSE_MOTION_EVENT_MASK|AWTEvent.MOUSE_EVENT_MASK);
+        } else {
+            currentColor = Color.WHITE;
+        }
+        
+        
     }
     
     
@@ -72,7 +78,11 @@ public class JState extends JComponent {
         
         // Rand
         if (!finalState) {
-            g.setColor(VFSAGUI.options.getLineCol());
+            if (!parent.isStatic()) {
+                g.setColor(VFSAGUI.options.getLineCol());
+            } else {
+                g.setColor(Color.BLACK);
+            }
         } else {
             g.setColor(Color.RED);
         }
@@ -85,7 +95,11 @@ public class JState extends JComponent {
         
         xPos = SwingUtilities.computeStringWidth(g.getFontMetrics(),name);
         
-        g.setColor(VFSAGUI.options.getLineCol());
+        if (!parent.isStatic()) {
+            g.setColor(VFSAGUI.options.getLineCol());
+        } else {
+            g.setColor(Color.BLACK);
+        }
         g.drawString(name,(AutWindow.STATE_HALFSIZE)-(xPos/2),AutWindow.STATE_HALFSIZE+5);
     }
     
@@ -100,7 +114,7 @@ public class JState extends JComponent {
         
         // popup menü
         if (event.getButton()==MouseEvent.BUTTON3
-                 && event.getID()==MouseEvent.MOUSE_PRESSED) {
+                && event.getID()==MouseEvent.MOUSE_PRESSED) {
             parent.showPopup(this);
         }
         
@@ -133,8 +147,8 @@ public class JState extends JComponent {
     }
     
     
-    // das Zeichenfenster veranlasst die Entfernung eines Zustands, deshalb
-    // entfernen alle Zustände ihre Transitionen die zu diesem zustand führten
+// das Zeichenfenster veranlasst die Entfernung eines Zustands, deshalb
+// entfernen alle Zustände ihre Transitionen die zu diesem zustand führten
     public void removeTransTo(JState removedState) {
         ListIterator<TransitionData> listIt;
         LinkedList<TransitionData> temp = new LinkedList<TransitionData>();
@@ -155,9 +169,9 @@ public class JState extends JComponent {
     
     
     
-    // wenn wir nicht markiert sind, schaue beim Parent
-    // Window wessen Markierung wir entfernen müssen
-    // setze gleichzeitig unsere Markierung
+// wenn wir nicht markiert sind, schaue beim Parent
+// Window wessen Markierung wir entfernen müssen
+// setze gleichzeitig unsere Markierung
     private void markMe() {
         if (!marked) {
             setMode(MODE_MARK);
@@ -172,8 +186,6 @@ public class JState extends JComponent {
         Point newPos, currentPos;
         
         if (parent.isShowingPopup()) return;
-        
-        parent = (AutWindow)getParent();
         
         // dragging disabled solange wir eine Transition zeichnen
         if (parent.isDrawingEdge()) return;
@@ -190,7 +202,7 @@ public class JState extends JComponent {
     
     
     
-    // Rückgabewert gibt an ob die Transition wirklich neu war
+// Rückgabewert gibt an ob die Transition wirklich neu war
     public boolean insertTransition(JState endState, Vector<Character> autoTrans) {
         ListIterator<TransitionData> tList;
         ListIterator<Character> charIt;
@@ -259,12 +271,12 @@ public class JState extends JComponent {
     }
     
     
-    // clone?
+// clone?
     protected LinkedList<TransitionData> getTransList() {
         return outgoingTransList;
     }
     
-    // prüft ob der Zustand eine Transition zu dest hat
+// prüft ob der Zustand eine Transition zu dest hat
     public boolean hasTransTo(JState dest) {
         ListIterator<TransitionData> lIt;
         TransitionData current;
@@ -279,10 +291,10 @@ public class JState extends JComponent {
         return false;
     }
     
-    // get/set transDrawn
-    // transDrawn gibt an ob im letzten Durchlauf von drawTransitions in AutWindow
-    // die Transitionen dieses Zustands gezeichnet wurden, dadurch wird verhindert
-    // das bei beidseitigen Transitionen beide Transitionen verschoben werden
+// get/set transDrawn
+// transDrawn gibt an ob im letzten Durchlauf von drawTransitions in AutWindow
+// die Transitionen dieses Zustands gezeichnet wurden, dadurch wird verhindert
+// das bei beidseitigen Transitionen beide Transitionen verschoben werden
     
     public boolean getTransDrawn() {
         return transDrawn;
@@ -293,7 +305,7 @@ public class JState extends JComponent {
     }
     
     
-    // (de)Markiere den Knoten als ab/ausgewählt
+// (de)Markiere den Knoten als ab/ausgewählt
     public void setMode(int flag) {
         switch(flag) {
             
@@ -314,6 +326,15 @@ public class JState extends JComponent {
                 
         }
     }
+    
+    public int compareTo(Object other) {
+        if (other instanceof JState) {
+            int otherNum = ((JState)other).getNumber();
+            return (num-otherNum);
+        }
+        return 0;
+    }
+    
     
     public void setNumber(int _num) {
         num = _num;
