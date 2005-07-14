@@ -33,7 +33,7 @@ public class MainMenu extends JMenuBar {
     
     public static enum MenuID {
         FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT, FILE_OPTIONS,
-        ALGO_LANG, ALGO_DETERM,
+        ALGO_LANG, ALGO_DETERM, ALGO_RUNVIS,
         VIEW_FITWINDOW
     }
     
@@ -109,11 +109,16 @@ public class MainMenu extends JMenuBar {
         JMenuItem algo_determ = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("determ"),
                 new ImageIcon("images/determ.png"));
         
+        JMenuItem algo_runvis = new JMenuItem("Laufvisualisierung",
+                new ImageIcon("images/runvis.png"));
+        
+        entries.put(algo_runvis, MenuID.ALGO_RUNVIS);
         entries.put(algo_lang, MenuID.ALGO_LANG);
         entries.put(algo_determ, MenuID.ALGO_DETERM);
         
         algo.add(algo_lang);
         algo.add(algo_determ);
+        algo.add(algo_runvis);
         
         add(algo);
         

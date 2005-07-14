@@ -94,11 +94,14 @@ public class MenuHandler implements ActionListener {
             case ALGO_DETERM:
                 guiMain.determ();
                 break;
+            case ALGO_RUNVIS:
+                guiMain.runvis();
+                break;
             case VIEW_FITWINDOW:
                 guiMain.fitWindow();
                 break;
             default:
-                System.out.println(java.util.ResourceBundle.getBundle("global").getString("not_implemented_yet"));
+                System.err.println("menu event not handled");
         }
     }
     
