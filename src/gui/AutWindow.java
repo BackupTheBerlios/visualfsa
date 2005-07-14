@@ -64,15 +64,24 @@ public class AutWindow extends JLayeredPane {
     
     private Color lineColour, charColour;
     
-    public AutWindow(VFSAGUI _topLevel) {
+    private boolean staticWindow;
+    
+    public AutWindow(VFSAGUI _topLevel, boolean _st) {
         super();
         topLevel = _topLevel;
         setLayout(null);
         setDoubleBuffered(true);
         setOpaque(true);
-        setBackground(VFSAGUI.options.getBackCol());
-        enableEvents(AWTEvent.MOUSE_EVENT_MASK);
-        statePopup = new StatePopup(_topLevel);
+        
+        staticWindow = _st;
+        
+        if (!staticWindow) {
+            setBackground(VFSAGUI.options.getBackCol());
+            enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+            statePopup = new StatePopup(_topLevel);
+        } else {
+            setBackground(Color.WHITE);
+        }
         
         startTriangle = new Polygon();
         startTriangle.addPoint(0,0);
@@ -114,7 +123,7 @@ public class AutWindow extends JLayeredPane {
             curr.removeTransTo(which);
             if (curr.getNumber()>which.getNumber()) curr.setNumber(curr.getNumber()-1);
         }
-
+        
         if (markedState==which)
             markedState = null;
         
@@ -130,6 +139,10 @@ public class AutWindow extends JLayeredPane {
                 && ev.getID()==MouseEvent.MOUSE_PRESSED) {
             addState(ev.getPoint());
         }
+    }
+    
+    public boolean isStatic() {
+        return staticWindow;
     }
     
     
@@ -155,8 +168,13 @@ public class AutWindow extends JLayeredPane {
         
         // wir holen uns bereits hier die Farben aus dem Optionsobjekt
         // um unnötigen Methodenaufruf-Overhead in drawTransitions zu vermeiden
-        charColour = VFSAGUI.options.getCharCol();
-        lineColour = VFSAGUI.options.getLineCol();
+        if (!staticWindow) {
+            charColour = VFSAGUI.options.getCharCol();
+            lineColour = VFSAGUI.options.getLineCol();
+        } else {
+            charColour = Color.RED;
+            lineColour = Color.BLACK;
+        }
         
         for (int i = 0 ; i < numstate ; i++ ) {
             current = (JState)states[i];
@@ -380,7 +398,7 @@ public class AutWindow extends JLayeredPane {
     // gültige Zeichen sind Buchstaben und Zahlen
     // der Rückgabewert 'null' zeigt an das der Benutzer Cancel gedrückt
     // oder keine (bzw. keine gültigen) Zeichen eingegeben hat
-    protected Vector<Character> editTransChars(String initial) {
+    public Vector<Character> editTransChars(String initial) {
         String result;
         
         result = JOptionPane.showInputDialog(this, "Trans.-zeichen (durch Kommata getrennt)", initial);
