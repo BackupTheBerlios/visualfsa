@@ -34,6 +34,7 @@ import datastructs.AppOptions;
 import datastructs.FSA;
 import algo.FSAAlgo;
 import threads.LanguageThread;
+import gui.runvis.RunVisual;
 
 public class VFSAGUI extends JFrame {
     
@@ -65,7 +66,7 @@ public class VFSAGUI extends JFrame {
         getContentPane().add(bottom, BorderLayout.SOUTH);
         
         
-        autPane = new AutWindow(this);
+        autPane = new AutWindow(this, false);
         
         side = new Sidebar(autPane);
         
@@ -89,6 +90,8 @@ public class VFSAGUI extends JFrame {
         
         // TODO, cmd-argumente
         newFile();
+        
+        
     }
     
     
@@ -161,9 +164,15 @@ public class VFSAGUI extends JFrame {
                     else
                         return true;
                 }
+                try {
+                    FileIO.fsaListToFile(side.getList(), filename);
+                    setTitle(verString+"-"+filename);
+                    side.insertResults(filename+" gesichert");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Fehler beim Schreiben, prüfen Sie Dateinamen/rechte",
+                            "Fehler", JOptionPane.ERROR_MESSAGE);
+                }
                 
-                FileIO.fsaListToFile(side.getList(), filename);
-                setTitle(verString+java.util.ResourceBundle.getBundle("global").getString("_-_")+filename);
                 return true;
             case JOptionPane.NO_OPTION:
                 // nicht speichern, dann $aktion
@@ -198,6 +207,8 @@ public class VFSAGUI extends JFrame {
         String newFilename;
         LinkedList inData;
         
+        FileIO ioObj = new FileIO();
+        
         // user wählt datei aus...
         newFilename = FileIO.getOpenFilename(this);
         
@@ -205,20 +216,19 @@ public class VFSAGUI extends JFrame {
         if (newFilename!=null) {
             try {
                 // Daten einlesen, eventuell hier Exceptions
-                inData = FileIO.fileToFsaList(newFilename);
+                inData = ioObj.fileToFsaList(newFilename);
                 filename = newFilename;
-                setTitle(verString+java.util.ResourceBundle.getBundle("global").getString("_-_")+filename);
+                setTitle(verString+"-"+filename);
                 // die eingelesene Liste mit Automaten einfügen, bei fehlerhaften
                 // Daten in der Liste -> Exception
                 side.insertList(inData);
             } catch(IOException ioEx) {
-                JOptionPane.showMessageDialog(this,java.util.ResourceBundle.getBundle("global").getString("ioErr")+ioEx.getMessage()+java.util.ResourceBundle.getBundle("global").getString(")"),
+                JOptionPane.showMessageDialog(this,java.util.ResourceBundle.getBundle("global").getString("ioErr")+ioEx.getMessage()+")",
                         java.util.ResourceBundle.getBundle("global").getString("Error"), JOptionPane.ERROR_MESSAGE);
             } catch (Exception generalEx) {
-                generalEx.printStackTrace();
                 JOptionPane.showMessageDialog(this,
                         java.util.ResourceBundle.getBundle("global").getString("readErr")+
-                        generalEx.getMessage()+java.util.ResourceBundle.getBundle("global").getString(")"),java.util.ResourceBundle.getBundle("global").getString("Error"),
+                        generalEx.getMessage()+")",java.util.ResourceBundle.getBundle("global").getString("Error"),
                         JOptionPane.ERROR_MESSAGE);
             }
             
@@ -235,7 +245,7 @@ public class VFSAGUI extends JFrame {
         final FSA currAut;
         final int wL;
         LanguageThread langThread;
-
+        
         // den aktuellen Automaten bestimmen
         currAut = side.getCurrentAut();
         
@@ -254,6 +264,15 @@ public class VFSAGUI extends JFrame {
         
         busyDlg.setWork(langThread);
         busyDlg.run();
+    }
+    
+    
+    // Laufvisualisierung starten
+    public void runvis() {
+        RunVisual runvisDialog;
+    
+        runvisDialog = new RunVisual(this);
+        runvisDialog.run(side.getCurrentAut());
     }
     
     
