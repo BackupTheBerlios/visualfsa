@@ -25,6 +25,7 @@ import java.util.Hashtable;
 import javax.swing.JMenuItem;
 
 import gui.dialogs.LangDialog;
+import gui.dialogs.AboutDialog;
 
 import static gui.MainMenu.MenuID;
 import datastructs.FSA;
@@ -99,6 +100,10 @@ public class MenuHandler implements ActionListener {
                 break;
             case VIEW_FITWINDOW:
                 guiMain.fitWindow();
+                break;
+            case HELP_ABOUT:
+                AboutDialog aboutDlg = new AboutDialog(guiMain,"About",true);
+                aboutDlg.run();
                 break;
             default:
                 System.err.println("menu event not handled");

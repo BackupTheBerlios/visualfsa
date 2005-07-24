@@ -34,7 +34,8 @@ public class MainMenu extends JMenuBar {
     public static enum MenuID {
         FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT, FILE_OPTIONS,
         ALGO_LANG, ALGO_DETERM, ALGO_RUNVIS,
-        VIEW_FITWINDOW
+        VIEW_FITWINDOW,
+        HELP_HELP, HELP_ABOUT
     }
     
     private MenuHandler genericHandler;
@@ -55,32 +56,43 @@ public class MainMenu extends JMenuBar {
         
         entries = new Hashtable<JMenuItem, MenuID>();
         
-        JMenu file = new JMenu(java.util.ResourceBundle.getBundle("global").getString("file"));
+        JMenu file = new JMenu("File");
+        
+        file.setMnemonic('F');
         
         /* Menü - Datei - */
-        JMenuItem newFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("new"),
+        JMenuItem newFile = new JMenuItem("New",
                 new ImageIcon("images/filenew.png"));
         
+        newFile.setMnemonic('N');        
         newFile.setAccelerator(KeyStroke.getKeyStroke('N',InputEvent.CTRL_MASK));
         
-        JMenuItem openFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("open"),
+        JMenuItem openFile = new JMenuItem("Open",
                 new ImageIcon("images/fileopen.png"));
         
+        openFile.setMnemonic('O');
         openFile.setAccelerator(KeyStroke.getKeyStroke('O',InputEvent.CTRL_MASK));
         
-        JMenuItem saveFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("save"),
+        JMenuItem saveFile = new JMenuItem("Save",
                 new ImageIcon("images/filesave.png"));
         
+        saveFile.setMnemonic('S');
         saveFile.setAccelerator(KeyStroke.getKeyStroke('S',InputEvent.CTRL_MASK));
         
-        JMenuItem saveasFile = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("saveas"),
+        JMenuItem saveasFile = new JMenuItem("Save as...",
                 new ImageIcon("images/filesaveas.png"));
-        JMenuItem options = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("options"),
+        
+        saveasFile.setMnemonic('e');
+        
+        JMenuItem options = new JMenuItem("Options",
                 new ImageIcon("images/options.png"));
         
-        JMenuItem quit = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("quit"),
+        options.setMnemonic('P');
+        
+        JMenuItem quit = new JMenuItem("Quit",
                 new ImageIcon("images/exit.png"));
         
+        quit.setMnemonic('Q');
         quit.setAccelerator(KeyStroke.getKeyStroke('Q',InputEvent.CTRL_MASK));
         
         entries.put(newFile, MenuID.FILE_NEW);
@@ -101,16 +113,21 @@ public class MainMenu extends JMenuBar {
         
         add(file);
         
-        JMenu algo = new JMenu(java.util.ResourceBundle.getBundle("global").getString("algo"));
+        JMenu algo = new JMenu("Algorithms");
         
-        JMenuItem algo_lang = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("guessLang"),
+        algo.setMnemonic('A');
+        
+        JMenuItem algo_lang = new JMenuItem("Accepted Language",
                 new ImageIcon("images/lang.png"));
+        algo_lang.setMnemonic('L');
         
-        JMenuItem algo_determ = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("determ"),
+        JMenuItem algo_determ = new JMenuItem("NFA -> DFA",
                 new ImageIcon("images/determ.png"));
+        algo_determ.setMnemonic('D');
         
-        JMenuItem algo_runvis = new JMenuItem("Laufvisualisierung",
+        JMenuItem algo_runvis = new JMenuItem("Run Visualization",
                 new ImageIcon("images/runvis.png"));
+        algo_runvis.setMnemonic('R');
         
         entries.put(algo_runvis, MenuID.ALGO_RUNVIS);
         entries.put(algo_lang, MenuID.ALGO_LANG);
@@ -122,11 +139,14 @@ public class MainMenu extends JMenuBar {
         
         add(algo);
         
-        JMenu view_menu = new JMenu(java.util.ResourceBundle.getBundle("global").getString("view"));
+        JMenu view_menu = new JMenu("View");
         
-        JMenuItem view_fitwin = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("fittowindowMenu"),
+        view_menu.setMnemonic('V');
+        
+        JMenuItem view_fitwin = new JMenuItem("Fit in Window",
                 new ImageIcon("images/fitinwindow.png"));
         
+        view_fitwin.setMnemonic('W');
         view_fitwin.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));
         
         view_menu.add(view_fitwin);
@@ -134,6 +154,29 @@ public class MainMenu extends JMenuBar {
         add(view_menu);
         
         entries.put(view_fitwin, MenuID.VIEW_FITWINDOW);
+        
+        
+        JMenu help = new JMenu("Help");
+        
+        help.setMnemonic('H');
+        
+        JMenuItem help_help = new JMenuItem("Documentation");
+        
+        help_help.setMnemonic('D');
+        help_help.setAccelerator(KeyStroke.getKeyStroke("F1"));
+        
+        
+        JMenuItem help_about = new JMenuItem("About");
+        help_about.setMnemonic('t');
+        
+        help.add(help_help);
+        help.addSeparator();
+        help.add(help_about);
+        
+        add(help);
+        
+        entries.put(help_help, MenuID.HELP_HELP);
+        entries.put(help_about, MenuID.HELP_ABOUT);
         
         genericHandler = new MenuHandler(topLevel, guiSide, entries);
         
