@@ -71,9 +71,9 @@ public class Sidebar extends JPanel {
         renAut = new JButton(new ImageIcon("images/stock_edit.png"));
         delAut = new JButton(new ImageIcon("images/stock_cancel.png"));
         
-        newAut.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("insAut"));
-        renAut.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("renAut"));
-        delAut.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("remAut"));
+        newAut.setToolTipText("insert a new, empty automaton");
+        renAut.setToolTipText("rename the currently selected automaton");
+        delAut.setToolTipText("remove the currently selected automaton");
         
         autList = new JList();
         autList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -103,7 +103,7 @@ public class Sidebar extends JPanel {
         
         lowerPanel = new JPanel(new BorderLayout());
         
-        resetResults = new JButton(java.util.ResourceBundle.getBundle("global").getString("resetOut"));
+        resetResults = new JButton("Clear Output");
         
         lowerPanel.add(resultScroller, BorderLayout.CENTER);
         lowerPanel.add(resetResults, BorderLayout.SOUTH);
@@ -143,15 +143,15 @@ public class Sidebar extends JPanel {
                 String newName;
                 
                 if (lastSel!=-1) {
-                    newName = JOptionPane.showInputDialog(autWin, java.util.ResourceBundle.getBundle("global").getString("newName"),
+                    newName = JOptionPane.showInputDialog(autWin, "New Name: ",
                             listModel.elementAt(lastSel));
                     if (newName==null) return; // cancel gedrückt
                     newName = newName.trim();
                     for (int i = 0 ; i <  newName.length()  ; i++ ) {
                         if (!Character.isJavaIdentifierPart(newName.charAt(i))) {
                             JOptionPane.showMessageDialog(autWin,
-                                    java.util.ResourceBundle.getBundle("global").getString("InvalidName"),
-                                    java.util.ResourceBundle.getBundle("global").getString("Error"), JOptionPane.ERROR_MESSAGE);
+                                    "Invalid Name, only characters and digits are allowed.",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
                     }
@@ -212,7 +212,7 @@ public class Sidebar extends JPanel {
     public void insertAut(FSA aut) {
         
         if (listModel.contains(aut.getName())) {
-            JOptionPane.showMessageDialog(autWin, java.util.ResourceBundle.getBundle("global").getString("nameAlreadyInList"));
+            JOptionPane.showMessageDialog(autWin, "The list already contains a automaton with this name.");
             return;
         }
         
@@ -244,6 +244,9 @@ public class Sidebar extends JPanel {
             listData.add(currentFSA);
         }
         autList.setSelectedIndex(listModel.getSize()-1);
+        
+        if (listData.size()>1)
+            delAut.setEnabled(true);
     }
     
     // füge neuen Text in das Ausgabefenster ein

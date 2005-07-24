@@ -52,8 +52,8 @@ public class BottomBar extends JPanel {
 	testWord = new JTextField(30);
 	doTest = new JButton("w in L(A) ?");
 
-	autInfo.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("infoTT"));
-	doTest.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("wordCheckTT"));
+	autInfo.setToolTipText("Displays some comprehensive informations about the current automaton");
+	doTest.setToolTipText("Checks if the current automaton accepts the entered word");
 	
 	leftPanel.add(autInfo, BorderLayout.WEST);
 	leftPanel.add(testWord, BorderLayout.CENTER);
@@ -62,7 +62,7 @@ public class BottomBar extends JPanel {
 	autoTransition = new JCheckBox("Auto-Transition");
 	autoCharacters = new JTextField(30);
 
-	autoTransition.setToolTipText(java.util.ResourceBundle.getBundle("global").getString("autoTransTT"));
+	autoTransition.setToolTipText("a new transition automatically uses the entered characters");
 		
 	rightPanel.add(autoTransition, BorderLayout.WEST);
 	rightPanel.add(autoCharacters, BorderLayout.CENTER);

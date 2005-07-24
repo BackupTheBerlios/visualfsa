@@ -25,6 +25,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import java.util.LinkedList;
 import java.io.IOException;
 
@@ -48,7 +49,7 @@ public class VFSAGUI extends JFrame {
     
     public static AppOptions options;
     
-    public static final String verString = "visualFSA 0.1b";
+    public static final String verString = "visualFSA 0.2";
     
     public VFSAGUI() {
         super();
@@ -97,6 +98,26 @@ public class VFSAGUI extends JFrame {
     
     // starte die GUI in einem neuen Thread
     public static void main(String[] args) {
+        
+        
+        try {
+            // Motif _is_ 1337 :-)
+            UIManager.setLookAndFeel(
+                    "com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+        } catch (Exception e) {
+            // narf, fall back to default
+            try {
+                UIManager.setLookAndFeel(
+                       UIManager.getCrossPlatformLookAndFeelClassName());
+            }
+            catch (Exception e2) {
+                System.out.println(e2.getMessage());
+                System.out.println("Fatal: Error setting L&F");
+                System.exit(1);
+            }
+        
+        }
+        
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 VFSAGUI visualFSA;
@@ -132,7 +153,7 @@ public class VFSAGUI extends JFrame {
         if (status) {
             side.insertResults(w+" in L("+autPane.getCurrentName()+")");
         } else {
-            side.insertResults(w+" "+java.util.ResourceBundle.getBundle("global").getString("notAccept"));
+            side.insertResults(w+" "+"is not recognized");
         }
     }
     
@@ -149,8 +170,8 @@ public class VFSAGUI extends JFrame {
             res = JOptionPane.YES_OPTION;
         } else {
             res = JOptionPane.showConfirmDialog(this,
-                    java.util.ResourceBundle.getBundle("global").getString("discardWarn"),
-                    java.util.ResourceBundle.getBundle("global").getString("Hint"), JOptionPane.YES_NO_CANCEL_OPTION);
+                    "Changes to this file will be lost, save it now?",
+                    "Notice", JOptionPane.YES_NO_CANCEL_OPTION);
         }
         
         switch(res) {
@@ -166,10 +187,10 @@ public class VFSAGUI extends JFrame {
                 }
                 try {
                     FileIO.fsaListToFile(side.getList(), filename);
-                    setTitle(verString+"-"+filename);
-                    side.insertResults(filename+" gesichert");
+                    setTitle(verString+" - "+filename);
+                    side.insertResults(filename+" saved");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Fehler beim Schreiben, prüfen Sie Dateinamen/rechte",
+                    JOptionPane.showMessageDialog(this, "Error while writing, check permissions?!",
                             "Fehler", JOptionPane.ERROR_MESSAGE);
                 }
                 
@@ -189,7 +210,7 @@ public class VFSAGUI extends JFrame {
     public void showOptions() {
         OptionDlg optDlg;
         
-        optDlg = new OptionDlg(this, java.util.ResourceBundle.getBundle("global").getString("options"), options);
+        optDlg = new OptionDlg(this, "Options", options);
         options = optDlg.run();
         autPane.setBackground(options.getBackCol());
         autPane.repaint();
@@ -218,17 +239,17 @@ public class VFSAGUI extends JFrame {
                 // Daten einlesen, eventuell hier Exceptions
                 inData = ioObj.fileToFsaList(newFilename);
                 filename = newFilename;
-                setTitle(verString+"-"+filename);
+                setTitle(verString+" - "+filename);
                 // die eingelesene Liste mit Automaten einfügen, bei fehlerhaften
                 // Daten in der Liste -> Exception
                 side.insertList(inData);
             } catch(IOException ioEx) {
-                JOptionPane.showMessageDialog(this,java.util.ResourceBundle.getBundle("global").getString("ioErr")+ioEx.getMessage()+")",
-                        java.util.ResourceBundle.getBundle("global").getString("Error"), JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,"(IO-Error "+ioEx.getMessage()+")",
+                        "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception generalEx) {
                 JOptionPane.showMessageDialog(this,
-                        java.util.ResourceBundle.getBundle("global").getString("readErr")+
-                        generalEx.getMessage()+")",java.util.ResourceBundle.getBundle("global").getString("Error"),
+                        "(Read-Error "+
+                        generalEx.getMessage()+")","Error",
                         JOptionPane.ERROR_MESSAGE);
             }
             
@@ -249,7 +270,7 @@ public class VFSAGUI extends JFrame {
         // den aktuellen Automaten bestimmen
         currAut = side.getCurrentAut();
         
-        LangDialog langDlg = new LangDialog(this, java.util.ResourceBundle.getBundle("global").getString("maxWordLen"), true);
+        LangDialog langDlg = new LangDialog(this, "Define Word Length", true);
         
         langDlg.setAlphaSize(currAut.getAlphabet().size());
         langDlg.run();
@@ -270,8 +291,8 @@ public class VFSAGUI extends JFrame {
     // Laufvisualisierung starten
     public void runvis() {
         RunVisual runvisDialog;
-    
-        runvisDialog = new RunVisual(this);
+        
+        runvisDialog = new RunVisual();
         runvisDialog.run(side.getCurrentAut());
     }
     
@@ -286,7 +307,7 @@ public class VFSAGUI extends JFrame {
         
         // nichts zu tun
         if (myAut.isDeterministic()) {
-            JOptionPane.showMessageDialog(this, java.util.ResourceBundle.getBundle("global").getString("isDFA"));
+            JOptionPane.showMessageDialog(this, "This automaton is already a DFA");
             return;
         }
         

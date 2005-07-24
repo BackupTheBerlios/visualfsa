@@ -401,7 +401,7 @@ public class AutWindow extends JLayeredPane {
     public Vector<Character> editTransChars(String initial) {
         String result;
         
-        result = JOptionPane.showInputDialog(this, "Trans.-zeichen (durch Kommata getrennt)", initial);
+        result = JOptionPane.showInputDialog(this, "Characters (seperated by commas)", initial);
         
         if (result==null || result.length()==0) return null;
         

@@ -36,13 +36,13 @@ public class StatePopup extends JPopupMenu {
     private VFSAGUI myGUI;
     
     public StatePopup(VFSAGUI _myGUI) {
-        edit = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("editTrans"),
+        edit = new JMenuItem("Edit Transitions",
                 new ImageIcon("images/edit.png"));
-        delete = new JMenuItem(java.util.ResourceBundle.getBundle("global").getString("remove"),
+        delete = new JMenuItem("Remove",
                 new ImageIcon("images/edit_remove.png"));
-        startst = new JCheckBoxMenuItem(java.util.ResourceBundle.getBundle("global").getString("Startstate"),
+        startst = new JCheckBoxMenuItem("Start-State",
                 new ImageIcon("images/start.png"));
-        finalst = new JCheckBoxMenuItem(java.util.ResourceBundle.getBundle("global").getString("finalState"), 
+        finalst = new JCheckBoxMenuItem("Final-State", 
                 new ImageIcon("images/final.png"));
         
         add(edit);
@@ -58,7 +58,7 @@ public class StatePopup extends JPopupMenu {
             public void actionPerformed(ActionEvent event) {
                 // starte den transedit Dialog
                 if (invoker.getTransList().isEmpty()) {
-                    JOptionPane.showMessageDialog(null, java.util.ResourceBundle.getBundle("global").getString("noTransFound"),java.util.ResourceBundle.getBundle("global").getString("Error"),
+                    JOptionPane.showMessageDialog(null, "No Transitions found!","Error",
                                     JOptionPane.WARNING_MESSAGE);
                     return;
                 }
