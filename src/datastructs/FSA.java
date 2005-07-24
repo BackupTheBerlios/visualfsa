@@ -432,14 +432,13 @@ public class FSA implements Serializable {
         Iterator<LinkedList<Transition>> tableIt;
         ListIterator<Transition> listIt;
         
-        str.append(java.util.ResourceBundle.getBundle("global").getString("autInfo"));
-        str.append(java.util.ResourceBundle.getBundle("global").getString("name")+name+"\n");
-        str.append(java.util.ResourceBundle.getBundle("global").getString("autType")+(this.isDeterministic() ? "DFA\n" : "NFA\n"));
-        str.append(java.util.ResourceBundle.getBundle("global").getString("startStateS")+startStateSet+"\n");
-        str.append(java.util.ResourceBundle.getBundle("global").getString("finalStateS")+finalStateSet+"\n");
-        str.append(java.util.ResourceBundle.getBundle("global").getString("inpAlpha")+getAlphabet()+"\n");
+        str.append("Name: "+name+"\n");
+        str.append("Type: "+(this.isDeterministic() ? "DFA\n" : "NFA\n"));
+        str.append("Start-states: "+startStateSet+"\n");
+        str.append("Final-states: "+finalStateSet+"\n");
+        str.append("Alphabet: "+getAlphabet()+"\n");
         
-        str.append(java.util.ResourceBundle.getBundle("global").getString("trans"));
+        str.append("Transitions:\n");
         
         coll = transitionTable.values();
         tableIt = coll.iterator();

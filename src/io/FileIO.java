@@ -260,7 +260,7 @@ public class FileIO {
         JFileChooser fileDlg;
         
         fileDlg = new JFileChooser();
-        fileDlg.setDialogTitle(java.util.ResourceBundle.getBundle("global").getString("saveFileIO"));
+        fileDlg.setDialogTitle("Save File");
         fileDlg.setSelectedFile(new File(initial));
         
         if (fileDlg.showSaveDialog(owner)==JFileChooser.APPROVE_OPTION) {
@@ -274,7 +274,7 @@ public class FileIO {
         JFileChooser fileDlg;
         
         fileDlg = new JFileChooser();
-        fileDlg.setDialogTitle(java.util.ResourceBundle.getBundle("global").getString("openFileIO"));
+        fileDlg.setDialogTitle("Open File");
         fileDlg.setMultiSelectionEnabled(false);
         if (fileDlg.showOpenDialog(owner)==JFileChooser.APPROVE_OPTION) {
             return fileDlg.getSelectedFile().toString();
