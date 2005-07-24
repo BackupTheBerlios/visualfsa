@@ -88,10 +88,107 @@ public class FSAAlgo {
             wordGenerator.resetVisited();
         }
         
-        System.out.println(lang);
-        
         return lang;
     }
+    
+    
+    /*
+     
+        Automat Minimierung Stufe 1
+     
+        Entfernung nicht erreichbarer Zustände
+     
+     */
+    
+    public static FSA removeIsolatedStates(FSA aut) {
+        
+        // im prinzip tiefensuche, vom startzustand nicht
+        // erreichbare Zustände fliegen raus
+        
+        LinkedList<Integer> stateStack;
+        Vector<Integer> visitedStates;
+        
+        // wir nehmen uns einen Stack für die noch zu bearbeitenden
+        // Zustände, sowie einen Vector der die bereits besuchten
+        // Zustände speichert
+        
+        stateStack = new LinkedList<Integer>();
+        visitedStates = new Vector<Integer>();
+        Integer currState;
+        
+        currState = aut.getStartSet().getFirst();
+        
+        // markiere den Startzustand als besucht
+        visitedStates.add(currState);
+        // pushe ihn auf den Stack
+        stateStack.addLast(currState);
+        
+        LinkedList<Transition> currTrans;
+        Integer reachedState;
+        
+        
+        do {
+            
+            // Zustand vom Stack holen
+            currState = stateStack.getLast();
+            
+            // Transitionen des aktuellen Zustands holen
+            currTrans = aut.getStateTransitions(currState);
+            
+            // iteriere über die Trans.liste
+            for ( Transition ct : currTrans) {
+                reachedState = ct.getEndState();
+                // noch nicht besucht?
+                if (!visitedStates.contains(reachedState)) {
+                    
+                    // markiere den Zustand als besucht, pushe auf den Stack
+                    visitedStates.add(reachedState);
+                    stateStack.addLast(reachedState);
+                    break; // verlasse for
+                }
+            }
+
+            // nun testen wir, ob ein neuer Zustand auf dem Stack gelandet ist,
+            // ist dies derselbe Zustand wie vor der for Schleife wurde keine
+            // Transition zu einem noch nicht besuchten Zustand gefunden, der
+            // betreffende Zustand wird also vom Stack entfernt
+            
+            if (currState==stateStack.getLast())
+                stateStack.removeLast();
+            
+        } while (!stateStack.isEmpty());
+        
+        // die nun in visitedStates enthaltenden Zustände, sind jene
+        // die man vom Startzustand aus erreichen kann
+        // um uns wildes Referenzengefummel zu ersparen, legen wir
+        // einfach einen neuen Automaten an
+       
+        FSA result = new FSA();
+        
+        result.setName(aut.getName()+"_reduced");
+        
+        for ( Integer retained : visitedStates ) {
+            
+            // der Zustand erhält die Posi des ursprüngl. automaten
+            result.setPosition(retained, aut.getPosition(retained));
+            
+            result.setStartFlag(retained, aut.getStartFlag(retained));
+            result.setFinalFlag(retained, aut.getFinalFlag(retained));
+            
+            // sowie alle seine Transitionen
+            currTrans = aut.getStateTransitions(retained);
+            
+            for ( Transition ct : currTrans) {
+                result.addTransition(ct.getStartState(), ct.getEndState(), ct.getChar());
+            }
+            
+        }
+        
+        
+        return result;
+    }
+    
+    
     
    /*
         Determinisierung per Potenzmengenkonstruktion
@@ -249,6 +346,8 @@ public class FSAAlgo {
         
         IntegerSet oldFinalSet = aut.getFinalSet();
         
+        IntegerSet myClone;
+        
         for ( Iterator<IntegerSet> it = statePowerSet.iterator(); it.hasNext(); ) {
             currentIntSet = it.next();
             
@@ -258,8 +357,11 @@ public class FSAAlgo {
                 dfaResult.setStartFlag(statePowerSet.indexOf(currentIntSet), true);
             }
             
-            currentIntSet.intersect(oldFinalSet);
-            if (!currentIntSet.isEmpty()) {
+            myClone = (IntegerSet)currentIntSet.clone();
+            
+            myClone.intersect(oldFinalSet);
+            
+            if (!myClone.isEmpty()) {
                 dfaResult.setFinalFlag(statePowerSet.indexOf(currentIntSet),  true);
             }
         }
