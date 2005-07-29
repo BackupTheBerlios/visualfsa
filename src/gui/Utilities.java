@@ -43,7 +43,6 @@ public class Utilities {
         float fitScaleY = 1;
         Component[] comps;
         int compCount;
-        //getViewport().getExtentSize()
         vpWidth  = (int)autWin.getWidth() - 40;
         vpHeight = (int)autWin.getHeight() - 40;
         leftmost = vpWidth;
@@ -75,5 +74,32 @@ public class Utilities {
         
         
     }
+    
+    public static void processGrid(AutWindow autWin) {
+        Component[] comps;
+        boolean grid = true;
+        
+        if ( !grid ) { return; }
+        
+        comps = autWin.getComponentsInLayer(autWin.STATE_LAYER);
+        
+        int compCount = autWin.getComponentCountInLayer(autWin.STATE_LAYER);
+        
+        for (int ip=0;ip<compCount;ip++) {
+    
+            JState toFit = (JState)comps[ip];
+            int x = toFit.getLocation().x;
+            int y = toFit.getLocation().y;
+            toFit.setBounds((int)(x - ( x % autWin.GRID_SIZE)),
+                    (int)(y - ( y % autWin.GRID_SIZE)),
+                    autWin.STATE_SIZE, autWin.STATE_SIZE);
+        }
+        
+        autWin.repaint();
+    }
+    
+    
+    
+    
     
 }
