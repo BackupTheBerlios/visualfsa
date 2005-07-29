@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.ListIterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.awt.event.MouseEvent;
 import java.awt.AWTEvent;
@@ -37,6 +38,8 @@ import java.awt.Rectangle;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.BasicStroke;
+import java.awt.Stroke;
 import java.awt.RenderingHints;
 import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
@@ -55,12 +58,14 @@ public class AutWindow extends JLayeredPane {
     private JState markedState;
     private JState edgeState;
     private boolean drawingEdge;
+    private boolean grid;
     
     private String currentName; // name des angezeigten Automaten
     private VFSAGUI topLevel;
     private StatePopup statePopup;
     
     private Polygon startTriangle;
+    private float[] penData;
     
     private Color lineColour, charColour;
     
@@ -72,6 +77,10 @@ public class AutWindow extends JLayeredPane {
         setLayout(null);
         setDoubleBuffered(true);
         setOpaque(true);
+        
+        penData = new float[1];
+        
+        penData[0] = 2.0f;
         
         staticWindow = _st;
         
@@ -152,11 +161,40 @@ public class AutWindow extends JLayeredPane {
         int numstate;
         JState current, endState;
         Object[] states;
-        LinkedList<JState> currentList;
-        ListIterator<JState> currentTarget;
         Point startLoc, endLoc;
         
-        Graphics2D g = (Graphics2D)gr;
+        BasicStroke dottedPen = new BasicStroke(1f,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND,
+                1f,
+                penData,
+                0.0f);
+        
+        
+        
+        Graphics2D g = (Graphics2D)gr.create();
+        
+        // backup old stroke
+        Stroke oldStroke = g.getStroke();
+        
+        g.setStroke(dottedPen);
+        
+        int wi = this.getWidth();
+        int he = this.getHeight();
+        
+        if (grid) {
+            for (int i = (STATE_HALFSIZE) ; i <= wi ; i+=GRID_SIZE) {
+                g.drawLine(i,0,i,he);
+            }
+            
+            for (int j = (STATE_HALFSIZE) ; j <= he ; j+=GRID_SIZE) {
+                g.drawLine(0,j,wi,j);
+            }
+            
+            
+        }
+        
+        g.setStroke(oldStroke); dottedPen = null;
         
         numstate = getComponentCountInLayer(STATE_LAYER);
         states = getComponentsInLayer(STATE_LAYER);
@@ -181,6 +219,8 @@ public class AutWindow extends JLayeredPane {
             drawTransitions(current, g);
             current.setTransDrawn(true);
         }
+        
+        g.dispose();
     }
     
     public void showPopup(JState who) {
@@ -196,9 +236,8 @@ public class AutWindow extends JLayeredPane {
     
     protected void drawTransitions(JState startState, Graphics2D g) {
         Point startLoc, endLoc;
-        LinkedList<TransitionData> transList;
+        LinkedHashMap<JState, TransitionData> transList;
         ListIterator<TransitionData> current;
-        JState endState;
         TransitionData currTrans;
         Polygon spitze;
         
@@ -214,14 +253,13 @@ public class AutWindow extends JLayeredPane {
         int schnittx, schnitty;
         
         transList = startState.getTransList();
-        current = transList.listIterator();
         
         spitze = new Polygon();
         Point a = new Point();
         
-        while (current.hasNext()) {
-            currTrans = current.next();
-            endState = currTrans.getEndState();
+        for ( JState endState : transList.keySet() ) {
+            
+            currTrans = transList.get(endState);
             
             // Transition ist eine Schlinge
             if (endState==startState) {
@@ -238,8 +276,6 @@ public class AutWindow extends JLayeredPane {
                 g.drawString(currTrans.getChars().toString(), mp.x, mp.y);
                 continue;
             }
-            
-            
             
             // aktueller Zielzustand, linke obere Ecke, Mittelpunkt berechnen
             endLoc = endState.getLocation();
@@ -361,6 +397,15 @@ public class AutWindow extends JLayeredPane {
     }
     
     
+    public void setGridState(boolean gs) {
+        grid = gs;
+    }
+    
+    public boolean isGrid() {
+        return grid;
+    }
+    
+    
     // ein Zustand ruft diese Methode auf um anzuzeigen das von ihm
     // aus das zeichnen einer neuen Transition gestartet wurde
     // wir merken uns diesen Zustand
@@ -469,11 +514,10 @@ public class AutWindow extends JLayeredPane {
     // wandelt die gui infos in einen FSA um
     public FSA toFSA() {
         Object[] states;
-        ListIterator<TransitionData> tData;
-        ListIterator<Character> tChar;
         FSA result = new FSA();
         JState current;
         TransitionData cTrans;
+        LinkedHashMap<JState,TransitionData> transitions;
         int fromState, toState;
         
         states = getComponentsInLayer(STATE_LAYER);
@@ -487,13 +531,15 @@ public class AutWindow extends JLayeredPane {
             if (current.isStartState()) result.setStartFlag(fromState, true);
             result.setPosition((Integer)fromState, current.getLocation());
             // durchlaufe seine Transitionen und füge diese in den Aut. ein
-            tData = current.getTransList().listIterator();
-            while (tData.hasNext()) {
-                cTrans = tData.next();
-                toState = cTrans.getEndState().getNumber();
-                tChar = cTrans.getChars().listIterator();
-                while (tChar.hasNext()) {
-                    result.addTransition(fromState, toState, tChar.next().charValue());
+            
+            transitions = current.getTransList();
+            
+            for (JState endState : transitions.keySet() ) {
+                cTrans = transitions.get(endState);
+                toState = endState.getNumber();
+
+                for (Character c : cTrans.getChars() ) {
+                    result.addTransition(fromState, toState, c );
                 }
                 
             }

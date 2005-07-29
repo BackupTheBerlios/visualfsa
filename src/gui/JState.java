@@ -22,6 +22,7 @@ package gui;
 import java.util.Vector;
 import java.util.ListIterator;
 import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.awt.Polygon;
 import java.awt.Point;
 import java.awt.Graphics;
@@ -40,7 +41,7 @@ public class JState extends JComponent implements Comparable {
     private int num;
     private AutWindow parent;
     private Color currentColor;
-    private LinkedList<TransitionData> outgoingTransList;
+    private LinkedHashMap<JState,TransitionData> outgoingTransList;
     
     public static final int MODE_MARK = 1;
     public static final int MODE_NOMARK = 2;
@@ -55,7 +56,7 @@ public class JState extends JComponent implements Comparable {
         setOpaque(true);
         num = _num;
         initial = new Point();
-        outgoingTransList = new LinkedList<TransitionData>();
+        outgoingTransList = new LinkedHashMap<JState,TransitionData>();
         parent = _parent;
         if (!parent.isStatic()) {
             currentColor = VFSAGUI.options.getBackCol();
@@ -147,24 +148,10 @@ public class JState extends JComponent implements Comparable {
     }
     
     
-// das Zeichenfenster veranlasst die Entfernung eines Zustands, deshalb
-// entfernen alle Zustände ihre Transitionen die zu diesem zustand führten
+    // das Zeichenfenster veranlasst die Entfernung eines Zustands, deshalb
+    // entfernen alle Zustände ihre Transitionen die zu diesem zustand führten
     public void removeTransTo(JState removedState) {
-        ListIterator<TransitionData> listIt;
-        LinkedList<TransitionData> temp = new LinkedList<TransitionData>();
-        TransitionData current;
-        
-        listIt = outgoingTransList.listIterator();
-        
-        // entfernen und gleichzeitig iterieren klappt nicht, deshalb einfach die
-        // bleibenden rausfischen
-        
-        while (listIt.hasNext()) {
-            current = listIt.next();
-            if (current.getEndState()!=removedState) temp.add(current);
-        }
-        
-        outgoingTransList.retainAll(temp);
+        outgoingTransList.remove(removedState);
     }
     
     
@@ -187,6 +174,8 @@ public class JState extends JComponent implements Comparable {
         
         if (parent.isShowingPopup()) return;
         
+        
+        
         // dragging disabled solange wir eine Transition zeichnen
         if (parent.isDrawingEdge()) return;
         
@@ -195,64 +184,66 @@ public class JState extends JComponent implements Comparable {
             newPos = new Point();
             newPos.x = currentPos.x + event.getPoint().x - initial.x;
             newPos.y = currentPos.y + event.getPoint().y - initial.y;
+            
+            if ( parent.isGrid() ) {
+                newPos.x = newPos.x - (newPos.x % parent.GRID_SIZE);
+                newPos.y = newPos.y - (newPos.y % parent.GRID_SIZE);
+                if (newPos.x < 1) { newPos.x = 1; }
+                if (newPos.y < 1) { newPos.y = 1; }
+            }
+            
             setLocation(newPos);
+            
+            
+            
             parent.repaint(); // arghs!
         }
     }
     
     
     
-// Rückgabewert gibt an ob die Transition wirklich neu war
+    // Rückgabewert gibt an ob die Transition wirklich neu war
     public boolean insertTransition(JState endState, Vector<Character> autoTrans) {
-        ListIterator<TransitionData> tList;
-        ListIterator<Character> charIt;
         Character currChar;
         Vector<Character> chars, existing;
-        TransitionData tcurr, newTrans;
+        TransitionData trans;
         String init="";
         
         // prüfe ob wir bereits eine Transition zu diesem Zustand besitzen
         
-        tList = outgoingTransList.listIterator();
-        
-        while (tList.hasNext()) {
-            tcurr = (TransitionData)tList.next();
+        if (outgoingTransList.containsKey(endState)) {
+            trans = outgoingTransList.get(endState);
             
-            // wir haben bereits eine Transition zu diesem Zustand
-            if (endState==tcurr.getEndState()) {
-                existing = tcurr.getChars();
+            existing = trans.getChars();
+            
+            // benutze autoTransitions Feature
+            if (autoTrans!=null) {
+                chars = autoTrans;
+            } else {
                 
-                // erstelle aus den bestehenden Zeichen den initial String für
-                // das Inputfenster
-                
-                charIt = existing.listIterator();
-                
-                while (charIt.hasNext()) {
-                    init = init + ((Character)charIt.next()).toString() + ",";
+                // erstelle aus den bestehenden Zeichen den Initalstring...
+                for ( Character c : existing ) {
+                    init = init + c + ",";
                 }
                 
-                if (autoTrans==null) {
-                    chars = parent.editTransChars(init);
-                } else {
-                    chars = autoTrans;
-                }
-                
-                // drückt der User Cancel bzw gibt ungültige Zeichen ein ändert
-                // sich die ursprüngliche Transition nicht
-                if (chars!=null) {
-                    
-                    // füge die neuen Buchstaben hinzu
-                    charIt = chars.listIterator();
-                    while (charIt.hasNext()) {
-                        currChar = (Character)charIt.next();
-                        if (!existing.contains(currChar))
-                            existing.add(currChar);
-                    }
-                }
-                parent.repaint();
-                return false;
+                chars = parent.editTransChars(init);
+                // falls der User cancel gedrückt hat
+                if (chars!=null) existing.clear();
             }
+            
+            if (chars!=null) {
+                
+                for ( Character c : chars ) {
+                    if (!existing.contains(c))
+                        existing.add(c);
+                }
+                
+            }
+            
+            parent.repaint();
+            return false;
         }
+        
         
         // hier angekommen war der Zustand noch nicht enthalten
         if (autoTrans==null) {
@@ -262,39 +253,27 @@ public class JState extends JComponent implements Comparable {
         }
         
         if (chars!=null) {
-            newTrans = new TransitionData(endState, chars);
-            outgoingTransList.add(newTrans);
+            trans = new TransitionData(endState, chars);
+            outgoingTransList.put(endState, trans);
         }
         
         parent.repaint(); // besser einzelnd neu zeichnen?
         return true;
     }
     
-    
-// clone?
-    protected LinkedList<TransitionData> getTransList() {
+    protected LinkedHashMap<JState, TransitionData> getTransList() {
         return outgoingTransList;
     }
     
-// prüft ob der Zustand eine Transition zu dest hat
+    // prüft ob der Zustand eine Transition zu dest hat
     public boolean hasTransTo(JState dest) {
-        ListIterator<TransitionData> lIt;
-        TransitionData current;
-        
-        lIt = outgoingTransList.listIterator();
-        
-        while (lIt.hasNext()) {
-            current = lIt.next();
-            if (current.getEndState()==dest) return true;
-        }
-        
-        return false;
+        return outgoingTransList.containsKey(dest);
     }
     
-// get/set transDrawn
-// transDrawn gibt an ob im letzten Durchlauf von drawTransitions in AutWindow
-// die Transitionen dieses Zustands gezeichnet wurden, dadurch wird verhindert
-// das bei beidseitigen Transitionen beide Transitionen verschoben werden
+    // get/set transDrawn
+    // transDrawn gibt an ob im letzten Durchlauf von drawTransitions in AutWindow
+    // die Transitionen dieses Zustands gezeichnet wurden, dadurch wird verhindert
+    // das bei beidseitigen Transitionen beide Transitionen verschoben werden
     
     public boolean getTransDrawn() {
         return transDrawn;
