@@ -240,11 +240,10 @@ public class FSAAlgo {
         
         // aktuelle teilmenge der Potenzmenge
         Vector<Integer> currentSet;
-        IntegerSet currentIntSet;
+//        IntegerSet currentIntSet;
         
         // eingabealphabet
         Vector<Character> alpha;
-        Character currChar;
         
         alpha = aut.getAlphabet();
         
@@ -257,9 +256,7 @@ public class FSAAlgo {
         int stateId; // der aktuell untersuchte (alte) Zustand
         
         // nimm einen Zustand des neuen Automaten her... (also eine Teilmenge der Potmenge)
-        for ( Iterator<IntegerSet> psIt = statePowerSet.iterator(); psIt.hasNext();) {
-            
-            currentIntSet = psIt.next();
+        for ( IntegerSet currentIntSet : statePowerSet ) {
             
             // (TODO?) IntegerSet implementiert (noch) nicht Iterator
             currentSet = currentIntSet.pureElements();
@@ -272,23 +269,16 @@ public class FSAAlgo {
                 // Zustand verbleibt
                 stateId = statePowerSet.indexOf(currentIntSet);
                 
-                for ( Iterator<Character> alphaIt = alpha.iterator(); alphaIt.hasNext(); ) {
-                    dfaResult.addTransition(stateId,stateId, alphaIt.next());
+                for ( Character cChar : alpha ) {
+                    dfaResult.addTransition(stateId,stateId, cChar);
                 }
+                
+                continue;
             }
             
-            // identifiziere die einelementige Menge die den alten Startzustand enthält
-            // Annahme ist natürlich das es sich um DFAs handelt, die nur einen Startzustand
-            // haben dürfen
-            /*if (currentIntSet.cardinality()==1 && aut.isStartState(currentIntSet.getFirst())) {
-                dfaResult.setStartFlag(statePowerSet.indexOf(currentIntSet), true);
-            }*/
-            
-            
             // durchlaufe für diesen Zustand alle Buchstaben des Eingabealphabets
-            for ( Iterator<Character> alphaIt = alpha.iterator(); alphaIt.hasNext(); ) {
+            for ( Character currChar : alpha ) {
                 
-                currChar = alphaIt.next();
                 // lege eine neue (zunächst) leere Menge an, hier kommen
                 // alle Zustände hinein die von stateId mit currChar aus erreichbar sind
                 destSet = new IntegerSet();
@@ -348,8 +338,7 @@ public class FSAAlgo {
         
         IntegerSet myClone;
         
-        for ( Iterator<IntegerSet> it = statePowerSet.iterator(); it.hasNext(); ) {
-            currentIntSet = it.next();
+        for ( IntegerSet currentIntSet : statePowerSet ) {
             
             // bevor wir hier rumschneiden, erst schauen ob das nicht
             // der neue Startzustand ist
