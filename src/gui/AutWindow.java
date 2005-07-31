@@ -45,6 +45,10 @@ import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Line2D;
+import java.awt.geom.AffineTransform;
 
 public class AutWindow extends JLayeredPane {
     
@@ -53,6 +57,7 @@ public class AutWindow extends JLayeredPane {
     public static final int GRID_SIZE = 40;
     public static final int STATE_HALFSIZE = 15;
     
+    private static final double PIHALF = Math.PI/2.0;
     private static final int MIN_STATE_DISTANCE = 55;
     
     private JState markedState;
@@ -64,12 +69,17 @@ public class AutWindow extends JLayeredPane {
     private VFSAGUI topLevel;
     private StatePopup statePopup;
     
-    private Polygon startTriangle;
-    private float[] penData;
-    
+    private Polygon startTriangle, vertex;
+    private BasicStroke linePen;
     private Color lineColour, charColour;
     
     private boolean staticWindow;
+    
+    private Point initialPoint, lastPos;
+    private Polygon stateShape;
+    
+    private boolean dragging;
+    private JState draggedState;
     
     public AutWindow(VFSAGUI _topLevel, boolean _st) {
         super();
@@ -78,15 +88,18 @@ public class AutWindow extends JLayeredPane {
         setDoubleBuffered(true);
         setOpaque(true);
         
-        penData = new float[1];
+        stateShape = new Polygon();
         
-        penData[0] = 2.0f;
+        stateShape.addPoint(0,0); stateShape.addPoint(0, STATE_SIZE-1);
+        stateShape.addPoint(STATE_SIZE-1, STATE_SIZE-1); stateShape.addPoint(STATE_SIZE-1,0);
+        
+        linePen = new BasicStroke(1.5f);
         
         staticWindow = _st;
         
         if (!staticWindow) {
             setBackground(VFSAGUI.options.getBackCol());
-            enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+            enableEvents(AWTEvent.MOUSE_EVENT_MASK|AWTEvent.MOUSE_MOTION_EVENT_MASK);
             statePopup = new StatePopup(_topLevel);
         } else {
             setBackground(Color.WHITE);
@@ -97,6 +110,14 @@ public class AutWindow extends JLayeredPane {
         startTriangle.addPoint(8,0);
         startTriangle.addPoint(0,8);
         
+        vertex = new Polygon();
+        vertex.addPoint(0,0);
+        vertex.addPoint(4,10);
+        vertex.addPoint(-4, 10);
+        
+        
+        initialPoint = new Point();
+        lastPos = new Point();
     }
     
     public JState addState(Point position) {
@@ -141,14 +162,77 @@ public class AutWindow extends JLayeredPane {
         repaint();
     }
     
+    public void setStatePoint(Point p, Point statePos) {
+        initialPoint.x = p.x;
+        initialPoint.y = p.y;
+        lastPos.x =  statePos.x;
+        lastPos.y = statePos.y;
+        drawStateShape(lastPos, true);
+        lastPos.translate(initialPoint.x, initialPoint.y);
+    }
+    
+    public void setDragging(boolean b, JState which) {
+        dragging = b;
+        draggedState = which;
+    }
+    
+    public boolean isDragging() {
+        return dragging;
+    }
     
     // füge bei Doppelklick einen neuen Zustand ein
-    public void processMouseEvent(MouseEvent ev) {
+    protected void processMouseEvent(MouseEvent ev) {
+        
         if (ev.getClickCount()==2 && ev.getButton()==MouseEvent.BUTTON1
                 && ev.getID()==MouseEvent.MOUSE_PRESSED) {
             addState(ev.getPoint());
         }
+        
+        if (dragging && draggedState!=null && ev.getID()==MouseEvent.MOUSE_RELEASED) {
+            dragging = false;
+            drawStateShape(lastPos, false);
+            lastPos.translate( -initialPoint.x, -initialPoint.y);
+            
+            if (grid) {
+                lastPos.x = lastPos.x - (lastPos.x % GRID_SIZE);
+                lastPos.y = lastPos.y - (lastPos.y % GRID_SIZE);
+                if (lastPos.x < 1) { lastPos.x = 1; }
+                if (lastPos.y < 1) { lastPos.y = 1; }
+            }
+            
+            draggedState.setLocation(lastPos);
+            repaint();
+        }
+        
     }
+    
+    public void processMouseMotionEvent(MouseEvent ev) {
+        if (!dragging || isShowingPopup()) return;
+        Point p = new Point(ev.getPoint());
+        //p.x -= initialPoint.x;
+        //p.y -= initialPoint.y;
+        drawStateShape(p, true);
+    }
+    
+    
+    private void drawStateShape(Point newPos, boolean drawAgain) {
+        Graphics gr = this.getGraphics();
+        
+        gr.setXORMode(Color.GREEN);
+        
+        stateShape.translate(lastPos.x-initialPoint.x, lastPos.y-initialPoint.y);
+        gr.drawPolygon(stateShape);
+        stateShape.translate(-(lastPos.x-initialPoint.x), -(lastPos.y-initialPoint.y));
+        
+        if (drawAgain) {
+            lastPos = newPos;
+            stateShape.translate((lastPos.x-initialPoint.x), (lastPos.y-initialPoint.y));
+            gr.drawPolygon(stateShape);
+            stateShape.translate(-(lastPos.x-initialPoint.x), -(lastPos.y-initialPoint.y));
+        }
+        
+    }
+    
     
     public boolean isStatic() {
         return staticWindow;
@@ -162,27 +246,16 @@ public class AutWindow extends JLayeredPane {
         JState current, endState;
         Object[] states;
         Point startLoc, endLoc;
-        
-        BasicStroke dottedPen = new BasicStroke(1f,
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND,
-                1f,
-                penData,
-                0.0f);
-        
-        
-        
+       
         Graphics2D g = (Graphics2D)gr.create();
         
-        // backup old stroke
-        Stroke oldStroke = g.getStroke();
-        
-        g.setStroke(dottedPen);
-        
-        int wi = this.getWidth();
-        int he = this.getHeight();
-        
         if (grid) {
+            
+            int wi = this.getWidth();
+            int he = this.getHeight();
+            
+            g.setColor(Color.LIGHT_GRAY);
+            
             for (int i = (STATE_HALFSIZE) ; i <= wi ; i+=GRID_SIZE) {
                 g.drawLine(i,0,i,he);
             }
@@ -190,11 +263,9 @@ public class AutWindow extends JLayeredPane {
             for (int j = (STATE_HALFSIZE) ; j <= he ; j+=GRID_SIZE) {
                 g.drawLine(0,j,wi,j);
             }
-            
-            
         }
         
-        g.setStroke(oldStroke); dottedPen = null;
+        g.setStroke(linePen);
         
         numstate = getComponentCountInLayer(STATE_LAYER);
         states = getComponentsInLayer(STATE_LAYER);
@@ -203,6 +274,8 @@ public class AutWindow extends JLayeredPane {
             current = (JState)states[i];
             current.setTransDrawn(false);
         }
+        
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         // wir holen uns bereits hier die Farben aus dem Optionsobjekt
         // um unnötigen Methodenaufruf-Overhead in drawTransitions zu vermeiden
@@ -221,6 +294,7 @@ public class AutWindow extends JLayeredPane {
         }
         
         g.dispose();
+        
     }
     
     public void showPopup(JState who) {
@@ -239,10 +313,8 @@ public class AutWindow extends JLayeredPane {
         LinkedHashMap<JState, TransitionData> transList;
         ListIterator<TransitionData> current;
         TransitionData currTrans;
-        Polygon spitze;
-        
-        // für die Pfeilspitzen
-        double width = 5.0, length = 20.0;
+        Shape finalVertex;
+        AffineTransform affineTrans;
         
         Point mp = new Point(), endPoint;
         int xsize,ysize;
@@ -254,8 +326,10 @@ public class AutWindow extends JLayeredPane {
         
         transList = startState.getTransList();
         
-        spitze = new Polygon();
         Point a = new Point();
+        
+        affineTrans = new AffineTransform();
+        
         
         for ( JState endState : transList.keySet() ) {
             
@@ -298,16 +372,14 @@ public class AutWindow extends JLayeredPane {
             
             
             // für die Beschriftung mit den Transitionszeichen die Mitte der Linie bestimmen
-            xsize = Math.abs(endLoc.x-startLoc.x);
-            ysize = Math.abs(endLoc.y-startLoc.y);
+            ankath = xsize = Math.abs(endLoc.x-startLoc.x);
+            gegenkath = ysize = Math.abs(endLoc.y-startLoc.y);
             
             xsize = xsize / 2;
             ysize = ysize / 2;
             
             // mit der Transition als Hypotenuse bildet
             // das ganze ein rechtwinkliges Dreieck, berechne die fehlenden Seiten
-            ankath = Math.abs(startLoc.x-endLoc.x);
-            gegenkath = Math.abs(startLoc.y-endLoc.y);
             hypo = Math.sqrt(ankath*ankath + gegenkath*gegenkath);
             
             // zu kurze Transition werden ausgeblendet
@@ -335,31 +407,33 @@ public class AutWindow extends JLayeredPane {
             
             endPoint = new Point(endLoc);
             
-            
             // abhängig wie die Zustände zueinander liegen wird dieser Punkt nun
             // auf den Mittelpunkt draufaddiert/subtrahiert
             
-            // TODO --- das geht besser :)
+            double rotAngel = 0.0;
             
-            
-            if (endLoc.x <= startLoc.x) {
-                mp.x = endLoc.x + xsize;
-                endPoint.x += schnittx;
-                
-            } else {
-                mp.x = startLoc.x + xsize;
-                endPoint.x -= schnittx;
-                
+            if (endLoc.x <= startLoc.x && endLoc.y <= startLoc.y) {
+                rotAngel = winkel - PIHALF;
+                endPoint.x += schnittx; mp.x = endLoc.x + xsize;
+                mp.y = endLoc.y + ysize; endPoint.y += schnitty;
             }
             
-            if (endLoc.y <= startLoc.y) {
-                mp.y = endLoc.y + ysize;
-                endPoint.y += schnitty;
-                
-            } else {
-                mp.y = startLoc.y + ysize;
-                endPoint.y -= schnitty;
-                
+            if (endLoc.x > startLoc.x && endLoc.y <= startLoc.y) {
+                rotAngel = PIHALF - winkel;
+                mp.x = startLoc.x + xsize; endPoint.x -= schnittx;
+                mp.y = endLoc.y + ysize; endPoint.y += schnitty;
+            }
+            
+            if (endLoc.x >= startLoc.x && endLoc.y > startLoc.y) {
+                rotAngel = winkel + PIHALF;
+                mp.x = startLoc.x + xsize; endPoint.x -= schnittx;
+                mp.y = startLoc.y + ysize; endPoint.y -= schnitty;
+            }
+            
+            if (endLoc.x < startLoc.x && endLoc.y > startLoc.y) {
+                rotAngel = -PIHALF - winkel;
+                endPoint.x += schnittx; mp.x = endLoc.x + xsize;
+                mp.y = startLoc.y + ysize; endPoint.y -= schnitty;
             }
             
             g.setColor(charColour);
@@ -367,30 +441,13 @@ public class AutWindow extends JLayeredPane {
             g.setColor(lineColour);
             g.drawLine(startLoc.x,startLoc.y,endPoint.x,endPoint.y);
             
+            // Pfeilspitze
+            affineTrans.setToRotation(rotAngel,  endPoint.x, endPoint.y);
+            affineTrans.translate(endPoint.x, endPoint.y);
             
-            // nicht 100% sauber, Pfeilspitze
-            double e_x, e_y;
+            finalVertex = affineTrans.createTransformedShape(vertex);
             
-            e_x = (endPoint.x - startLoc.x) / hypo;
-            e_y = (endPoint.y - startLoc.y) / hypo;
-            
-            
-            
-            a.x = endPoint.x - (int) (length/2*e_x);
-            a.y = endPoint.y - (int) (length/2*e_y);
-            
-            spitze.reset();
-            
-            spitze.addPoint(endPoint.x, endPoint.y);
-            
-            spitze.addPoint(a.x - (int) Math.round(width*e_y),
-                    a.y + (int) Math.round(width*e_x));
-            
-            spitze.addPoint(a.x + (int) Math.round(width*e_y),
-                    a.y - (int) Math.round(width*e_x));
-            
-            
-            g.fillPolygon(spitze);
+            g.fill(finalVertex);
             
         }
         
@@ -537,7 +594,7 @@ public class AutWindow extends JLayeredPane {
             for (JState endState : transitions.keySet() ) {
                 cTrans = transitions.get(endState);
                 toState = endState.getNumber();
-
+                
                 for (Character c : cTrans.getChars() ) {
                     result.addTransition(fromState, toState, c );
                 }

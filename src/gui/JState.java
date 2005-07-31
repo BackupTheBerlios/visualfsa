@@ -112,11 +112,23 @@ public class JState extends JComponent implements Comparable {
         
         if (parent.isShowingPopup()) return;
         
+        if (event.getClickCount()<2 && event.getButton()==MouseEvent.BUTTON1)
+            parent.dispatchEvent(event);
+        
+        if (parent.isDragging()) return;
+        
+        // state dragging
+        if (event.getButton()==MouseEvent.BUTTON1 &&
+                event.getID()==MouseEvent.MOUSE_PRESSED) {
+            parent.setStatePoint(event.getPoint(), getLocation());
+           
+        }
         
         // popup menü
         if (event.getButton()==MouseEvent.BUTTON3
                 && event.getID()==MouseEvent.MOUSE_PRESSED) {
             parent.showPopup(this);
+            return;
         }
         
         if (event.getID()==MouseEvent.MOUSE_PRESSED && event.getButton()==MouseEvent.BUTTON1) {
@@ -128,9 +140,7 @@ public class JState extends JComponent implements Comparable {
             // während des Zeichnens ist der Ausgangszustand
             // rot markiert
             
-            initial = event.getPoint();
-            
-            if (parent.isDrawingEdge()) {
+            if (parent.isDrawingEdge() && event.getClickCount()==2) {
                 parent.endEdge(this);
                 return;
             } else if (!(parent.isDrawingEdge()) && event.getClickCount()==2) {
@@ -139,9 +149,11 @@ public class JState extends JComponent implements Comparable {
                 return;
             }
             
+            
+            
+            
             // Während des Kantenzeichnens ist das Markieren nicht zulässig
             if (parent.isDrawingEdge()) return;
-            
             
             markMe();
         }
@@ -169,35 +181,22 @@ public class JState extends JComponent implements Comparable {
         }
     }
     
+    // die MouseMotion Events werden an das Zeichenfenster durchgereicht
     protected void processMouseMotionEvent(MouseEvent event) {
-        Point newPos, currentPos;
         
-        if (parent.isShowingPopup()) return;
+        if (event.getID()!=MouseEvent.MOUSE_DRAGGED) return;
         
+        Point pos = event.getPoint();
         
+        pos.translate(getLocation().x, getLocation().y);
         
-        // dragging disabled solange wir eine Transition zeichnen
-        if (parent.isDrawingEdge()) return;
+        MouseEvent ev = new MouseEvent(parent, MouseEvent.MOUSE_DRAGGED,0,0,
+                pos.x, pos.y,
+                0, false);
         
-        if (event.getID()==MouseEvent.MOUSE_DRAGGED) {
-            currentPos = this.getLocation();
-            newPos = new Point();
-            newPos.x = currentPos.x + event.getPoint().x - initial.x;
-            newPos.y = currentPos.y + event.getPoint().y - initial.y;
-            
-            if ( parent.isGrid() ) {
-                newPos.x = newPos.x - (newPos.x % parent.GRID_SIZE);
-                newPos.y = newPos.y - (newPos.y % parent.GRID_SIZE);
-                if (newPos.x < 1) { newPos.x = 1; }
-                if (newPos.y < 1) { newPos.y = 1; }
-            }
-            
-            setLocation(newPos);
-            
-            
-            
-            parent.repaint(); // arghs!
-        }
+        parent.setDragging(true, this);
+        parent.dispatchEvent(ev);
+        
     }
     
     
