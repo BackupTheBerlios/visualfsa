@@ -19,135 +19,146 @@
 
 package datastructs;
 
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.File;
-import java.io.Serializable;
-import java.io.FileNotFoundException;
 import java.awt.Color;
+import java.util.HashMap;
 
-
-public class AppOptions implements Serializable {
+public class AppOptions {
     
-    // Farboptionen
-    private Color lineCol, charCol, backCol, transCol, markCol;
-    
-    // Immer nach Speichern fragen?
-    private boolean askSave;
-    
-    private final String optFilename = "vfsa_opt.dat";
-    
-    /* set und get braucht die Welt */
-    
-    public void setLineCol(Color c) {
-        lineCol = c;
+    public static enum OPTION_TYPE {
+        COLOR_OPTION,
+        BOOL_OPTION,
+        UNDEFINED_OPTION
     }
     
-    public void setCharCol(Color c) {
-        charCol = c;
+    private HashMap<String, SingleOption> options;
+    // sollen nicht vorhandene Schlüssel mit ihren Default-Wert eingetragen werden?
+    private boolean putDefault;
+    
+    public AppOptions(boolean putDefPolicy) {
+        options = new HashMap<String, SingleOption>();
+        putDefault = putDefPolicy;
     }
     
-    public void setBackCol(Color c) {
-        backCol = c;
+    public void putOption(String key, SingleOption opt) {
+        options.put(key, opt);
     }
     
-    public void setTransCol(Color c) {
-        transCol = c;
+    public void setColorValueForKey(String key, Color val) {
+        SingleOption o = new SingleOption(OPTION_TYPE.COLOR_OPTION, val.getRGB());
+        options.put(key, o);
     }
+    
+    public Color getColorValueForKey(String key, Color def) {
+        if (options.containsKey(key)) {
             
-    public void setMarkCol(Color c) {
-        markCol = c;
-    }
-    
-    public Color getLineCol() { return lineCol; }
-    public Color getCharCol() { return charCol; }
-    public Color getBackCol() { return backCol; }
-    public Color getTransCol() { return transCol; }
-    public Color getMarkCol() { return markCol; }
-    
-    
-    public void setAskSave(boolean ask) {
-        askSave = ask;
-    }
-    
-    public boolean getAskSave() {
-        return askSave;
-    }
-    
-    
-    /* setzt das Objekt auf die Standardeinstellungen für vfsa */
-    public void setDefault() {
-        lineCol = Color.BLACK;
-        charCol = Color.RED;
-        backCol = Color.WHITE;
-        markCol = Color.YELLOW;
-        transCol = Color.GREEN;
-        askSave = true;
-    }
-    
-    // erzeugt ein Optionsobjekt mit default einstellungen
-    public AppOptions getDefaultOptions() {
-        AppOptions def;
-        def = new AppOptions();
-        def.setDefault();
-        return def;
-    }
-
-    
-    public void setOptionsFrom(AppOptions opt) {
-        askSave = opt.getAskSave();
-        lineCol = opt.getLineCol();
-        charCol = opt.getCharCol();
-        transCol = opt.getTransCol();
-        backCol = opt.getBackCol();
-        markCol = opt.getMarkCol();
-    }
-    
-    
-    public void saveOptions() {
-        ObjectOutputStream outStream;
-        
-        try {
-	    outStream = new ObjectOutputStream(new FileOutputStream(optFilename));
-	    outStream.writeObject(this);
-	    outStream.close();
-	}
-	catch (IOException ioEx) {
-	    System.err.println("Error - could not write options!");
-            System.err.println(ioEx.getMessage());
-	}
-	catch (Exception generalEx) {
-	    // möglich sind hier, NotSerializable und InvalidClass, beide
-	    // Ausnahmen sind im Endbenutzerbetrieb praktisch nicht möglich
-            System.err.println("Error - could not read options!");
-	}
-    }
-    
-    public void loadOptions() {
-        ObjectInputStream objectStream;
-	AppOptions readObject;
-        
-        try {
-            objectStream = new ObjectInputStream(new FileInputStream(optFilename));
-            readObject = ((AppOptions)(objectStream.readObject()));
-
-            this.setOptionsFrom(readObject);
+            Color res;
+            SingleOption opt;
             
-            objectStream.close();
+            opt = options.get(key);
+            
+            if (opt.getType()!=OPTION_TYPE.COLOR_OPTION)
+                return def;
+            
+            return (new Color(opt.getValue()));
+        } else {
+            if (putDefault) {
+                SingleOption newEntry;
+                newEntry = new SingleOption(OPTION_TYPE.COLOR_OPTION,
+                        def.getRGB());
+                options.put(key, newEntry);
+            }
+            return def;
         }
-        catch (FileNotFoundException nfEx) {
-            // wird keine Optionsdatei gefunden, wird eine mit default-werten
-            // angelegt
-            this.setDefault();
-            this.saveOptions();
+    }
+    
+    
+    public void setBoolValueForKey(String key, boolean val) {
+        SingleOption o = new SingleOption(OPTION_TYPE.BOOL_OPTION, val ? 1 : 0);
+        options.put(key,o);
+    }
+    
+    
+    public boolean getBoolValueForKey(String key, boolean def) {
+        if (options.containsKey(key)) {
+            
+            Color res;
+            SingleOption opt;
+            
+            opt = options.get(key);
+            
+            if (opt.getType()!=OPTION_TYPE.BOOL_OPTION)
+                return def;
+            
+            return (opt.getValue()!=0);
+            
+        } else {
+            if (putDefault) {
+                SingleOption newEntry = new SingleOption(OPTION_TYPE.BOOL_OPTION,
+                        def ? 1 : 0);
+                options.put(key, newEntry);
+            }
+            return def;
         }
-        catch (Exception genEx) {
-            System.err.println(genEx.getMessage());
-            System.err.println("Error - could not read options!");
+    }
+    
+    // deep-copy
+    public AppOptions copy() {
+        SingleOption opt;
+        
+        AppOptions res = new AppOptions(true);
+        
+        for ( String key : this.options.keySet() ) {
+            
+            opt = options.get(key);
+            
+            res.putOption(key, (SingleOption)opt.clone());
         }
+        
+        return res;
+    }
+    
+    public static OPTION_TYPE mapTypeString(String aType) {
+        aType = aType.toUpperCase();
+        
+        if (aType.equals("COLOR")) {
+            return OPTION_TYPE.COLOR_OPTION;
+        } else if (aType.equals("BOOL")) {
+            return OPTION_TYPE.BOOL_OPTION;
+        }
+        
+        return OPTION_TYPE.UNDEFINED_OPTION;
+    }
+    
+    private String getTypeString(OPTION_TYPE t) {
+        switch (t) {
+            
+            case COLOR_OPTION:
+                return "COLOR";
+            case BOOL_OPTION:
+                return "BOOL";
+                
+            default:
+                return "UNDEFINED";
+        }
+    }
+    
+    
+    public String toString() {
+        StringBuffer res = new StringBuffer();
+        SingleOption opt;
+        
+        for (String key : options.keySet() ) {
+            opt = options.get(key);
+            res.append(getTypeString(opt.getType()));
+            res.append(":");
+            res.append(key);
+            res.append(":");
+            res.append(((Integer)opt.getValue()).toString());
+            res.append("\n");
+        }
+        
+        return res.toString();
     }
     
 }
+
