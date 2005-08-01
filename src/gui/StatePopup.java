@@ -37,7 +37,7 @@ public class StatePopup extends JPopupMenu {
     
     public StatePopup(VFSAGUI _myGUI) {
         edit = new JMenuItem("Edit Transitions",
-                new ImageIcon("images/edit.png"));
+                new ImageIcon("images/stock_edit.png"));
         delete = new JMenuItem("Remove",
                 new ImageIcon("images/edit_remove.png"));
         startst = new JCheckBoxMenuItem("Start-State",
@@ -56,13 +56,6 @@ public class StatePopup extends JPopupMenu {
         // Transitionen editieren
         edit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                // starte den transedit Dialog
-                if (invoker.getTransList().isEmpty()) {
-                    JOptionPane.showMessageDialog(null, "No Transitions found!","Error",
-                                    JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-                
                 TransEdit myTEdlg;
                 
                 myTEdlg = new TransEdit(myGUI);
@@ -106,6 +99,7 @@ public class StatePopup extends JPopupMenu {
         
         // lasse nicht zu das der letzte Zustand entfernt werden kann
         delete.setEnabled(((AutWindow)invoker.getParent()).getComponentCount()!=1);
+        edit.setEnabled(invoker.getTransList().size()!=0);
         
         this.show(who, AutWindow.STATE_HALFSIZE,
                 AutWindow.STATE_HALFSIZE);
