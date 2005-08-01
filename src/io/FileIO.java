@@ -44,6 +44,9 @@ package io;
 
 import datastructs.FSA;
 import datastructs.Transition;
+import datastructs.AppOptions;
+import datastructs.SingleOption;
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Component;
 import java.util.LinkedList;
@@ -61,6 +64,7 @@ import javax.swing.JFileChooser;
 
 public class FileIO {
     
+    private final static String optionsFile = "vfsa.ini";
     
     private class ParsedState {
         
@@ -218,6 +222,8 @@ public class FileIO {
             
         }
         
+        input.close();
+        
         
         return result;
     }
@@ -282,5 +288,92 @@ public class FileIO {
             return null;
         }
     }
+    
+    
+    /*
+     
+     Optionsdatei Format:
+     
+     OptionsTyp:Schluessel:Wert
+     .
+     .
+     
+     zb.
+     
+     Color:LINE_COLOR:WeirdIntVal
+     Bool:BLUBB_OPTION:WeirdIntVal
+     
+     */
+    
+    public static void readOptions(AppOptions opt)
+    throws Exception {
+        
+        BufferedReader inFile;
+        String currentLine;
+        boolean done = false;
+        
+        
+        try {
+            inFile = new BufferedReader(new FileReader(optionsFile));
+            
+            do {
+                currentLine = inFile.readLine();
+                
+                // done
+                if (currentLine==null || currentLine.length()==0) {
+                    done = true;
+                } else {
+                    parseOption(currentLine, opt);
+                }
+            } while (!done);
+            inFile.close();
+        } catch (FileNotFoundException nfEx) {
+            
+            // Optionsdatei nicht gefunden, versuche
+            // eine neue mit default-Werten anzulegen
+            
+            throw new Exception("option file not found...");
+        }
+        
+    }
+    
+    // returns null if no valid option could be parsed
+    private static void parseOption(String line, AppOptions options) {
+        StringTokenizer tok = new StringTokenizer(line,":");
+        
+        String optKey;
+        String optType;
+        int optVal;
+        
+        SingleOption result;
+        
+        if (tok.countTokens()!=3)
+            return;
+        
+        optType = tok.nextToken();
+        optKey  = tok.nextToken();
+        
+        try {
+            optVal = Integer.parseInt(tok.nextToken());
+            result = new SingleOption(AppOptions.mapTypeString(optType), optVal);
+            options.putOption(optKey, result);
+        } catch (NumberFormatException nfEx) {
+            return;
+        }
+    }
+    
+    
+    public static void writeOptions(AppOptions opt)
+    throws Exception {
+        
+        PrintWriter writer;
+        
+        writer = new PrintWriter(optionsFile);
+        
+        writer.println(opt.toString());
+        
+        writer.close();
+    }
+    
     
 }
