@@ -33,12 +33,13 @@ import javax.swing.ListSelectionModel;
 import javax.swing.DefaultListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.Iterator;
 import java.util.Vector;
 
 import gui.TransitionData;
 import gui.AutWindow;
+import gui.JState;
 
 public class TransEdit extends JDialog {
     
@@ -47,10 +48,11 @@ public class TransEdit extends JDialog {
     private JButton delButton, updateButton, okButton;
     private JTextField transChars;
     
-    private LinkedList<TransitionData> data;
+    private LinkedHashMap<JState,TransitionData> data;
+    private LinkedList<JState> backend;
     
     public TransEdit(Frame owner) {
-        super(owner, java.util.ResourceBundle.getBundle("global").getString("editTrans"), true);
+        super(owner, "Edit Transitions", true);
     }
     
     public void run() {
@@ -62,8 +64,11 @@ public class TransEdit extends JDialog {
         
         listMod = new DefaultListModel();
         
-        for (int i = 0 ; i < data.size() ; i++ ) {
-            listMod.addElement(data.get(i));
+        backend = new LinkedList<JState>();
+        
+        for ( JState state : data.keySet() ) {
+            listMod.addElement( data.get(state) );
+            backend.addLast( state );
         }
         
         transList.setModel(listMod);
@@ -80,9 +85,9 @@ public class TransEdit extends JDialog {
         
         buttonPanel.setLayout(new GridLayout(1,3));
         
-        delButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("remove"));
-        updateButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("update"));
-        okButton = new JButton(java.util.ResourceBundle.getBundle("global").getString("OK"));
+        delButton = new JButton("Remove");
+        updateButton = new JButton("Refresh");
+        okButton = new JButton("OK");
         
         buttonPanel.add(okButton);
         buttonPanel.add(updateButton);
@@ -100,7 +105,8 @@ public class TransEdit extends JDialog {
                 if (sel!=-1) {
                     // !!!! wir arbeiten auf der Originalreferenz, die Transition ist dann
                     // tatsächlich hin :)
-                    data.remove(sel);
+                    data.remove(backend.get(sel));
+                    backend.remove(sel);
                     listMod.remove(sel);
                     transList.setSelectedIndex(listMod.size()-1);
                     if (listMod.isEmpty()) {
@@ -120,11 +126,11 @@ public class TransEdit extends JDialog {
                     
                     // wenn != null, war zumindest ein sinniges Zeichen dabei
                     if (newChars!=null) {
-                        data.get(sel).setChars(newChars);
-                        listMod.setElementAt(data.get(sel).toString(), sel);
+                        data.get(backend.get(sel)).setChars(newChars);
+                        listMod.setElementAt(data.get(backend.get(sel)).toString(), sel);
                     }
                 }
-            }
+            }   
         });
         
         transList.addListSelectionListener(new ListSelectionListener() {
@@ -136,12 +142,13 @@ public class TransEdit extends JDialog {
                 // da wir vom User erwarten das er die Zeichen so eingibt wie wir
                 // es gerne hätten, müssen auch wir wohl oder übel den Char-Vec etwas anhübschen
                 if (sel!=-1) {
-                    td = data.get(sel);
-                    for ( Iterator<Character> it = td.getChars().iterator(); it.hasNext(); ) {
-                        res.append(it.next());
-                        if (it.hasNext()) res.append(",");
+                    td = data.get(backend.get(sel));
+                    for ( Character c : td.getChars() ) {
+                        res.append(c);
+                        res.append(",");
                     }
-                    
+                    if (res.charAt(res.length()-1)==',')
+                        res.setCharAt(res.length()-1,' ');
                     transChars.setText(res.toString());
                 }
             }
@@ -161,7 +168,7 @@ public class TransEdit extends JDialog {
     }
     
     
-    public void setData(LinkedList<TransitionData> ld) {
+    public void setData(LinkedHashMap<JState,TransitionData> ld) {
         data = ld;
     }
     

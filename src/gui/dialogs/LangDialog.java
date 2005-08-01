@@ -69,7 +69,7 @@ public class LangDialog extends JDialog {
         JPanel lowerPan = new JPanel();
         lowerPan.setLayout(new GridLayout(1,3));
         
-        add(new JLabel(java.util.ResourceBundle.getBundle("global").getString("maxWordLen"), SwingConstants.CENTER), BorderLayout.CENTER);
+        add(new JLabel("word length:", SwingConstants.CENTER), BorderLayout.CENTER);
         
         // hier wird die Wortlänge begrenzt, bei mehr als 500k Wörter wird es kritisch mit dem Heap :/
         for (int k = 0 ; k < 50 ; k++) {
@@ -84,8 +84,8 @@ public class LangDialog extends JDialog {
         spinModel = new SpinnerNumberModel(1,1,max,1);
         spin = new JSpinner(spinModel);
                 
-        JButton start = new JButton(java.util.ResourceBundle.getBundle("global").getString("OK"));
-        JButton cancel = new JButton(java.util.ResourceBundle.getBundle("global").getString("cancel"));
+        JButton start = new JButton("OK");
+        JButton cancel = new JButton("Cancel");
         
         lowerPan.add(spin);
         lowerPan.add(start);

@@ -28,23 +28,61 @@ package gui.dialogs;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.JProgressBar;
 import java.awt.Frame;
+import java.awt.GridLayout;
 
 public class BusyDialog extends JDialog{
     
     private Runnable myWork = null;
+    final private JProgressBar pBar;
+    private JLabel display;
     
     public BusyDialog(Frame owner, String title, boolean modal) {
         super(owner, title, modal);
+        
+        display = new JLabel("--", SwingConstants.CENTER);
+        pBar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 100);
     }
     
     public void setWork(Runnable _work) {
         myWork = _work;
     }
     
+    public void setProgress(final int v) {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                
+                public void run() {
+                    pBar.setValue(v);
+                }
+            });
+        } catch (Exception err) {
+            System.err.println("Error while updating gui");
+        }
+    }
+    
+    public void setCurrentStep(final String s) {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                
+                public void run() {
+                    display.setText(s);
+                }
+            });
+        } catch (Exception err) {
+            System.err.println("Error while updating gui");
+        }
+    }
+    
     public void run() {
         
-        getContentPane().add(new JLabel(java.util.ResourceBundle.getBundle("global").getString("patience"), SwingConstants.CENTER));
+        
+        getContentPane().setLayout(new GridLayout(3,1));
+        getContentPane().add(display);
+        getContentPane().add(pBar);
+        getContentPane().add(new JLabel("Please wait...", SwingConstants.CENTER));
         
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         
@@ -52,13 +90,12 @@ public class BusyDialog extends JDialog{
         if (myWork!=null) {
             Thread myWorkThread = new Thread(myWork);
             myWorkThread.start();
-        }
-        else {
+        } else {
             dispose();
             return;
         }
         
-        pack();
+        setSize(300, 70);
         setLocation(70,70);
         setVisible(true);
         
