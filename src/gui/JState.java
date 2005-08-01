@@ -58,11 +58,11 @@ public class JState extends JComponent implements Comparable {
         initial = new Point();
         outgoingTransList = new LinkedHashMap<JState,TransitionData>();
         parent = _parent;
+        
+        currentColor = VFSAGUI.options.getColorValueForKey("BACKGROUND_COLOR", Color.WHITE);
+        
         if (!parent.isStatic()) {
-            currentColor = VFSAGUI.options.getBackCol();
             enableEvents(AWTEvent.MOUSE_MOTION_EVENT_MASK|AWTEvent.MOUSE_EVENT_MASK);
-        } else {
-            currentColor = Color.WHITE;
         }
         
         
@@ -79,11 +79,7 @@ public class JState extends JComponent implements Comparable {
         
         // Rand
         if (!finalState) {
-            if (!parent.isStatic()) {
-                g.setColor(VFSAGUI.options.getLineCol());
-            } else {
-                g.setColor(Color.BLACK);
-            }
+            g.setColor(VFSAGUI.options.getColorValueForKey("LINE_COLOR", Color.BLACK));
         } else {
             g.setColor(Color.RED);
         }
@@ -96,11 +92,8 @@ public class JState extends JComponent implements Comparable {
         
         xPos = SwingUtilities.computeStringWidth(g.getFontMetrics(),name);
         
-        if (!parent.isStatic()) {
-            g.setColor(VFSAGUI.options.getLineCol());
-        } else {
-            g.setColor(Color.BLACK);
-        }
+        g.setColor(VFSAGUI.options.getColorValueForKey("LINE_COLOR", Color.BLACK));
+        
         g.drawString(name,(AutWindow.STATE_HALFSIZE)-(xPos/2),AutWindow.STATE_HALFSIZE+5);
     }
     
@@ -121,7 +114,7 @@ public class JState extends JComponent implements Comparable {
         if (event.getButton()==MouseEvent.BUTTON1 &&
                 event.getID()==MouseEvent.MOUSE_PRESSED) {
             parent.setStatePoint(event.getPoint(), getLocation());
-           
+            
         }
         
         // popup menü
@@ -183,6 +176,8 @@ public class JState extends JComponent implements Comparable {
     
     // die MouseMotion Events werden an das Zeichenfenster durchgereicht
     protected void processMouseMotionEvent(MouseEvent event) {
+        
+        if (parent.isShowingPopup()) return;
         
         if (event.getID()!=MouseEvent.MOUSE_DRAGGED) return;
         
@@ -288,17 +283,17 @@ public class JState extends JComponent implements Comparable {
         switch(flag) {
             
             case MODE_MARK:
-                currentColor = VFSAGUI.options.getMarkCol();
+                currentColor = VFSAGUI.options.getColorValueForKey("MARK_COLOR", Color.YELLOW);
                 marked = true;
                 repaint();
                 break;
             case MODE_NOMARK:
-                currentColor = VFSAGUI.options.getBackCol();
+                currentColor = VFSAGUI.options.getColorValueForKey("BACKGROUND_COLOR", Color.WHITE);
                 marked = false;
                 repaint();
                 break;
             case MODE_EDGE:
-                currentColor= VFSAGUI.options.getTransCol();
+                currentColor= VFSAGUI.options.getColorValueForKey("SPECIAL_COLOR", Color.GREEN);
                 repaint();
                 
                 

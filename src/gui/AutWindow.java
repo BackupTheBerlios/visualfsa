@@ -71,7 +71,7 @@ public class AutWindow extends JLayeredPane {
     
     private Polygon startTriangle, vertex;
     private BasicStroke linePen;
-    private Color lineColour, charColour;
+    private Color lineColour, charColour, bgCol;
     
     private boolean staticWindow;
     
@@ -97,12 +97,13 @@ public class AutWindow extends JLayeredPane {
         
         staticWindow = _st;
         
+        bgCol = topLevel.options.getColorValueForKey("BACKGROUND_COLOR", Color.WHITE);
+        
+        setBackground(bgCol);
+        
         if (!staticWindow) {
-            setBackground(VFSAGUI.options.getBackCol());
             enableEvents(AWTEvent.MOUSE_EVENT_MASK|AWTEvent.MOUSE_MOTION_EVENT_MASK);
             statePopup = new StatePopup(_topLevel);
-        } else {
-            setBackground(Color.WHITE);
         }
         
         startTriangle = new Polygon();
@@ -246,7 +247,7 @@ public class AutWindow extends JLayeredPane {
         JState current, endState;
         Object[] states;
         Point startLoc, endLoc;
-       
+        
         Graphics2D g = (Graphics2D)gr.create();
         
         if (grid) {
@@ -275,17 +276,14 @@ public class AutWindow extends JLayeredPane {
             current.setTransDrawn(false);
         }
         
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if (topLevel.options.getBoolValueForKey("ANTIALIAS_OPTION", true)) {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         
         // wir holen uns bereits hier die Farben aus dem Optionsobjekt
         // um unnötigen Methodenaufruf-Overhead in drawTransitions zu vermeiden
-        if (!staticWindow) {
-            charColour = VFSAGUI.options.getCharCol();
-            lineColour = VFSAGUI.options.getLineCol();
-        } else {
-            charColour = Color.RED;
-            lineColour = Color.BLACK;
-        }
+        charColour = topLevel.options.getColorValueForKey("CHAR_COLOR", Color.RED);
+        lineColour = topLevel.options.getColorValueForKey("LINE_COLOR", Color.BLACK);
         
         for (int i = 0 ; i < numstate ; i++ ) {
             current = (JState)states[i];
