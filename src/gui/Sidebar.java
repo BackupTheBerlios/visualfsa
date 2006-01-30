@@ -69,7 +69,7 @@ public class Sidebar extends JPanel {
         
         newAut = new JButton(new ImageIcon("images/stock_new.png"));
         renAut = new JButton(new ImageIcon("images/stock_edit.png"));
-        delAut = new JButton(new ImageIcon("images/stock_cancel.png"));
+        delAut = new JButton(new ImageIcon("images/edit_remove.png"));
         
         newAut.setToolTipText("insert a new, empty automaton");
         renAut.setToolTipText("rename the currently selected automaton");

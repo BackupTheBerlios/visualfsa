@@ -19,6 +19,7 @@
 
 package gui;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.BorderLayout;
 import javax.swing.SwingUtilities;
@@ -35,6 +36,7 @@ import datastructs.AppOptions;
 import datastructs.FSA;
 import algo.FSAAlgo;
 import threads.LanguageThread;
+import threads.DetermThread;
 import gui.runvis.RunVisual;
 
 public class VFSAGUI extends JFrame {
@@ -58,9 +60,6 @@ public class VFSAGUI extends JFrame {
     public void showGUI() {
         JSplitPane centerSplitter;
         
-        options = new AppOptions();
-        options.loadOptions();
-        
         getContentPane().setLayout(new BorderLayout());
         
         bottom = new BottomBar(this);
@@ -72,8 +71,6 @@ public class VFSAGUI extends JFrame {
         side = new Sidebar(autPane);
         
         side.insertNewAut();
-        
-        
         
         centerSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, autPane, side);
         centerSplitter.setResizeWeight(0.8f);
@@ -100,23 +97,14 @@ public class VFSAGUI extends JFrame {
     public static void main(String[] args) {
         
         
-        try {
-            // Motif _is_ 1337 :-)
-            UIManager.setLookAndFeel(
-                    "com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-        } catch (Exception e) {
-            // narf, fall back to default
-            try {
-                UIManager.setLookAndFeel(
-                       UIManager.getCrossPlatformLookAndFeelClassName());
-            }
-            catch (Exception e2) {
-                System.out.println(e2.getMessage());
-                System.out.println("Fatal: Error setting L&F");
-                System.exit(1);
-            }
+        options = new AppOptions(true);
         
+        try {
+            FileIO.readOptions(options);
+        } catch (Exception e) {
+            System.err.println("could not read options");
         }
+        
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -125,6 +113,12 @@ public class VFSAGUI extends JFrame {
                 visualFSA.showGUI();
             }
         });
+        
+        try {
+            FileIO.writeOptions(options);
+        } catch (Exception e) {
+            System.err.println("error while writing options!");
+        }
     }
     
     // eigentlich hässlich, jede Menge Dispatchmethoden :/
@@ -212,10 +206,17 @@ public class VFSAGUI extends JFrame {
         
         optDlg = new OptionDlg(this, "Options", options);
         options = optDlg.run();
-        autPane.setBackground(options.getBackCol());
+        
+        autPane.setBackground(options.getColorValueForKey("BACKGROUND_COLOR", Color.WHITE));
         autPane.repaint();
-        autPane.paintComponents(autPane.getGraphics());
-        options.saveOptions();
+        autPane.paintComponent(autPane.getGraphics());
+        
+        
+        try {
+            FileIO.writeOptions(options);
+        } catch (Exception e) {
+            System.err.println("error while writing options!");
+        }
     }
     
     
@@ -279,7 +280,7 @@ public class VFSAGUI extends JFrame {
         // User hat cancel gedrückt
         if (wL==-1) return;
         
-        final BusyDialog busyDlg = new BusyDialog(this, "", true);
+        BusyDialog busyDlg = new BusyDialog(this, "", true);
         
         langThread = new LanguageThread(currAut, wL, busyDlg, side);
         
@@ -301,9 +302,15 @@ public class VFSAGUI extends JFrame {
     public void determ() {
         FSA myAut;
         FSA result;
+        BusyDialog waitDlg;
+        DetermThread determThread;
         
         /* gui infos synchr. */
         myAut = side.getCurrentAut();
+        
+        if (myAut.getStates().size()>=17) {
+            JOptionPane.showMessageDialog(this, "This automaton has more than 16 states", "Error", JOptionPane.ERROR_MESSAGE);
+        }
         
         // nichts zu tun
         if (myAut.isDeterministic()) {
@@ -311,7 +318,13 @@ public class VFSAGUI extends JFrame {
             return;
         }
         
-        result = FSAAlgo.determ(myAut);
+        waitDlg = new BusyDialog(this,"",true);
+        determThread = new DetermThread(myAut, waitDlg);
+        waitDlg.setWork(determThread);
+        
+        waitDlg.run();
+        
+        result = determThread.getResult();
         
         result.setName(myAut.getName()+"_dfa");
         
@@ -320,6 +333,14 @@ public class VFSAGUI extends JFrame {
     
     public void fitWindow() {
         Utilities.fitToWindow(side.getCurrentAut(), autPane);
+        if (autPane.isGrid()) {
+            Utilities.processGrid(autPane);
+        }
+    }
+    
+    public void alignToGrid() {
+        Utilities.processGrid(autPane);
+        autPane.setGridState(!autPane.isGrid());
     }
     
     public void newFile() {

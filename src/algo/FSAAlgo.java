@@ -19,14 +19,18 @@
 
 package algo;
 
+import java.awt.Point;
+import java.util.Vector;
+import java.util.LinkedList;
+import java.util.Set;
+import javax.swing.JDialog;
+
 import datastructs.WordTree;
 import datastructs.Transition;
 import datastructs.IntegerSet;
 import datastructs.FSA;
 
-import java.awt.Point;
-import java.util.*;
-
+import gui.dialogs.BusyDialog;
 
 public class FSAAlgo {
     
@@ -45,12 +49,14 @@ public class FSAAlgo {
         Mit jedem erzeugten Wort wird aut.accepts aufgerufen
      
      */
-    public static synchronized Vector<String> guessLang(FSA aut, int step) throws OutOfMemoryError {
+    public static Vector<String> guessLang(FSA aut, int step, JDialog _waitDlg) throws OutOfMemoryError {
         Vector<Character> alpha;
         Vector<String> lang;
         boolean autType;
         WordTree wordGenerator;
         String currWord;
+        
+        BusyDialog waitDlg = (BusyDialog)_waitDlg;
         
         autType = aut.isDeterministic();
         alpha = aut.getAlphabet();
@@ -69,11 +75,21 @@ public class FSAAlgo {
         
         wordGenerator = new WordTree(alpha, step);
         
-        for ( Iterator<Character> it = alpha.iterator(); it.hasNext(); ) {
+        int progress, alphaSize = alpha.size();
+        int count = -1;
+        
+        for ( Character c : alpha ) {
             // setze die Wurzel des Baumes
-            wordGenerator.setRootData(it.next());
+            wordGenerator.setRootData(c);
             
             currWord = wordGenerator.nextWord();
+            
+            count++;
+            
+            progress = (count*100)/alphaSize;
+            
+            waitDlg.setCurrentStep("checking words starting with "+c);
+            waitDlg.setProgress(progress);
             
             while (currWord!=null) {
                 // prüfe ob der automat akzeptiert
@@ -172,8 +188,8 @@ public class FSAAlgo {
             // der Zustand erhält die Posi des ursprüngl. automaten
             result.setPosition(retained, aut.getPosition(retained));
             
-            result.setStartFlag(retained, aut.getStartFlag(retained));
-            result.setFinalFlag(retained, aut.getFinalFlag(retained));
+            result.setStartFlag(retained, aut.isStartState(retained));
+            result.setFinalFlag(retained, aut.isFinalState(retained));
             
             // sowie alle seine Transitionen
             currTrans = aut.getStateTransitions(retained);
@@ -218,8 +234,9 @@ public class FSAAlgo {
         (wirre Erklärung, noch viel wirrerer Code) :-)
     
     */
-    public static FSA determ(FSA aut) {
+    public static FSA determ(FSA aut, JDialog _waitDlg) {
         FSA dfaResult = new FSA();
+        BusyDialog waitDlg = (BusyDialog)_waitDlg;
         
         /* erstelle die Zustandsmenge des Automaten */
         Set<Integer> tempSet;
@@ -227,20 +244,18 @@ public class FSAAlgo {
         
         stateSet = new IntegerSet();
         
-        tempSet = aut.getStates();
-        
-        for ( Iterator<Integer> it = tempSet.iterator(); it.hasNext(); ) {
-            stateSet.insert(it.next());
+        for ( Integer i : aut.getStates() ) {
+            stateSet.insert(i);
         }
         
         // Potenzmenge davon berechnen
         Vector<IntegerSet> statePowerSet;
         
+        waitDlg.setCurrentStep("calculating powerset");
         statePowerSet = stateSet.getPowerset();
         
         // aktuelle teilmenge der Potenzmenge
         Vector<Integer> currentSet;
-//        IntegerSet currentIntSet;
         
         // eingabealphabet
         Vector<Character> alpha;
@@ -249,14 +264,22 @@ public class FSAAlgo {
         
         // aktuelle Transitionsliste
         LinkedList<Transition> transList;
-        Transition currTrans;
         
         // der neue Zustand (==Zustandsmenge) im neuen Automaten
         IntegerSet destSet;
-        int stateId; // der aktuell untersuchte (alte) Zustand
+        int stateId; 
+        
+        int progress,count = -1,pSetSize = statePowerSet.size();
         
         // nimm einen Zustand des neuen Automaten her... (also eine Teilmenge der Potmenge)
         for ( IntegerSet currentIntSet : statePowerSet ) {
+            
+            count++;
+            
+            progress = (count*100)/pSetSize;
+            
+            waitDlg.setProgress(progress);
+            waitDlg.setCurrentStep("checking set "+count+" of "+pSetSize);
             
             // (TODO?) IntegerSet implementiert (noch) nicht Iterator
             currentSet = currentIntSet.pureElements();
@@ -284,26 +307,22 @@ public class FSAAlgo {
                 destSet = new IntegerSet();
                 
                 // durchlaufe die aktuelle Menge (=Zustand) ....
-                for ( Iterator<Integer> setIt = currentSet.iterator(); setIt.hasNext(); ) {
-                    
-                    stateId = setIt.next();
+                for ( Integer stId : currentSet ) {
                     
                     // besorge alle Transitionen dieses (alten) Zustands aus dem
                     // alten Automaten
-                    transList = aut.getStateTransitions(stateId);
+                    transList = aut.getStateTransitions(stId);
                     
                     if (transList==null) continue;
                     
                     // betrachte nun die ausgehenden Transition dieses ZUstands im alten Aut.
-                    for ( Iterator<Transition> transIt = transList.iterator(); transIt.hasNext(); ) {
-                        
-                        currTrans = transIt.next();
+                    for ( Transition t : transList ) {
                         
                         // gab es im alten Automaten eine Transition von stateId mit currChar
                         // irgendwo anders hin, füge den jeweiligen Zielzustand in die
                         // neue Zielzustandsmenge ein
-                        if (currTrans.getChar() == currChar && currTrans.getStartState()==stateId) {
-                            destSet.insert(currTrans.getEndState());
+                        if (t.getChar() == currChar && t.getStartState()==stId) {
+                            destSet.insert(t.getEndState());
                             
                         }
                         
@@ -358,10 +377,11 @@ public class FSAAlgo {
         // erzeuge die noch nicht vorhandenen Pixelpositionen der Zustände
         dfaResult = generatePositions(dfaResult);
         
-        // TODO
-        // die Determinisierung erzeugt viel redundanten / anderweitigen
-        // Unsinn (= sinnlose Zustände und Transitionen)
-        // eine nachgelagerte Minimierung wäre sinnvoll
+        waitDlg.setCurrentStep("reducing");
+
+        // ein wenig Minimierung ohne den User zu fragen ;)
+        // könnte man als optional einbauen
+        dfaResult = removeIsolatedStates(dfaResult);
         
         return dfaResult;
     }
@@ -383,7 +403,7 @@ public class FSAAlgo {
         
         Point pos;
         
-        for ( Iterator<Integer> it = stateSet.iterator(); it.hasNext(); ) {
+        for ( Integer i : stateSet ) {
             pos = new Point(currX, currY+hopOffSet);
             currX+=POS_GEN_SIZE;
             ++rowCount;
@@ -393,7 +413,7 @@ public class FSAAlgo {
                 currY+=POS_GEN_SIZE;
                 rowCount = 1;
             }
-            aut.setPosition(it.next(), pos);
+            aut.setPosition(i, pos);
         }
         
         return aut;

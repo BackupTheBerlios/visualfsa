@@ -22,8 +22,8 @@ package threads;
 import java.util.Arrays;
 import java.util.Vector;
 import java.util.Iterator;
-
 import java.awt.Component;
+import javax.swing.SwingUtilities;
 
 import datastructs.FSA;
 import datastructs.IntegerSet;
@@ -40,6 +40,8 @@ public class RunVisualThread extends Thread {
     private FSA myAut;
     private Vector<IntegerSet> stateLog;
     private String word;
+    private Component[] states;
+    private Vector<Integer> currentState;
     
     public RunVisualThread(WordAnimation _wordAni, RunVisual _runVisual, AutWindowAnimator _autAni,
             FSA aut, Vector<IntegerSet> log, String _word) {
@@ -59,44 +61,64 @@ public class RunVisualThread extends Thread {
         
         wordAnimator.setAnimating(true);
         
-        mainClass.insertLog("Wort: "+word);
-        mainClass.insertLog("Startzustand: "+stateLog.get(0)+"\n");
-        
-        Component[] states;
+        mainClass.insertLog("Word: "+word);
+        mainClass.insertLog("Start-State: "+stateLog.get(0)+"\n");
         
         states = autAnimation.getComponentsInLayer(AutWindowAnimator.STATE_LAYER);
         
-        Vector<Integer> currentState;
-        
         // sortiere die Zustände nach ihrer Nummer
         Arrays.sort(states);
-                
+        
         for ( int i = 0 ; i < wordLength ; i++ ) {
             
+            mainClass.insertLog("Automaton reads: "+word.charAt(i));
             
-            mainClass.insertLog("Automat liest: "+word.charAt(i));
+            currentState = stateLog.get(i).pureElements();
             
-            wordAnimator.animateStep();
-    
-                    currentState = stateLog.get(i).pureElements();
-            markStates(states, currentState, true);
-            mainClass.insertLog("Zustand ist: "+currentState);
-            
-            // markiere die aktuellen Zustände
-            
-            try {
-                this.sleep(1000);
+            try  {
+                // gui update hat im awt edp zu erfolgen...
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        // markierungen entfernen
+                        markStates(states, currentState, false);
+                        
+                        wordAnimator.animateStep();
+                        markStates(states, currentState, true);
+                        mainClass.insertLog("Current State(s): "+currentState);
+                    }
+                    
+                });
             } catch (Exception e) {
-                
+                System.out.println("exception while running gui update in awt edp");
+                System.out.println(e.getMessage());
             }
             
-            // markierungen entfernen
-            markStates(states, currentState, false);
-    
+            try {
+                this.sleep(3000);
+            } catch (Exception e) {
+                System.out.println("exception in RunVisThread while trying to sleep...");
+                System.out.println(e.getMessage());
+            }
+            
+            try  {
+                // gui update hat im awt edp zu erfolgen...
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        // markierungen entfernen
+                        markStates(states, currentState, false);
+                    }
+                });
+            } catch (Exception e) {
+                System.out.println("exception while running gui update in awt edp");
+                System.out.println(e.getMessage());
+            }
+            
+            
+            
+            
         }
         
-        wordAnimator.setAnimating(false);
-        wordAnimator.repaint();
+        
     }
     
     

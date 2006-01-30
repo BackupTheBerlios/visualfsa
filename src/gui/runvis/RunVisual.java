@@ -20,12 +20,12 @@
 
 package gui.runvis;
 
-import java.awt.Frame;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JDialog;
+import javax.swing.border.BevelBorder;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -42,7 +42,7 @@ import datastructs.FSA;
 
 import threads.RunVisualThread;
 
-public class RunVisual extends JDialog {
+public class RunVisual extends JFrame {
     
     private JSplitPane splitter;
     private AutWindowAnimator surface;
@@ -51,10 +51,6 @@ public class RunVisual extends JDialog {
     private WordAnimation wordAni;
     private JTextField testWord;
     private JButton quit, start;
-    
-    public RunVisual(Frame owner) {
-        super(owner, "Laufvisualisierung", true);
-    }
     
     public void run(final FSA aut) {
         
@@ -65,6 +61,8 @@ public class RunVisual extends JDialog {
         textLogScroll = new JScrollPane(textLog);
         
         this.add(textLogScroll, BorderLayout.WEST);
+        
+        this.setTitle("Run Visualization");
         
         // ein autwindow mit static = true, hat zwar alle
         // Methoden wie das Zeichenfenster, sind aber deaktiviert
@@ -78,6 +76,7 @@ public class RunVisual extends JDialog {
         surface.insertAut(aut);
         
         wordAni = new WordAnimation("");
+        wordAni.setBorder(new BevelBorder(BevelBorder.LOWERED));
         
         this.add(wordAni, BorderLayout.SOUTH);
         
@@ -85,7 +84,7 @@ public class RunVisual extends JDialog {
         JPanel topPan = new JPanel();
         
         start = new JButton("Start");
-        quit = new JButton("Beenden");
+        quit = new JButton("Quit");
         testWord = new JTextField("");
         
         topPan.setLayout(new BorderLayout());
@@ -95,7 +94,7 @@ public class RunVisual extends JDialog {
         
         this.add(topPan, BorderLayout.NORTH);
         
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         
         // actionhandler registieren
         start.addActionListener(new ActionListener() {
@@ -109,27 +108,34 @@ public class RunVisual extends JDialog {
                 aut.setLog(false);
                 
                 myThread = new RunVisualThread(wordAni, mySelf, surface, aut,
-                                                    aut.getLastLog(), testWord.getText());
+                        aut.getLastLog(), testWord.getText());
                 
                 try {
                     myThread.start();
                 } catch(Exception ex) {
-                    
+                    System.out.println("Error, could not start Vis-Thread");
+                    System.out.println(ex.getMessage());
                 }
+                
+                wordAni.setAnimating(false);
+                wordAni.repaint();
                 
             }
         });
         
+        setResizable(true);
         pack();
+        
         
         Dimension aniDim =
                 new Dimension(getWidth(), 40);
-
+        
         // Dimension des WordAni Objekts festlegen
         wordAni.setPreferredSize(aniDim);
         
         setSize(500,300);
         setVisible(true);
+        super.setResizable(true);
         
     }
     

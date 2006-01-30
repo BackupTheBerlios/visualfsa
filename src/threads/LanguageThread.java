@@ -25,6 +25,7 @@ import java.util.Vector;
 import java.util.Iterator;
 
 import gui.Sidebar;
+import gui.dialogs.BusyDialog;
 import algo.FSAAlgo;
 import datastructs.FSA;
 
@@ -49,7 +50,7 @@ public class LanguageThread implements Runnable {
         StringBuffer resultText;
         
         try {
-            result = FSAAlgo.guessLang(aut, wordLength);
+            result = FSAAlgo.guessLang(aut, wordLength, pleaseWaitDlg);
             resultSize = result.size();
             
             resultText = new StringBuffer("L = { ");
@@ -64,8 +65,8 @@ public class LanguageThread implements Runnable {
             
         } catch (OutOfMemoryError memErr) {
             JOptionPane.showMessageDialog(pleaseWaitDlg.getParent(),
-                                java.util.ResourceBundle.getBundle("global").getString("insuffMem"),
-                                java.util.ResourceBundle.getBundle("global").getString("Error"),
+                                "Insufficient memory, reduce word length",
+                                "Error",
                                 JOptionPane.ERROR_MESSAGE);
         }
         

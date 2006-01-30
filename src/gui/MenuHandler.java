@@ -23,12 +23,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Hashtable;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
 import gui.dialogs.LangDialog;
 import gui.dialogs.AboutDialog;
 
 import static gui.MainMenu.MenuID;
 import datastructs.FSA;
+
+import algo.*;
 
 /* Eventhandler für das Anwendungsmenü */
 
@@ -55,7 +58,7 @@ public class MenuHandler implements ActionListener {
         switch (val) {
             case FILE_NEW:
                 /* Datei -> Neu, prüfen ob die aktuelle Datei gespeichert werden soll */
-                if (guiMain.options.getAskSave()) {
+                if (guiMain.options.getBoolValueForKey("ASKSAVE_OPTION", false)) {
                     if (guiMain.checkSave(false, true))
                         guiMain.newFile();    
                 }
@@ -66,7 +69,7 @@ public class MenuHandler implements ActionListener {
                 break;
             case FILE_OPEN:
                 /* Datei -> Öffnen, prüfen ob aktuelle Datei gespeichert werden soll */
-                if (guiMain.options.getAskSave()) {
+                if (guiMain.options.getBoolValueForKey("ASKSAVE_OPTION", false)) {
                     if (guiMain.checkSave(false, true))
                         guiMain.openFile();
                 }
@@ -84,9 +87,12 @@ public class MenuHandler implements ActionListener {
                 guiMain.showOptions();
                 break;
             case FILE_QUIT:
-                if (guiMain.options.getAskSave()) {
+                if (guiMain.options.getBoolValueForKey("ASKSAVE_OPTION", false)) {
                     if (guiMain.checkSave(false, true))
                       guiMain.dispose();
+                }
+                else {
+                    guiMain.dispose();
                 }
                 break;
             case ALGO_LANG:
@@ -98,12 +104,28 @@ public class MenuHandler implements ActionListener {
             case ALGO_RUNVIS:
                 guiMain.runvis();
                 break;
+            case ALGO_REMISO:
+                currAut = guiSide.getCurrentAut();
+                if (!currAut.isDeterministic()) {
+                    JOptionPane.showMessageDialog(guiMain, "Only DFA can be minimized.", "Warning", JOptionPane.WARNING_MESSAGE);
+                    break;
+                }
+                guiSide.insertAut(FSAAlgo.removeIsolatedStates(currAut));
+                break;
             case VIEW_FITWINDOW:
                 guiMain.fitWindow();
+                break;
+            case VIEW_ALIGNGRID:
+                guiMain.alignToGrid();
                 break;
             case HELP_ABOUT:
                 AboutDialog aboutDlg = new AboutDialog(guiMain,"About",true);
                 aboutDlg.run();
+                break;
+            case HELP_HELP:
+                HelpFrame myHelpFrame;
+                myHelpFrame = new HelpFrame(guiMain,"Help", true);
+                myHelpFrame.run();
                 break;
             default:
                 System.err.println("menu event not handled");

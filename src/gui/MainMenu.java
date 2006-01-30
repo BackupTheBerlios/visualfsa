@@ -33,8 +33,8 @@ public class MainMenu extends JMenuBar {
     
     public static enum MenuID {
         FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT, FILE_OPTIONS,
-        ALGO_LANG, ALGO_DETERM, ALGO_RUNVIS,
-        VIEW_FITWINDOW,
+        ALGO_LANG, ALGO_DETERM, ALGO_RUNVIS, ALGO_REMISO,
+        VIEW_FITWINDOW, VIEW_ALIGNGRID,
         HELP_HELP, HELP_ABOUT
     }
     
@@ -62,7 +62,7 @@ public class MainMenu extends JMenuBar {
         
         /* Menü - Datei - */
         JMenuItem newFile = new JMenuItem("New",
-                new ImageIcon("images/filenew.png"));
+                new ImageIcon("images/stock_new.png"));
         
         newFile.setMnemonic('N');        
         newFile.setAccelerator(KeyStroke.getKeyStroke('N',InputEvent.CTRL_MASK));
@@ -126,9 +126,13 @@ public class MainMenu extends JMenuBar {
         algo_determ.setMnemonic('D');
         
         JMenuItem algo_runvis = new JMenuItem("Run Visualization",
-                new ImageIcon("images/runvis.png"));
+                new ImageIcon("images/start.png"));
         algo_runvis.setMnemonic('R');
         
+        JMenuItem algo_remiso = new JMenuItem("Remove Isolated States");
+        algo_remiso.setMnemonic('I');
+        
+        entries.put(algo_remiso, MenuID.ALGO_REMISO);
         entries.put(algo_runvis, MenuID.ALGO_RUNVIS);
         entries.put(algo_lang, MenuID.ALGO_LANG);
         entries.put(algo_determ, MenuID.ALGO_DETERM);
@@ -136,6 +140,7 @@ public class MainMenu extends JMenuBar {
         algo.add(algo_lang);
         algo.add(algo_determ);
         algo.add(algo_runvis);
+        algo.add(algo_remiso);
         
         add(algo);
         
@@ -149,24 +154,33 @@ public class MainMenu extends JMenuBar {
         view_fitwin.setMnemonic('W');
         view_fitwin.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));
         
+        JMenuItem view_grid = new JMenuItem("Align to Grid");
+        
+        view_grid.setMnemonic('G');
+        view_grid.setAccelerator(KeyStroke.getKeyStroke('G', InputEvent.CTRL_MASK));
+        
         view_menu.add(view_fitwin);
+        view_menu.add(view_grid);
         
         add(view_menu);
         
         entries.put(view_fitwin, MenuID.VIEW_FITWINDOW);
+        entries.put(view_grid, MenuID.VIEW_ALIGNGRID);
         
         
         JMenu help = new JMenu("Help");
         
         help.setMnemonic('H');
         
-        JMenuItem help_help = new JMenuItem("Documentation");
+        JMenuItem help_help = new JMenuItem("Documentation",
+            new ImageIcon("images/stock_help.png"));
         
         help_help.setMnemonic('D');
         help_help.setAccelerator(KeyStroke.getKeyStroke("F1"));
         
         
-        JMenuItem help_about = new JMenuItem("About");
+        JMenuItem help_about = new JMenuItem("About",
+                new ImageIcon("images/stock_quest.png"));
         help_about.setMnemonic('t');
         
         help.add(help_help);
