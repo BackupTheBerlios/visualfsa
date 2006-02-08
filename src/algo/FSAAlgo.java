@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -45,10 +45,17 @@ public class FSAAlgo {
     private static final int STATES_PER_ROW = 6;
     
     /*
-        guessLang versucht die Sprache die ein Automat erkennt zu identifzieren,
-        dabei werden aus dem Eingabealphabet alle Wörter gebildet deren Länge
-        kleiner 'step' ist (da die Sprachen potentiell unendlich sind (sein können))
-        Mit jedem erzeugten Wort wird aut.accepts aufgerufen
+        guessLang versucht die Sprache die ein Automat erkennt zu identifzieren.
+        Dabei werden zunächst für jede Wortlänge, beginnend bei 1, bis zu einer
+        fixen Grenze mit einem Baum alle Wörter über dem Alphabet erzeugt.
+        Die Baumerzeugung bricht dabei automatisch aus Sicherheitsgründen
+        die Erzeugung an sich ab, sowie eine gewisse Speicherbedarfgrenze
+        überschritten wurde. Die eigentliche Erzeugung der Wörter entspricht
+        dann einem Durchlauf durch den Baum, beginnend bei der Wurzel bis zum
+        ersten nicht als besucht markierten Knoten.
+        Die Spracherkennung testet nun jedes Wort im Automat auf Akzeptanz und
+        bricht das Verfahren ab, sowie eine gewisse Anzahl an Wörter erkannt wurde
+        (wiederrum aus Speicherplatzgründen)
      
         Um das Problem zu umgehen, für jeden einzelnen Algorithmus ein eigenes Threadobjekt
         im cvs-tree zu haben, hier mal der vielleicht stümperhafte versuch das Ganze
@@ -104,7 +111,7 @@ public class FSAAlgo {
                                     lang.add(currWord);
                                 }
                                 
-                                if (lang.size() > 5000) {
+                                if (lang.size() > 1000) {
                                     exitFlag = true;
                                 }
                             }
@@ -130,7 +137,7 @@ public class FSAAlgo {
                 
                 resultText.append(" }");
                 lang = null; System.gc();
-            }            
+            }
             
             public Object getResult() { return resultText; }
             
@@ -274,156 +281,169 @@ public class FSAAlgo {
         (wirre Erklärung, noch viel wirrerer Code) :-)
     
     */
-    public static FSA determ(FSA aut, JDialog _waitDlg) {
-        FSA dfaResult = new FSA();
-        BusyDialog waitDlg = (BusyDialog)_waitDlg;
+    public static GenericAlgorithm determ(final FSA aut) {
+        GenericAlgorithm determAlgo;
         
-        /* erstelle die Zustandsmenge des Automaten */
-        Set<Integer> tempSet;
-        IntegerSet stateSet;
-        
-        stateSet = new IntegerSet();
-        
-        for ( Integer i : aut.getStates() ) {
-            stateSet.insert(i);
-        }
-        
-        // Potenzmenge davon berechnen
-        Vector<IntegerSet> statePowerSet;
-        
-        //waitDlg.setCurrentStep("calculating powerset");
-        statePowerSet = stateSet.getPowerset();
-        
-        // aktuelle teilmenge der Potenzmenge
-        Vector<Integer> currentSet;
-        
-        // eingabealphabet
-        Vector<Character> alpha;
-        
-        alpha = aut.getAlphabet();
-        
-        // aktuelle Transitionsliste
-        LinkedList<Transition> transList;
-        
-        // der neue Zustand (==Zustandsmenge) im neuen Automaten
-        IntegerSet destSet;
-        int stateId;
-        
-        int progress,count = -1,pSetSize = statePowerSet.size();
-        
-        // nimm einen Zustand des neuen Automaten her... (also eine Teilmenge der Potmenge)
-        for ( IntegerSet currentIntSet : statePowerSet ) {
+        determAlgo = new GenericAlgorithm() {
             
-            count++;
+            private FSA dfaResult;
             
-            progress = (count*100)/pSetSize;
             
-            //  waitDlg.setProgress(progress);
-            //  waitDlg.setCurrentStep("checking set "+count+" of "+pSetSize);
-            
-            // (TODO?) IntegerSet implementiert (noch) nicht Iterator
-            currentSet = currentIntSet.pureElements();
-            
-            // eine spezielle Teilmenge der Potenzmenge, nämlich die leere
-            // Menge, wird gesondert behandelt, sie dient gewissermaßen
-            // als Fangzustand
-            if (currentSet.isEmpty()) {
-                // füge für alle Buchstaben die Transitionen ein die beim
-                // Zustand verbleibt
-                stateId = statePowerSet.indexOf(currentIntSet);
+            public void runAlgorithm() {
                 
-                for ( Character cChar : alpha ) {
-                    dfaResult.addTransition(stateId,stateId, cChar);
+                dfaResult = new FSA();
+                
+                /* erstelle die Zustandsmenge des Automaten */
+                Set<Integer> tempSet;
+                IntegerSet stateSet;
+                
+                stateSet = new IntegerSet();
+                
+                for ( Integer i : aut.getStates() ) {
+                    stateSet.insert(i);
                 }
                 
-                continue;
-            }
-            
-            // durchlaufe für diesen Zustand alle Buchstaben des Eingabealphabets
-            for ( Character currChar : alpha ) {
+                // Potenzmenge davon berechnen
+                Vector<IntegerSet> statePowerSet;
                 
-                // lege eine neue (zunächst) leere Menge an, hier kommen
-                // alle Zustände hinein die von stateId mit currChar aus erreichbar sind
-                destSet = new IntegerSet();
+                //waitDlg.setCurrentStep("calculating powerset");
+                statePowerSet = stateSet.getPowerset();
                 
-                // durchlaufe die aktuelle Menge (=Zustand) ....
-                for ( Integer stId : currentSet ) {
+                // aktuelle teilmenge der Potenzmenge
+                Vector<Integer> currentSet;
+                
+                // eingabealphabet
+                Vector<Character> alpha;
+                
+                alpha = aut.getAlphabet();
+                
+                // aktuelle Transitionsliste
+                LinkedList<Transition> transList;
+                
+                // der neue Zustand (==Zustandsmenge) im neuen Automaten
+                IntegerSet destSet;
+                int stateId;
+                
+                int progress,count = -1,pSetSize = statePowerSet.size();
+                
+                // nimm einen Zustand des neuen Automaten her... (also eine Teilmenge der Potmenge)
+                for ( IntegerSet currentIntSet : statePowerSet ) {
                     
-                    // besorge alle Transitionen dieses (alten) Zustands aus dem
-                    // alten Automaten
-                    transList = aut.getStateTransitions(stId);
+                    count++;
                     
-                    if (transList==null) continue;
+                    progress = (count*100)/pSetSize;
                     
-                    // betrachte nun die ausgehenden Transition dieses ZUstands im alten Aut.
-                    for ( Transition t : transList ) {
+                    //  waitDlg.setProgress(progress);
+                    //  waitDlg.setCurrentStep("checking set "+count+" of "+pSetSize);
+                    
+                    // (TODO?) IntegerSet implementiert (noch) nicht Iterator
+                    currentSet = currentIntSet.pureElements();
+                    
+                    // eine spezielle Teilmenge der Potenzmenge, nämlich die leere
+                    // Menge, wird gesondert behandelt, sie dient gewissermaßen
+                    // als Fangzustand
+                    if (currentSet.isEmpty()) {
+                        // füge für alle Buchstaben die Transitionen ein die beim
+                        // Zustand verbleibt
+                        stateId = statePowerSet.indexOf(currentIntSet);
                         
-                        // gab es im alten Automaten eine Transition von stateId mit currChar
-                        // irgendwo anders hin, füge den jeweiligen Zielzustand in die
-                        // neue Zielzustandsmenge ein
-                        if (t.getChar() == currChar && t.getStartState()==stId) {
-                            destSet.insert(t.getEndState());
+                        for ( Character cChar : alpha ) {
+                            dfaResult.addTransition(stateId,stateId, cChar);
+                        }
+                        
+                        continue;
+                    }
+                    
+                    // durchlaufe für diesen Zustand alle Buchstaben des Eingabealphabets
+                    for ( Character currChar : alpha ) {
+                        
+                        // lege eine neue (zunächst) leere Menge an, hier kommen
+                        // alle Zustände hinein die von stateId mit currChar aus erreichbar sind
+                        destSet = new IntegerSet();
+                        
+                        // durchlaufe die aktuelle Menge (=Zustand) ....
+                        for ( Integer stId : currentSet ) {
+                            
+                            // besorge alle Transitionen dieses (alten) Zustands aus dem
+                            // alten Automaten
+                            transList = aut.getStateTransitions(stId);
+                            
+                            if (transList==null) continue;
+                            
+                            // betrachte nun die ausgehenden Transition dieses ZUstands im alten Aut.
+                            for ( Transition t : transList ) {
+                                
+                                // gab es im alten Automaten eine Transition von stateId mit currChar
+                                // irgendwo anders hin, füge den jeweiligen Zielzustand in die
+                                // neue Zielzustandsmenge ein
+                                if (t.getChar() == currChar && t.getStartState()==stId) {
+                                    destSet.insert(t.getEndState());
+                                    
+                                }
+                                
+                            }
+                            
+                            // über den Index im Vector der Potenzmenge werden die einzelnen
+                            // Menge eindeutig identifiziert, hier wird die endgültige Transition eingefügt
                             
                         }
                         
+                        dfaResult.addTransition(statePowerSet.indexOf(currentIntSet),
+                            statePowerSet.indexOf(destSet),
+                            currChar);
                     }
-                    
-                    // über den Index im Vector der Potenzmenge werden die einzelnen
-                    // Menge eindeutig identifiziert, hier wird die endgültige Transition eingefügt
                     
                 }
                 
-                dfaResult.addTransition(statePowerSet.indexOf(currentIntSet),
-                    statePowerSet.indexOf(destSet),
-                    currChar);
-            }
+                // bestimme den neuen Startzustand des Automaten
+                // der neue Startzustand ist jene Zustandsmenge, welche alle alten
+                // Startzustände enthält, die Potenzmenge wird danach durchsucht
+                // wird auch in der schleife weiter unten getan
+                IntegerSet oldStartSet = aut.getStartSet();
+                
+                // abschließend bestimmen wir nun noch die neuen Endzustände des Automaten
+                // dazu nehmen wir die ursprüngliche Endzustandsmenge und schneiden mit
+                // jedem Element der Potenzmenge, ist der Schnitt nicht leer, ist der
+                // entsprechende Zustand (==Menge) ein endzustand im neuen Automat
+                // einfach gesagt, jede Zustandsmenge des Potenzautomaten die
+                // den einen alten Endzustand enthält ist Endzustand.
+                
+                IntegerSet oldFinalSet = aut.getFinalSet();
+                
+                IntegerSet myClone;
+                
+                for ( IntegerSet currentIntSet : statePowerSet ) {
+                    
+                    // bevor wir hier rumschneiden, erst schauen ob das nicht
+                    // der neue Startzustand ist
+                    if (currentIntSet.equals(oldStartSet)) {
+                        dfaResult.setStartFlag(statePowerSet.indexOf(currentIntSet), true);
+                    }
+                    
+                    myClone = (IntegerSet)currentIntSet.clone();
+                    
+                    myClone.intersect(oldFinalSet);
+                    
+                    if (!myClone.isEmpty()) {
+                        dfaResult.setFinalFlag(statePowerSet.indexOf(currentIntSet),  true);
+                    }
+                }
+                
+                // erzeuge die noch nicht vorhandenen Pixelpositionen der Zustände
+                dfaResult = generatePositions(dfaResult);
+                
+                // ein wenig Minimierung ohne den User zu fragen ;)
+                // könnte man als optional einbauen
+                dfaResult = removeIsolatedStates(dfaResult);
+                
+            } // runAlgo
             
-        }
-        
-        // bestimme den neuen Startzustand des Automaten
-        // der neue Startzustand ist jene Zustandsmenge, welche alle alten
-        // Startzustände enthält, die Potenzmenge wird danach durchsucht
-        // wird auch in der schleife weiter unten getan
-        IntegerSet oldStartSet = aut.getStartSet();
-        
-        // abschließend bestimmen wir nun noch die neuen Endzustände des Automaten
-        // dazu nehmen wir die ursprüngliche Endzustandsmenge und schneiden mit
-        // jedem Element der Potenzmenge, ist der Schnitt nicht leer, ist der
-        // entsprechende Zustand (==Menge) ein endzustand im neuen Automat
-        // einfach gesagt, jede Zustandsmenge des Potenzautomaten die
-        // den einen alten Endzustand enthält ist Endzustand.
-        
-        IntegerSet oldFinalSet = aut.getFinalSet();
-        
-        IntegerSet myClone;
-        
-        for ( IntegerSet currentIntSet : statePowerSet ) {
+            public Object getResult() { return dfaResult; }
             
-            // bevor wir hier rumschneiden, erst schauen ob das nicht
-            // der neue Startzustand ist
-            if (currentIntSet.equals(oldStartSet)) {
-                dfaResult.setStartFlag(statePowerSet.indexOf(currentIntSet), true);
-            }
             
-            myClone = (IntegerSet)currentIntSet.clone();
-            
-            myClone.intersect(oldFinalSet);
-            
-            if (!myClone.isEmpty()) {
-                dfaResult.setFinalFlag(statePowerSet.indexOf(currentIntSet),  true);
-            }
-        }
+        }; // new GenericAlgorithm
         
-        // erzeuge die noch nicht vorhandenen Pixelpositionen der Zustände
-        dfaResult = generatePositions(dfaResult);
-        
-        //waitDlg.setCurrentStep("reducing");
-        
-        // ein wenig Minimierung ohne den User zu fragen ;)
-        // könnte man als optional einbauen
-        dfaResult = removeIsolatedStates(dfaResult);
-        
-        return dfaResult;
+        return determAlgo;
     }
     
     
