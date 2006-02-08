@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -20,7 +20,6 @@
 /* hardcoded trash here */
 
 package gui.dialogs;
-
 
 import javax.swing.JPanel;
 import javax.swing.JCheckBox;

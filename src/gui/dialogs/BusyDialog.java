@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -29,76 +29,32 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.JProgressBar;
 import java.awt.Frame;
-import java.awt.GridLayout;
+
+import algo.GenericAlgorithm;
+import threads.GenericAlgoThread;
 
 public class BusyDialog extends JDialog{
     
-    private Runnable myWork = null;
-    final private JProgressBar pBar;
-    private JLabel display;
-    
     public BusyDialog(Frame owner, String title, boolean modal) {
         super(owner, title, modal);
+    }
+    
+    public void run(GenericAlgorithm genAlgo) {
         
-        display = new JLabel("--", SwingConstants.CENTER);
-        pBar = new JProgressBar(JProgressBar.HORIZONTAL, 0, 100);
-    }
-    
-    public void setWork(Runnable _work) {
-        myWork = _work;
-    }
-    
-    public void setProgress(final int v) {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                
-                public void run() {
-                    pBar.setValue(v);
-                }
-            });
-        } catch (Exception err) {
-            System.err.println("Error while updating gui");
-        }
-    }
-    
-    public void setCurrentStep(final String s) {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                
-                public void run() {
-                    display.setText(s);
-                }
-            });
-        } catch (Exception err) {
-            System.err.println("Error while updating gui");
-        }
-    }
-    
-    public void run() {
-        
-        
-        getContentPane().setLayout(new GridLayout(3,1));
-        getContentPane().add(display);
-        getContentPane().add(pBar);
         getContentPane().add(new JLabel("Please wait...", SwingConstants.CENTER));
         
         setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         
-        // wenn wir keinen Arbeitsthread haben öffnet sich das Fenster gar nicht erst
-        if (myWork!=null) {
-            Thread myWorkThread = new Thread(myWork);
-            myWorkThread.start();
-        } else {
-            dispose();
-            return;
-        }
-        
         setSize(300, 70);
         setLocation(70,70);
-        setVisible(true);
         
+        // starte den eigentlichen Arbeitsthread
+        GenericAlgoThread myThread = new GenericAlgoThread(genAlgo);
+        
+        myThread.runAlgo(this);
+        
+        setVisible(true);
     }
     
     

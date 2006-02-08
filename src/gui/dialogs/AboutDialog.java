@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -50,10 +50,10 @@ public class AboutDialog extends JDialog {
         about_stuff.setEditable(false);
         about_stuff.setText("This is visualFSA\n\n" +
                 "" +
-                "This tool is intended to make automata theory more concrete and it\n" +
-                "tries to provide some fun with theory 'foo'. Beyond this, it might become handy\n"+
-                "for some students solving their tasks in some theory courses\n"+
-                "(probably even for some prof preparing such a course)\n"+
+                "Actually, this tool is just some kind of a 'proof of concept'.\n" +
+                "Its neither some high-scientific program, nor is it aiming to be such a tool.\n" +
+                "Beyond this, it might become handy for some students solving their tasks in some\n" +
+                "theory courses (probably even for some prof preparing such a course) :)\n"+
                 "It is not intended to solve the NP/P problem or calculating\n" +
                 "the influences of a nuclear strike on cockroaches ;-)\n\n"+
                 "This program is covered by the GPL, you should have received a copy\n" +
@@ -67,9 +67,9 @@ public class AboutDialog extends JDialog {
         
         getContentPane().add(desc, BorderLayout.CENTER);
         
-        okButton = new JButton("Blah?!");
+        okButton = new JButton("Ok");
         
-        someFun = new JButton("I like theory!");
+        someFun = new JButton("I'm bored...");
         
         buttonPan.setLayout(new GridLayout(1,2));
         
