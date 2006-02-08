@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -30,6 +30,11 @@ public class WordTree {
     public WordTree(Vector<Character> alpha, int depth) {
         
         int alphaSize = alpha.size();
+        
+        long totalMem, currentMem;
+        double usage;
+        
+        totalMem = Runtime.getRuntime().totalMemory();
         
         Vector<WordTreeNode> newChilds = new Vector<WordTreeNode>();
         Vector<WordTreeNode> parents, newParents;
@@ -75,6 +80,18 @@ public class WordTree {
             
             parents = newParents;
             
+            // der erstellte Baum ist vom Speicherverbauch her der Knackpunkt
+            // bei der Spracherkennung. Deshalb wird ja jedem Teildurchlauf
+            // der aktuelle Speicherverbrauch abgefragt. Überschreitet dieser
+            // (empirisch) festgestellte Höchstwerte bricht die Baumerstellung
+            // ab. Klar ist, auch der halb-fertige Baum erzeugt immer noch
+            // eine echte - vor allem aber sinvolle - Teilmenge von "A*"
+            currentMem = Runtime.getRuntime().freeMemory();
+            usage = (double)currentMem/(double)totalMem;
+            
+            if (usage>0.90) {
+                break;
+            }
         }
         
     }
@@ -127,7 +144,7 @@ public class WordTree {
     // setzt alle Knoten als unmakiert
     public void resetVisited() {
         resetVisitedRec(root);
-    }           
+    }
     
     
     private void resetVisitedRec(WordTreeNode currentRoot) {
@@ -145,8 +162,8 @@ public class WordTree {
         
         return;
     }
-            
     
-            
-            
+    
+    
+    
 }
