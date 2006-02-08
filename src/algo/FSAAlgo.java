@@ -32,6 +32,8 @@ import datastructs.FSA;
 
 import gui.dialogs.BusyDialog;
 
+import threads.GenericAlgoThread;
+
 public class FSAAlgo {
     
     
@@ -48,66 +50,94 @@ public class FSAAlgo {
         kleiner 'step' ist (da die Sprachen potentiell unendlich sind (sein können))
         Mit jedem erzeugten Wort wird aut.accepts aufgerufen
      
+        Um das Problem zu umgehen, für jeden einzelnen Algorithmus ein eigenes Threadobjekt
+        im cvs-tree zu haben, hier mal der vielleicht stümperhafte versuch das Ganze
+        etwas zu generalisieren. Der jeweilige Algorithmus übergibt dabei einem einzigen
+        'Ausführthread' eine Instanz des GenericAlgorithm Interfaces, welches die eigentlichen
+        Methoden enthält die zur Ausführung der Arbeit wichtig sind.
+     
      */
-    public static Vector<String> guessLang(FSA aut, int step, JDialog _waitDlg) throws OutOfMemoryError {
-        Vector<Character> alpha;
-        Vector<String> lang;
-        boolean autType;
-        WordTree wordGenerator;
-        String currWord;
+    public static GenericAlgorithm guessLang(final FSA aut) {
         
-        BusyDialog waitDlg = (BusyDialog)_waitDlg;
+        GenericAlgorithm langAlg;
         
-        autType = aut.isDeterministic();
-        alpha = aut.getAlphabet();
-        
-        lang = new Vector<String>();
-        
-        // der Wortbaum ist zwar toll, erwischt aber das leere Wort nicht...
-        // soviel Zeit haben wir dann aber auch noch, dieses explizit zu testen
-        
-        if (aut.accepts("",  true, autType)) {
-            lang.add("\\epsilon");
-        }
-        
-        // der Wortbaum bekommt bei jedem Durchlauf den nächsten
-        // Buchstaben des Eingabealphabets als Wurzel
-        
-        wordGenerator = new WordTree(alpha, step);
-        
-        int progress, alphaSize = alpha.size();
-        int count = -1;
-        
-        for ( Character c : alpha ) {
-            // setze die Wurzel des Baumes
-            wordGenerator.setRootData(c);
+        langAlg = new GenericAlgorithm() {
             
-            currWord = wordGenerator.nextWord();
+            private Vector<Character> alpha;
+            private boolean autType;
+            private WordTree wordGenerator;
+            private String currWord;
+            private Vector<String> lang;
+            private StringBuffer resultText;
             
-            count++;
-            
-            progress = (count*100)/alphaSize;
-            
-            waitDlg.setCurrentStep("checking words starting with "+c);
-            waitDlg.setProgress(progress);
-            
-            while (currWord!=null) {
-                // prüfe ob der automat akzeptiert
-                if (aut.accepts(currWord, true,  autType)) {
-                    lang.add(currWord);
+            public void runAlgorithm() {
+                
+                autType = aut.isDeterministic();
+                alpha = aut.getAlphabet();
+                
+                boolean exitFlag = false;
+                
+                lang = new Vector<String>();
+                
+                // der Wortbaum ist zwar toll, erwischt aber das leere Wort nicht...
+                // soviel Zeit haben wir dann aber auch noch, dieses explizit zu testen
+                
+                if (aut.accepts("",  true, autType)) {
+                    lang.add("\\epsilon");
                 }
-                currWord = wordGenerator.nextWord();
-            }
+                
+                // prüfe zunächst die Wörter der Länge n, dann die mit Länge n+1
+                for (int wordLength = 1 ; wordLength < 11 ; wordLength++) {
+                    
+                    wordGenerator = new WordTree(alpha, wordLength);
+                    
+                    for ( Character c : alpha ) {
+                        // setze die Wurzel des Baumes
+                        wordGenerator.setRootData(c);
+                        
+                        currWord = wordGenerator.nextWord();
+                        
+                        while (currWord!=null && !exitFlag) {
+                            // prüfe ob der automat akzeptiert
+                            if (aut.accepts(currWord, true,  autType)) {
+                                if (!lang.contains(currWord)) {
+                                    lang.add(currWord);
+                                }
+                                
+                                if (lang.size() > 5000) {
+                                    exitFlag = true;
+                                }
+                            }
+                            currWord = wordGenerator.nextWord();
+                        }
+                        
+                        // Um den Baum nicht neu erzeugen zu müssen, werden
+                        // alle Knoten als unbesucht gesetzt
+                        if (exitFlag) break;
+                        wordGenerator.resetVisited();
+                    }
+                    
+                    wordGenerator = null; System.gc();
+                    if (exitFlag) break;
+                }
+                
+                
+                resultText = new StringBuffer("L = { ");
+                
+                for ( String s : lang ) {
+                    resultText.append(s+", \n");
+                }
+                
+                resultText.append(" }");
+                lang = null; System.gc();
+            }            
             
-            // Um den Baum nicht neu erzeugen zu müssen, werden
-            // alle Knoten als unbesucht gesetzt
-            wordGenerator.resetVisited();
-        }
+            public Object getResult() { return resultText; }
+            
+        };
         
-        return lang;
+        return langAlg;
     }
-    
-    
     /*
      
         Automat Minimierung Stufe 1
@@ -151,19 +181,28 @@ public class FSAAlgo {
             // Transitionen des aktuellen Zustands holen
             currTrans = aut.getStateTransitions(currState);
             
-            // iteriere über die Trans.liste
-            for ( Transition ct : currTrans) {
-                reachedState = ct.getEndState();
-                // noch nicht besucht?
-                if (!visitedStates.contains(reachedState)) {
-                    
-                    // markiere den Zustand als besucht, pushe auf den Stack
-                    visitedStates.add(reachedState);
-                    stateStack.addLast(reachedState);
-                    break; // verlasse for
+            // zustand hat keine transition, soll vorkommen
+            // umgeht auch einen Nullpointer, für den Fall
+            // das der Automat DFA ist, weil nur einen zustand
+            // hat, dieser ist start und endzustand, aber ohne transition
+            
+            if (currTrans!=null) {
+                
+                // iteriere über die Trans.liste
+                for ( Transition ct : currTrans) {
+                    reachedState = ct.getEndState();
+                    // noch nicht besucht?
+                    if (!visitedStates.contains(reachedState)) {
+                        
+                        // markiere den Zustand als besucht, pushe auf den Stack
+                        visitedStates.add(reachedState);
+                        stateStack.addLast(reachedState);
+                        break; // verlasse for
+                    }
                 }
+                
             }
-
+            
             // nun testen wir, ob ein neuer Zustand auf dem Stack gelandet ist,
             // ist dies derselbe Zustand wie vor der for Schleife wurde keine
             // Transition zu einem noch nicht besuchten Zustand gefunden, der
@@ -178,7 +217,7 @@ public class FSAAlgo {
         // die man vom Startzustand aus erreichen kann
         // um uns wildes Referenzengefummel zu ersparen, legen wir
         // einfach einen neuen Automaten an
-       
+        
         FSA result = new FSA();
         
         result.setName(aut.getName()+"_reduced");
@@ -194,10 +233,11 @@ public class FSAAlgo {
             // sowie alle seine Transitionen
             currTrans = aut.getStateTransitions(retained);
             
-            for ( Transition ct : currTrans) {
-                result.addTransition(ct.getStartState(), ct.getEndState(), ct.getChar());
+            if (currTrans!=null) {
+                for ( Transition ct : currTrans) {
+                    result.addTransition(ct.getStartState(), ct.getEndState(), ct.getChar());
+                }
             }
-            
         }
         
         
@@ -251,7 +291,7 @@ public class FSAAlgo {
         // Potenzmenge davon berechnen
         Vector<IntegerSet> statePowerSet;
         
-        waitDlg.setCurrentStep("calculating powerset");
+        //waitDlg.setCurrentStep("calculating powerset");
         statePowerSet = stateSet.getPowerset();
         
         // aktuelle teilmenge der Potenzmenge
@@ -267,7 +307,7 @@ public class FSAAlgo {
         
         // der neue Zustand (==Zustandsmenge) im neuen Automaten
         IntegerSet destSet;
-        int stateId; 
+        int stateId;
         
         int progress,count = -1,pSetSize = statePowerSet.size();
         
@@ -278,8 +318,8 @@ public class FSAAlgo {
             
             progress = (count*100)/pSetSize;
             
-            waitDlg.setProgress(progress);
-            waitDlg.setCurrentStep("checking set "+count+" of "+pSetSize);
+            //  waitDlg.setProgress(progress);
+            //  waitDlg.setCurrentStep("checking set "+count+" of "+pSetSize);
             
             // (TODO?) IntegerSet implementiert (noch) nicht Iterator
             currentSet = currentIntSet.pureElements();
@@ -334,8 +374,8 @@ public class FSAAlgo {
                 }
                 
                 dfaResult.addTransition(statePowerSet.indexOf(currentIntSet),
-                        statePowerSet.indexOf(destSet),
-                        currChar);
+                    statePowerSet.indexOf(destSet),
+                    currChar);
             }
             
         }
@@ -377,8 +417,8 @@ public class FSAAlgo {
         // erzeuge die noch nicht vorhandenen Pixelpositionen der Zustände
         dfaResult = generatePositions(dfaResult);
         
-        waitDlg.setCurrentStep("reducing");
-
+        //waitDlg.setCurrentStep("reducing");
+        
         // ein wenig Minimierung ohne den User zu fragen ;)
         // könnte man als optional einbauen
         dfaResult = removeIsolatedStates(dfaResult);
