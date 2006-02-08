@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -35,6 +35,7 @@ import gui.dialogs.*;
 import datastructs.AppOptions;
 import datastructs.FSA;
 import algo.FSAAlgo;
+import algo.GenericAlgorithm;
 import threads.LanguageThread;
 import threads.DetermThread;
 import gui.runvis.RunVisual;
@@ -258,34 +259,22 @@ public class VFSAGUI extends JFrame {
     }
     
     /*
-        öffnet einen modalen Dialgo in dem der User die Wortlänge bestimmen kann,
-        bis zu der der Test vollzogen wird
-     
-        viel mieses Code-Gefrickel hier
+        (Versuch der) Spracherkennung
      */
     public void guessLang() {
-        final FSA currAut;
-        final int wL;
-        LanguageThread langThread;
+        FSA currAut;
+        GenericAlgorithm guessLangAlgo;
+        BusyDialog waitDlg;
+        
+        waitDlg = new BusyDialog(this, "Patience", true);
         
         // den aktuellen Automaten bestimmen
         currAut = side.getCurrentAut();
-        
-        LangDialog langDlg = new LangDialog(this, "Define Word Length", true);
-        
-        langDlg.setAlphaSize(currAut.getAlphabet().size());
-        langDlg.run();
-        wL = langDlg.getWordLength();
-        
-        // User hat cancel gedrückt
-        if (wL==-1) return;
-        
-        BusyDialog busyDlg = new BusyDialog(this, "", true);
-        
-        langThread = new LanguageThread(currAut, wL, busyDlg, side);
-        
-        busyDlg.setWork(langThread);
-        busyDlg.run();
+        // guessLang selbst stösst nun einen Thread an der für alles weitere sorgt
+        guessLangAlgo = FSAAlgo.guessLang(currAut);
+        waitDlg.run(guessLangAlgo);
+        side.insertResults(guessLangAlgo.getResult().toString());
+     
     }
     
     
@@ -303,13 +292,18 @@ public class VFSAGUI extends JFrame {
         FSA myAut;
         FSA result;
         BusyDialog waitDlg;
-        DetermThread determThread;
+        GenericAlgorithm determAlgo;
         
         /* gui infos synchr. */
         myAut = side.getCurrentAut();
         
+        /* zunächst ein paar unschöne Fälle abfangen, gegen die wir (momentan)
+           noch keine Handhabe haben -.- 
+         */
+        
         if (myAut.getStates().size()>=17) {
             JOptionPane.showMessageDialog(this, "This automaton has more than 16 states", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
         
         // nichts zu tun
@@ -317,18 +311,13 @@ public class VFSAGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "This automaton is already a DFA");
             return;
         }
-        
-        waitDlg = new BusyDialog(this,"",true);
-        determThread = new DetermThread(myAut, waitDlg);
-        waitDlg.setWork(determThread);
-        
-        waitDlg.run();
-        
-        result = determThread.getResult();
-        
+    
+        determAlgo = FSAAlgo.determ(myAut);
+        waitDlg = new BusyDialog(this, "Patience", true);
+        waitDlg.run(determAlgo);
+        result = ((FSA)determAlgo.getResult());
         result.setName(myAut.getName()+"_dfa");
-        
-        side.insertAut( result );
+        side.insertAut(result);
     }
     
     public void fitWindow() {
