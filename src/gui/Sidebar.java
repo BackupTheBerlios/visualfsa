@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -67,9 +67,9 @@ public class Sidebar extends JPanel {
         
         upperPanel = new JPanel(new BorderLayout());
         
-        newAut = new JButton(new ImageIcon("images/stock_new.png"));
-        renAut = new JButton(new ImageIcon("images/stock_edit.png"));
-        delAut = new JButton(new ImageIcon("images/edit_remove.png"));
+        newAut = new JButton("Add");
+        renAut = new JButton("Rename");
+        delAut = new JButton("Remove");
         
         newAut.setToolTipText("insert a new, empty automaton");
         renAut.setToolTipText("rename the currently selected automaton");

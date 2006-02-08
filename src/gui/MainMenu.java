@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -61,36 +61,30 @@ public class MainMenu extends JMenuBar {
         file.setMnemonic('F');
         
         /* Menü - Datei - */
-        JMenuItem newFile = new JMenuItem("New",
-                new ImageIcon("images/stock_new.png"));
+        JMenuItem newFile = new JMenuItem("New");
         
         newFile.setMnemonic('N');        
         newFile.setAccelerator(KeyStroke.getKeyStroke('N',InputEvent.CTRL_MASK));
         
-        JMenuItem openFile = new JMenuItem("Open",
-                new ImageIcon("images/fileopen.png"));
+        JMenuItem openFile = new JMenuItem("Open");
         
         openFile.setMnemonic('O');
         openFile.setAccelerator(KeyStroke.getKeyStroke('O',InputEvent.CTRL_MASK));
         
-        JMenuItem saveFile = new JMenuItem("Save",
-                new ImageIcon("images/filesave.png"));
+        JMenuItem saveFile = new JMenuItem("Save");
         
         saveFile.setMnemonic('S');
         saveFile.setAccelerator(KeyStroke.getKeyStroke('S',InputEvent.CTRL_MASK));
         
-        JMenuItem saveasFile = new JMenuItem("Save as...",
-                new ImageIcon("images/filesaveas.png"));
+        JMenuItem saveasFile = new JMenuItem("Save as...");
         
         saveasFile.setMnemonic('e');
         
-        JMenuItem options = new JMenuItem("Options",
-                new ImageIcon("images/options.png"));
+        JMenuItem options = new JMenuItem("Options");
         
         options.setMnemonic('P');
         
-        JMenuItem quit = new JMenuItem("Quit",
-                new ImageIcon("images/exit.png"));
+        JMenuItem quit = new JMenuItem("Quit");
         
         quit.setMnemonic('Q');
         quit.setAccelerator(KeyStroke.getKeyStroke('Q',InputEvent.CTRL_MASK));
@@ -117,16 +111,13 @@ public class MainMenu extends JMenuBar {
         
         algo.setMnemonic('A');
         
-        JMenuItem algo_lang = new JMenuItem("Accepted Language",
-                new ImageIcon("images/lang.png"));
+        JMenuItem algo_lang = new JMenuItem("Accepted Language");
         algo_lang.setMnemonic('L');
         
-        JMenuItem algo_determ = new JMenuItem("NFA -> DFA",
-                new ImageIcon("images/determ.png"));
+        JMenuItem algo_determ = new JMenuItem("NFA -> DFA");
         algo_determ.setMnemonic('D');
         
-        JMenuItem algo_runvis = new JMenuItem("Run Visualization",
-                new ImageIcon("images/start.png"));
+        JMenuItem algo_runvis = new JMenuItem("Run Visualization");
         algo_runvis.setMnemonic('R');
         
         JMenuItem algo_remiso = new JMenuItem("Remove Isolated States");
@@ -148,8 +139,7 @@ public class MainMenu extends JMenuBar {
         
         view_menu.setMnemonic('V');
         
-        JMenuItem view_fitwin = new JMenuItem("Fit in Window",
-                new ImageIcon("images/fitinwindow.png"));
+        JMenuItem view_fitwin = new JMenuItem("Fit in Window");
         
         view_fitwin.setMnemonic('W');
         view_fitwin.setAccelerator(KeyStroke.getKeyStroke('F',InputEvent.CTRL_MASK));
@@ -172,15 +162,13 @@ public class MainMenu extends JMenuBar {
         
         help.setMnemonic('H');
         
-        JMenuItem help_help = new JMenuItem("Documentation",
-            new ImageIcon("images/stock_help.png"));
+        JMenuItem help_help = new JMenuItem("Documentation");
         
         help_help.setMnemonic('D');
         help_help.setAccelerator(KeyStroke.getKeyStroke("F1"));
         
         
-        JMenuItem help_about = new JMenuItem("About",
-                new ImageIcon("images/stock_quest.png"));
+        JMenuItem help_about = new JMenuItem("About");
         help_about.setMnemonic('t');
         
         help.add(help_help);

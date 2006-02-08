@@ -1,5 +1,5 @@
 /*
-  Copyright 2005 Mathias Lichtner
+  Copyright 2005, 2006 Mathias Lichtner
   mlic at informatik.uni-kiel.de
  
   This file is part of visualfsa.
@@ -36,14 +36,10 @@ public class StatePopup extends JPopupMenu {
     private VFSAGUI myGUI;
     
     public StatePopup(VFSAGUI _myGUI) {
-        edit = new JMenuItem("Edit Transitions",
-                new ImageIcon("images/stock_edit.png"));
-        delete = new JMenuItem("Remove",
-                new ImageIcon("images/edit_remove.png"));
-        startst = new JCheckBoxMenuItem("Start-State",
-                new ImageIcon("images/start.png"));
-        finalst = new JCheckBoxMenuItem("Final-State", 
-                new ImageIcon("images/final.png"));
+        edit = new JMenuItem("Edit Transitions");
+        delete = new JMenuItem("Remove");
+        startst = new JCheckBoxMenuItem("Start-State");
+        finalst = new JCheckBoxMenuItem("Final-State");
         
         add(edit);
         add(delete);
