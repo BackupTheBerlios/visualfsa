@@ -33,7 +33,7 @@ public class MainMenu extends JMenuBar {
     
     public static enum MenuID {
         FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT, FILE_OPTIONS,
-        ALGO_LANG, ALGO_DETERM, ALGO_RUNVIS, ALGO_REMISO,
+        ALGO_LANG, ALGO_DETERM, ALGO_REMISO, ALGO_COMPLEMENT, ALGO_INTERSECT, ALGO_UNION, ALGO_EQUALITY,
         VIEW_FITWINDOW, VIEW_ALIGNGRID,
         HELP_HELP, HELP_ABOUT
     }
@@ -117,22 +117,38 @@ public class MainMenu extends JMenuBar {
         JMenuItem algo_determ = new JMenuItem("NFA -> DFA");
         algo_determ.setMnemonic('D');
         
-        JMenuItem algo_runvis = new JMenuItem("Run Visualization");
-        algo_runvis.setMnemonic('R');
-        
         JMenuItem algo_remiso = new JMenuItem("Remove Isolated States");
         algo_remiso.setMnemonic('I');
         
         entries.put(algo_remiso, MenuID.ALGO_REMISO);
-        entries.put(algo_runvis, MenuID.ALGO_RUNVIS);
         entries.put(algo_lang, MenuID.ALGO_LANG);
         entries.put(algo_determ, MenuID.ALGO_DETERM);
         
         algo.add(algo_lang);
         algo.add(algo_determ);
-        algo.add(algo_runvis);
         algo.add(algo_remiso);
         
+        JMenu algo_setop = new JMenu("Set Operations");
+        
+        JMenuItem algo_setop_union = new JMenuItem("Union...");
+        JMenuItem algo_setop_intersect = new JMenuItem("Intersection...");
+        JMenuItem algo_setop_complement = new JMenuItem("Complement");
+        
+        algo_setop.add(algo_setop_union);
+        algo_setop.add(algo_setop_intersect);
+        algo_setop.add(algo_setop_complement);
+        
+        entries.put(algo_setop_union, MenuID.ALGO_UNION);
+        entries.put(algo_setop_intersect, MenuID.ALGO_INTERSECT);
+        entries.put(algo_setop_complement, MenuID.ALGO_COMPLEMENT);
+
+        algo.add(algo_setop);
+        
+        JMenuItem algo_equality = new JMenuItem("Equality Test...");
+        
+        entries.put(algo_equality, MenuID.ALGO_EQUALITY);
+        
+        algo.add(algo_equality);
         add(algo);
         
         JMenu view_menu = new JMenu("View");

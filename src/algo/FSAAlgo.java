@@ -145,6 +145,16 @@ public class FSAAlgo {
         
         return langAlg;
     }
+    
+    
+    
+    public static void autUnion(FSA autA, FSA autB) {
+        
+        System.out.println("union: "+autA.getName()+" "+autB.getName());
+        
+    }
+    
+    
     /*
      
         Automat Minimierung Stufe 1

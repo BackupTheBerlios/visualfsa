@@ -82,6 +82,23 @@ public class FSA implements Serializable {
         posTable.put(state, p);
     }
     
+    // jeder Endzustand wird nicht Endzustand, jeder nicht Endzustand
+    // wird Endzustand, der automat erkennt fortan also das Komplement seiner
+    // (ehemaligen) Sprache
+    public void invertStates() {
+        Set<Integer> stateSet;
+        
+        stateSet = this.getStates();
+        
+        for (Integer s : stateSet) {
+            if (finalStateSet.contains(s)) {
+                finalStateSet.remove(s);
+            } else {
+              finalStateSet.insert(s);  
+            }
+        }
+    }
+    
     public LinkedList<Transition> getStateTransitions(int k) {
         return transitionTable.get(k);
     }
@@ -176,7 +193,6 @@ public class FSA implements Serializable {
         endSet.intersect(finalStateSet);
         return (!endSet.isEmpty());
     }
-    
     
     private boolean dfaAccepts(String w) {
         Integer reachedState;

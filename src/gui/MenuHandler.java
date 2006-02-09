@@ -25,13 +25,13 @@ import java.util.Hashtable;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
-import gui.dialogs.LangDialog;
 import gui.dialogs.AboutDialog;
+import gui.dialogs.SelectAutDialog;
 
 import static gui.MainMenu.MenuID;
 import datastructs.FSA;
 
-import algo.*;
+import algo.FSAAlgo;
 
 /* Eventhandler für das Anwendungsmenü */
 
@@ -42,7 +42,7 @@ public class MenuHandler implements ActionListener {
     private Hashtable<JMenuItem, MainMenu.MenuID> entries;
     
     public MenuHandler(VFSAGUI _guiMain, Sidebar _guiSide,
-            Hashtable<JMenuItem, MainMenu.MenuID> _entries) {
+        Hashtable<JMenuItem, MainMenu.MenuID> _entries) {
         guiMain = _guiMain;
         guiSide = _guiSide;
         entries = _entries;
@@ -60,9 +60,8 @@ public class MenuHandler implements ActionListener {
                 /* Datei -> Neu, prüfen ob die aktuelle Datei gespeichert werden soll */
                 if (guiMain.options.getBoolValueForKey("ASKSAVE_OPTION", false)) {
                     if (guiMain.checkSave(false, true))
-                        guiMain.newFile();    
-                }
-                else {
+                        guiMain.newFile();
+                } else {
                     guiMain.newFile();
                 }
                 
@@ -72,8 +71,7 @@ public class MenuHandler implements ActionListener {
                 if (guiMain.options.getBoolValueForKey("ASKSAVE_OPTION", false)) {
                     if (guiMain.checkSave(false, true))
                         guiMain.openFile();
-                }
-                else {
+                } else {
                     guiMain.openFile();
                 }
                 break;
@@ -89,10 +87,18 @@ public class MenuHandler implements ActionListener {
             case FILE_QUIT:
                 if (guiMain.options.getBoolValueForKey("ASKSAVE_OPTION", false)) {
                     if (guiMain.checkSave(false, true))
-                      guiMain.dispose();
-                }
-                else {
+                        guiMain.dispose();
+                } else {
                     guiMain.dispose();
+                }
+                break;
+            case ALGO_UNION:
+                SelectAutDialog selAutDlg = new SelectAutDialog(guiMain);
+                selAutDlg.run(guiSide.getList());
+                if (selAutDlg.getSelection()!=-1) {
+                    currAut = guiSide.getCurrentAut();
+                    FSA otherAut = guiSide.getList().get(selAutDlg.getSelection());
+                    FSAAlgo.autUnion(currAut, otherAut);
                 }
                 break;
             case ALGO_LANG:
@@ -101,9 +107,6 @@ public class MenuHandler implements ActionListener {
             case ALGO_DETERM:
                 guiMain.determ();
                 break;
-            case ALGO_RUNVIS:
-                guiMain.runvis();
-                break;
             case ALGO_REMISO:
                 currAut = guiSide.getCurrentAut();
                 if (!currAut.isDeterministic()) {
@@ -111,6 +114,13 @@ public class MenuHandler implements ActionListener {
                     break;
                 }
                 guiSide.insertAut(FSAAlgo.removeIsolatedStates(currAut));
+                break;
+            case ALGO_COMPLEMENT:
+                // muhahaha, easy ;)
+                currAut = guiSide.getCurrentAut();
+                currAut.setName(currAut.getName()+"_compl");
+                currAut.invertStates();
+                guiSide.insertAut(currAut);
                 break;
             case VIEW_FITWINDOW:
                 guiMain.fitWindow();

@@ -36,16 +36,12 @@ import datastructs.AppOptions;
 import datastructs.FSA;
 import algo.FSAAlgo;
 import algo.GenericAlgorithm;
-import threads.LanguageThread;
-import threads.DetermThread;
-import gui.runvis.RunVisual;
 
 public class VFSAGUI extends JFrame {
     
     private BottomBar bottom;
     private Sidebar side;
     private AutWindow autPane;
-    private TopBar top;
     private MainMenu menubar;
     
     private String filename;
@@ -277,16 +273,7 @@ public class VFSAGUI extends JFrame {
      
     }
     
-    
-    // Laufvisualisierung starten
-    public void runvis() {
-        RunVisual runvisDialog;
-        
-        runvisDialog = new RunVisual();
-        runvisDialog.run(side.getCurrentAut());
-    }
-    
-    
+   
     /* automat determinisieren */
     public void determ() {
         FSA myAut;
