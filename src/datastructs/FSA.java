@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.ListIterator;
 import java.awt.Point;
 
-public class FSA implements Serializable {
+public class FSA implements Serializable, Cloneable {
     
     private LinkedHashMap<Integer,LinkedList<Transition>> transitionTable;
     private LinkedHashMap<Integer,Point> posTable; // koor der Zustände
@@ -489,4 +489,32 @@ public class FSA implements Serializable {
         return startStateSet;
     }
     
+    // tiefe Kopie des Automaten erstellen
+    public Object clone() {
+        FSA copy;
+        LinkedList<Transition> currentTL;
+        
+        copy = new FSA();
+        
+        for (Integer key : transitionTable.keySet()) {
+            // die Transitionsliste des aktuellen Zustands(schluessel) aus der Map ziehen
+            currentTL = transitionTable.get(key);
+            
+            copy.setPosition(key, this.getPosition(key)); // o.O
+            
+            // wenn != leer, drüber laufen und dem neuen automaten hinzufügen
+            if (currentTL!=null) {
+                for ( Transition ct : currentTL) {
+                    copy.addTransition(ct.getStartState(), ct.getEndState(), ct.getChar());
+                }
+            }
+        }
+        
+        // Startzustände und Endzustände kopieren
+        copy.startStateSet = (IntegerSet)this.startStateSet.clone();
+        copy.finalStateSet = (IntegerSet)this.finalStateSet.clone();
+        
+        return copy;
+    }
+        
 }
