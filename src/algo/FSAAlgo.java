@@ -147,11 +147,63 @@ public class FSAAlgo {
     }
     
     
+    /*
     
-    public static void autUnion(FSA autA, FSA autB) {
+        Vereinigung zweier Automaten
+     
+        Einfaches Spiel diesmal, die Automaten werden einfach zusammengelegt
+        Wichtig ist nur, die Zustände des einen Automaten entsprechend um-
+        zubennen...böses zahlengefummel das
+     
+     */
+    public static FSA autUnion(FSA autA, FSA autB) {
+        FSA resultFSA, otherClone;
+        int stateMaxA = -1;
+        int stateMaxB = -1;
+        int offset;
         
-        System.out.println("union: "+autA.getName()+" "+autB.getName());
+        // bevor wir hier Referenzen kaputt haun, lieber n neuen Automaten 
+        // als Rückgabewert erstellen, sieht auch prinzipiell sauberer aus
+
+        // der Automat mit der absolut höheren Zustandsnr wird geclonet, ihm
+        // werden dann, mit offset versehen die Zustände des anderen hinzugefügt
+        // um allerhand Fallunterscheidungen zu sparen, wird der jeweils andere
+        // automat auch geclonet
         
+        for ( Integer key : autB.getStates() ) { stateMaxB = Math.max(stateMaxB, key); }
+        for ( Integer key : autA.getStates() ) { stateMaxA = Math.max(stateMaxA, key); }
+        
+        if (stateMaxA>=stateMaxB) {
+            resultFSA = (FSA)autA.clone();
+            otherClone = (FSA)autB.clone();
+            offset = stateMaxA;
+        }
+        else {
+            resultFSA = (FSA)autB.clone();
+            otherClone = (FSA)autA.clone();
+            offset = stateMaxB;
+        }
+        
+        offset++;
+   
+        for (Integer key : otherClone.getStates() ) {
+            for ( Transition t : otherClone.getStateTransitions(key) ) {
+                resultFSA.addTransition(t.getStartState()+offset,
+                    t.getEndState()+offset, t.getChar() );
+            }
+        }
+        
+        for (Integer state : otherClone.getStates() ) { 
+            resultFSA.setStartFlag(state+offset, otherClone.isStartState(state));
+            resultFSA.setFinalFlag(state+offset, otherClone.isFinalState(state));
+        }
+        
+        resultFSA.setName(autA.getName()+"_union_"+autB.getName());
+       
+        // da die Positionen mit Sicherheit eh hinüber sind... erzeuge einfach neue
+        resultFSA = FSAAlgo.generatePositions(resultFSA);
+        
+        return resultFSA;
     }
     
     
