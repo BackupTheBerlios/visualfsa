@@ -208,12 +208,27 @@ public class Sidebar extends JPanel {
         return result;
     }
     
+    // alles mit !=-1 ist gültig
+    public int getCurrentSelection() {
+        return lastSel;
+    }
+    
     // füge einen neuen (nicht leeren, vgl. insertNewAut) in die Liste ein
-    public void insertAut(FSA aut) {
+    public void insertAut(FSA aut, boolean replace) {
+        int lastIdx = lastSel;
         
-        if (listModel.contains(aut.getName())) {
+        // wenn wir ersetzen, ist es banane ob da schon ein Automat mit demselben Namen ist...
+        if (listModel.contains(aut.getName()) && !replace) {
             JOptionPane.showMessageDialog(autWin, "The list already contains a automaton with this name.");
             return;
+        }
+        
+        if (replace) {
+            // lastSel muss auf -1 gesetzt werden, da durch das verändern von Model/Data der
+            // ListListener triggert.... sonst geht da was kaputt
+            lastSel = -1;
+            listModel.remove(lastIdx);
+            listData.remove(lastIdx);
         }
         
         listData.add(aut);

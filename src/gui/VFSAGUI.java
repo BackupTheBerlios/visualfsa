@@ -111,11 +111,6 @@ public class VFSAGUI extends JFrame {
             }
         });
         
-        try {
-            FileIO.writeOptions(options);
-        } catch (Exception e) {
-            System.err.println("error while writing options!");
-        }
     }
     
     // eigentlich hässlich, jede Menge Dispatchmethoden :/
@@ -161,8 +156,8 @@ public class VFSAGUI extends JFrame {
             res = JOptionPane.YES_OPTION;
         } else {
             res = JOptionPane.showConfirmDialog(this,
-                    "Changes to this file will be lost, save it now?",
-                    "Notice", JOptionPane.YES_NO_CANCEL_OPTION);
+                "Changes to this file will be lost, save it now?",
+                "Notice", JOptionPane.YES_NO_CANCEL_OPTION);
         }
         
         switch(res) {
@@ -182,7 +177,7 @@ public class VFSAGUI extends JFrame {
                     side.insertResults(filename+" saved");
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(this, "Error while writing, check permissions?!",
-                            "Fehler", JOptionPane.ERROR_MESSAGE);
+                        "Fehler", JOptionPane.ERROR_MESSAGE);
                 }
                 
                 return true;
@@ -208,14 +203,18 @@ public class VFSAGUI extends JFrame {
         autPane.repaint();
         autPane.paintComponent(autPane.getGraphics());
         
-        
+        saveOptions();
+    }
+    
+    
+    /* speichert die aktuellen programmeinstellungen  */
+    public void saveOptions() {
         try {
             FileIO.writeOptions(options);
         } catch (Exception e) {
             System.err.println("error while writing options!");
         }
     }
-    
     
     /**
      * Öffnet einen Dateidialog in dem der Benutzer eine Datei auswählen kann.
@@ -243,12 +242,12 @@ public class VFSAGUI extends JFrame {
                 side.insertList(inData);
             } catch(IOException ioEx) {
                 JOptionPane.showMessageDialog(this,"(IO-Error "+ioEx.getMessage()+")",
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                    "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception generalEx) {
                 JOptionPane.showMessageDialog(this,
-                        "(Read-Error "+
-                        generalEx.getMessage()+")","Error",
-                        JOptionPane.ERROR_MESSAGE);
+                    "(Read-Error "+
+                    generalEx.getMessage()+")","Error",
+                    JOptionPane.ERROR_MESSAGE);
             }
             
         }
@@ -270,22 +269,24 @@ public class VFSAGUI extends JFrame {
         guessLangAlgo = FSAAlgo.guessLang(currAut);
         waitDlg.run(guessLangAlgo);
         side.insertResults(guessLangAlgo.getResult().toString());
-     
+        
     }
     
-   
+    
     /* automat determinisieren */
     public void determ() {
         FSA myAut;
         FSA result;
         BusyDialog waitDlg;
         GenericAlgorithm determAlgo;
+        int oldAut;
         
         /* gui infos synchr. */
         myAut = side.getCurrentAut();
+        oldAut = side.getCurrentSelection();
         
         /* zunächst ein paar unschöne Fälle abfangen, gegen die wir (momentan)
-           noch keine Handhabe haben -.- 
+           noch keine Handhabe haben -.-
          */
         
         if (myAut.getStates().size()>=17) {
@@ -298,13 +299,13 @@ public class VFSAGUI extends JFrame {
             JOptionPane.showMessageDialog(this, "This automaton is already a DFA");
             return;
         }
-    
+        
         determAlgo = FSAAlgo.determ(myAut);
         waitDlg = new BusyDialog(this, "Patience", true);
         waitDlg.run(determAlgo);
         result = ((FSA)determAlgo.getResult());
         result.setName(myAut.getName()+"_dfa");
-        side.insertAut(result);
+        side.insertAut(result, options.getBoolValueForKey("REPLACE_AUT", false));
     }
     
     public void fitWindow() {

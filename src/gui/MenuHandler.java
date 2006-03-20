@@ -54,6 +54,7 @@ public class MenuHandler implements ActionListener {
         MainMenu.MenuID val = entries.get(eventSource);
         
         FSA currAut;
+        int selectedAut;
         
         switch (val) {
             case FILE_NEW:
@@ -85,6 +86,7 @@ public class MenuHandler implements ActionListener {
                 guiMain.showOptions();
                 break;
             case FILE_QUIT:
+                guiMain.saveOptions();
                 if (guiMain.options.getBoolValueForKey("ASKSAVE_OPTION", false)) {
                     if (guiMain.checkSave(false, true))
                         guiMain.dispose();
@@ -92,13 +94,18 @@ public class MenuHandler implements ActionListener {
                     guiMain.dispose();
                 }
                 break;
+            case ALGO_REPLACE:
+                guiMain.options.setBoolValueForKey("REPLACE_AUT", eventSource.isSelected());
+                guiMain.saveOptions();
+                break;
             case ALGO_UNION:
                 SelectAutDialog selAutDlg = new SelectAutDialog(guiMain);
                 selAutDlg.run(guiSide.getList());
                 if (selAutDlg.getSelection()!=-1) {
+                    selectedAut = guiSide.getCurrentSelection();
                     currAut = guiSide.getCurrentAut();
                     FSA otherAut = guiSide.getList().get(selAutDlg.getSelection());
-                    FSAAlgo.autUnion(currAut, otherAut);
+                    guiSide.insertAut(FSAAlgo.autUnion(currAut, otherAut), guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
                 }
                 break;
             case ALGO_LANG:
@@ -109,18 +116,18 @@ public class MenuHandler implements ActionListener {
                 break;
             case ALGO_REMISO:
                 currAut = guiSide.getCurrentAut();
-                if (!currAut.isDeterministic()) {
+                 if (!currAut.isDeterministic()) {
                     JOptionPane.showMessageDialog(guiMain, "Only DFA can be minimized.", "Warning", JOptionPane.WARNING_MESSAGE);
                     break;
                 }
-                guiSide.insertAut(FSAAlgo.removeIsolatedStates(currAut));
+                guiSide.insertAut(FSAAlgo.removeIsolatedStates(currAut), guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
                 break;
             case ALGO_COMPLEMENT:
                 // muhahaha, easy ;)
                 currAut = guiSide.getCurrentAut();
                 currAut.setName(currAut.getName()+"_compl");
                 currAut.invertStates();
-                guiSide.insertAut(currAut);
+                guiSide.insertAut(currAut, guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
                 break;
             case VIEW_FITWINDOW:
                 guiMain.fitWindow();

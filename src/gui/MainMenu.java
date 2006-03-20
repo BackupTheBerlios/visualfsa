@@ -27,13 +27,14 @@ import javax.swing.KeyStroke;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.ImageIcon;
 
 public class MainMenu extends JMenuBar {
     
     public static enum MenuID {
         FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT, FILE_OPTIONS,
-        ALGO_LANG, ALGO_DETERM, ALGO_REMISO, ALGO_COMPLEMENT, ALGO_INTERSECT, ALGO_UNION, ALGO_EQUALITY,
+        ALGO_REPLACE, ALGO_LANG, ALGO_DETERM, ALGO_REMISO, ALGO_COMPLEMENT, ALGO_INTERSECT, ALGO_UNION, ALGO_EQUALITY,
         VIEW_FITWINDOW, VIEW_ALIGNGRID,
         HELP_HELP, HELP_ABOUT
     }
@@ -111,6 +112,9 @@ public class MainMenu extends JMenuBar {
         
         algo.setMnemonic('A');
         
+        JCheckBoxMenuItem algo_replace = new JCheckBoxMenuItem("Replace automatons",
+            topLevel.options.getBoolValueForKey("REPLACE_AUT", false));
+        
         JMenuItem algo_lang = new JMenuItem("Accepted Language");
         algo_lang.setMnemonic('L');
         
@@ -120,10 +124,13 @@ public class MainMenu extends JMenuBar {
         JMenuItem algo_remiso = new JMenuItem("Remove Isolated States");
         algo_remiso.setMnemonic('I');
         
+        entries.put(algo_replace, MenuID.ALGO_REPLACE);
         entries.put(algo_remiso, MenuID.ALGO_REMISO);
         entries.put(algo_lang, MenuID.ALGO_LANG);
         entries.put(algo_determ, MenuID.ALGO_DETERM);
         
+        algo.add(algo_replace);
+        algo.addSeparator();
         algo.add(algo_lang);
         algo.add(algo_determ);
         algo.add(algo_remiso);
