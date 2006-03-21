@@ -146,6 +146,7 @@ public class Sidebar extends JPanel {
                     newName = JOptionPane.showInputDialog(autWin, "New Name: ",
                             listModel.elementAt(lastSel));
                     if (newName==null) return; // cancel gedrückt
+                    if (newName.length()==0) return; // ...
                     newName = newName.trim();
                     for (int i = 0 ; i <  newName.length()  ; i++ ) {
                         if (!Character.isJavaIdentifierPart(newName.charAt(i))) {

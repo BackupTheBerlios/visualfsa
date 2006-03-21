@@ -202,7 +202,7 @@ public class FSAAlgo {
        
         // da die Positionen mit Sicherheit eh hinüber sind... erzeuge einfach neue
         resultFSA = FSAAlgo.generatePositions(resultFSA);
-        
+  
         return resultFSA;
     }
     
@@ -230,6 +230,7 @@ public class FSAAlgo {
         stateStack = new LinkedList<Integer>();
         visitedStates = new Vector<Integer>();
         Integer currState;
+
         
         currState = aut.getStartSet().getFirst();
         
@@ -390,13 +391,6 @@ public class FSAAlgo {
                 
                 // nimm einen Zustand des neuen Automaten her... (also eine Teilmenge der Potmenge)
                 for ( IntegerSet currentIntSet : statePowerSet ) {
-                    
-                    count++;
-                    
-                    progress = (count*100)/pSetSize;
-                    
-                    //  waitDlg.setProgress(progress);
-                    //  waitDlg.setCurrentStep("checking set "+count+" of "+pSetSize);
                     
                     // (TODO?) IntegerSet implementiert (noch) nicht Iterator
                     currentSet = currentIntSet.pureElements();

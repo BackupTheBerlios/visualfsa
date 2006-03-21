@@ -285,6 +285,14 @@ public class VFSAGUI extends JFrame {
         myAut = side.getCurrentAut();
         oldAut = side.getCurrentSelection();
         
+        // bei einem automat mit nur einem zustand und ohne startzustand
+        // wird dieser einzige zustand entfernt, was später beim einfügen
+        // in die gui zu einer NullPointer führt..
+        if (myAut.getStartSet().cardinality()==0) {
+            JOptionPane.showMessageDialog(this, "This automaton lacks a start state", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         /* zunächst ein paar unschöne Fälle abfangen, gegen die wir (momentan)
            noch keine Handhabe haben -.-
          */

@@ -123,8 +123,9 @@ public class AutWindow extends JLayeredPane {
     
     public JState addState(Point position) {
         JState newState;
-        
+    
         newState = new JState(getComponentCountInLayer(STATE_LAYER), this);
+        
         newState.setBounds(position.x, position.y, STATE_SIZE, STATE_SIZE);
         
         add(newState);

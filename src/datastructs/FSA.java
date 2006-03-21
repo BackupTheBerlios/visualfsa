@@ -94,10 +94,23 @@ public class FSA implements Serializable, Cloneable {
             if (finalStateSet.contains(s)) {
                 finalStateSet.remove(s);
             } else {
-              finalStateSet.insert(s);  
+                finalStateSet.insert(s);
             }
         }
     }
+    
+    // prüft ob der Automat mindestens eine Transition hat, bei den Mengenoperation
+    // gibt es Probleme mit Automaten die nur aus Zuständen bestehen, aber keine
+    // Transitionen haben
+    public boolean hasTransitions() {
+        LinkedList<Transition> tl;
+        for (Integer key : transitionTable.keySet()) {
+            tl = transitionTable.get(key);
+            if (tl!=null && tl.size()>=0) return true;
+        }
+        return false;
+    }
+    
     
     public LinkedList<Transition> getStateTransitions(int k) {
         return transitionTable.get(k);
@@ -516,5 +529,5 @@ public class FSA implements Serializable, Cloneable {
         
         return copy;
     }
-        
+    
 }

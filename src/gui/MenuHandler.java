@@ -102,9 +102,15 @@ public class MenuHandler implements ActionListener {
                 SelectAutDialog selAutDlg = new SelectAutDialog(guiMain);
                 selAutDlg.run(guiSide.getList());
                 if (selAutDlg.getSelection()!=-1) {
-                    selectedAut = guiSide.getCurrentSelection();
                     currAut = guiSide.getCurrentAut();
                     FSA otherAut = guiSide.getList().get(selAutDlg.getSelection());
+                    
+                    if (!currAut.hasTransitions() || !otherAut.hasTransitions()) {
+                        JOptionPane.showMessageDialog(guiMain, "At least one automaton does not have any transitions.", 
+                                "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    
                     guiSide.insertAut(FSAAlgo.autUnion(currAut, otherAut), guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
                 }
                 break;
