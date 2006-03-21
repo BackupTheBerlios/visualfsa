@@ -56,6 +56,8 @@ public class MenuHandler implements ActionListener {
         FSA currAut;
         int selectedAut;
         
+        SelectAutDialog selAutDlg;
+        
         switch (val) {
             case FILE_NEW:
                 /* Datei -> Neu, prüfen ob die aktuelle Datei gespeichert werden soll */
@@ -99,7 +101,7 @@ public class MenuHandler implements ActionListener {
                 guiMain.saveOptions();
                 break;
             case ALGO_UNION:
-                SelectAutDialog selAutDlg = new SelectAutDialog(guiMain);
+                selAutDlg = new SelectAutDialog(guiMain);
                 selAutDlg.run(guiSide.getList());
                 if (selAutDlg.getSelection()!=-1) {
                     currAut = guiSide.getCurrentAut();
@@ -112,6 +114,17 @@ public class MenuHandler implements ActionListener {
                     }
                     
                     guiSide.insertAut(FSAAlgo.autUnion(currAut, otherAut), guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
+                }
+                break;
+            case ALGO_INTERSECT:
+                selAutDlg = new SelectAutDialog(guiMain);
+                selAutDlg.run(guiSide.getList());
+                if (selAutDlg.getSelection()!=-1) {
+                    currAut = guiSide.getCurrentAut();
+                    FSA otherAut = guiSide.getList().get(selAutDlg.getSelection());
+                    
+                    guiSide.insertAut(FSAAlgo.autIntersect(currAut, otherAut), 
+                        guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
                 }
                 break;
             case ALGO_LANG:

@@ -36,6 +36,43 @@ import threads.GenericAlgoThread;
 
 public class FSAAlgo {
     
+
+    // inner class, IntPair
+    private static class IntPair implements Cloneable {
+        
+        private int a,b;
+        
+        public IntPair(int _a, int _b) {
+            a = _a; b = _b;
+        }
+        
+        public void setA(int _a) { a = _a; }
+        public void setB(int _b) { b = _b; }
+        public void set(int _a, int _b) { a = _a; b = _b; }
+        
+        public int getA() { return a; }
+        public int getB() { return b; }
+        
+        public Object clone() {
+            IntPair myClone = new IntPair(a,b);
+            return myClone;
+        }
+        
+        public String toString() { return "("+a+","+b+")"; }
+        
+        public boolean equals(Object o) {
+            IntPair other;
+            if (o instanceof IntPair) {
+                other = (IntPair)o;
+                return (other.getA()==a && other.getB()==b);
+            }
+            else {
+                return false;
+            }
+        }
+        
+    } // IntPair
+    
     
     // gittergröße bei der automatischen Positionsgenerierung für die Zustände
     private static final int POS_GEN_SIZE = 90;
@@ -147,6 +184,134 @@ public class FSAAlgo {
     }
     
     
+    
+    /* Test auf Gleichheit, im Sinne der erkannten Sprache
+     
+     Idee, geklaut by Buch ;), es gilt:
+     L(A1) = L(A2) gdw L(A1) subset L(A2) und L(A2) subset L(A1) 
+     für die Inklusionen gilt jeweils folgendes:
+     
+     L(A1) subset L(A2) gdw L(A1) n compl(L(A2) gdw L(A1xcompl(A2)) = emptyset
+     
+     leider wieder nur ein Test mit unsicherem Ausgang, da die Spracherkennung
+     speicherplatzbedingt frühzeitig abbricht, gibt es durchaus ungleiche automaten
+     die nicht als ungleich erkannt werden, da die Wörter die den unterschied 'machen'
+     durch die Spracherkennung nicht erfasst werden. 
+     
+     */
+    
+    public static boolean equalityTest(FSA autA, FSA autB) {
+        
+        
+        return false;
+    }
+    
+    
+    
+    
+    /* 
+     
+        Durchschnitt
+     
+        total ineffizient, schnell hingeklatscht das hier -.-
+        glaub ich jedenfalls ^^
+     
+     */
+    
+    public static FSA autIntersect(FSA autA, FSA autB) {
+        Vector<IntPair> stateCartesian, finalStateCart, startStateCart;    
+        FSA result;
+        
+        stateCartesian = new Vector<IntPair>();
+        finalStateCart = new Vector<IntPair>();
+        startStateCart = new Vector<IntPair>();
+        
+        // berechne zunächst das kartesische Produkt der beiden Zustandsmengen
+        
+        for ( Integer sa : autA.getStates() ) {
+            for ( Integer sb : autB.getStates() ) {
+                stateCartesian.add(new IntPair(sa, sb));
+            }
+        }
+        
+        // dito für die Endzustände
+        
+        for ( Integer sa : autA.getFinalSet().pureElements() ) {
+            for ( Integer sb : autB.getFinalSet().pureElements() ) {
+                finalStateCart.add(new IntPair(sa, sb));
+            }
+        }
+        
+        // dito für die Startzustände..
+        for ( Integer sa : autA.getStartSet().pureElements() ) {
+            for ( Integer sb : autB.getStartSet().pureElements() ) {
+                startStateCart.add(new IntPair(sa, sb));
+            }
+        }
+        
+        result = new FSA();
+        
+        int sa, sb;
+        LinkedList<Transition> tla, tlb;
+        IntPair temp;
+        
+        // durchlaufe nun das kart. Produkt aller Zustände..
+        for ( IntPair currentPair : stateCartesian ) {
+            sa = currentPair.getA();
+            sb = currentPair.getB();
+            
+            tla = autA.getStateTransitions(sa);
+            tlb = autB.getStateTransitions(sb);
+            
+            // durchlaufe das Alphabet von Automat A
+            // es ist tendenziell egal, welches der beiden Alphabete
+            // man durchläuft, man schneidet sie dadurch implizit
+            for ( Character a : autA.getAlphabet() ) {
+                
+                for ( Transition ta : tla ) {
+                    // wenn das Zeichen zutrifft...
+                    if (ta.getChar() == a) {
+                        // ...suche eine passende Transition in der Liste von b
+                        for ( Transition tb : tlb ) {
+
+                            // auch autB hat mit Zeichen a von sb aus eine Transition
+                            if (tb.getChar() == a) {
+                                // der neue Zielzustand, ist das Paar aus den Zielzuständen
+                                // der jeweils gefundenen Transitionen
+                                temp = new IntPair(ta.getEndState(), tb.getEndState());
+                                // bastel nun die komplette neue transition
+                                // die Zustandsnr ergibt sich dabei durch die Position
+                                // des Zahlenpaares innerhalb des Vectors
+                                result.addTransition(stateCartesian.indexOf(currentPair),
+                                        stateCartesian.indexOf(temp), a);
+                            }
+                        
+                        }
+                        
+                    }
+                }
+                
+            }
+            
+        }
+
+        for ( IntPair pair : stateCartesian ) {
+            if (startStateCart.contains(pair)) {
+                result.setStartFlag(stateCartesian.indexOf(pair), true);
+            }
+            if (finalStateCart.contains(pair)) {
+                result.setFinalFlag(stateCartesian.indexOf(pair), true);
+            }
+        }
+        
+        result = generatePositions(result);
+        result.setName(autA.getName()+"_intersect_"+autB.getName());
+       
+        return result;
+    }
+    
+    
+    
     /*
     
         Vereinigung zweier Automaten
@@ -154,6 +319,8 @@ public class FSAAlgo {
         Einfaches Spiel diesmal, die Automaten werden einfach zusammengelegt
         Wichtig ist nur, die Zustände des einen Automaten entsprechend um-
         zubennen...böses zahlengefummel das
+     
+        todo: für nfa klappt das nicht (immer) .. vorher > dfa
      
      */
     public static FSA autUnion(FSA autA, FSA autB) {
