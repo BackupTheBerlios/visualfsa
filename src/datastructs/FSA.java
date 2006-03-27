@@ -185,6 +185,7 @@ public class FSA implements Serializable, Cloneable {
         } else {
             return this.nfaAccepts(word);
         }
+        
     }
     
     
@@ -203,6 +204,11 @@ public class FSA implements Serializable, Cloneable {
         // nfaDelta liefert uU zb die Originalreferenz auf das StartStateSet
         // zurück, deshalb hier clone
         endSet = (IntegerSet)endSet.clone();
+        
+        if (logRun) {
+            lastLog.add(endSet);
+        }
+        
         endSet.intersect(finalStateSet);
         return (!endSet.isEmpty());
     }
@@ -214,7 +220,16 @@ public class FSA implements Serializable, Cloneable {
         // welches getFirst findet (dabei liefert IntegerSet.getFirst
         // das kleinste element in der Menge
         reachedState = dfaDelta(startStateSet.getFirst(), w);
+        
         if (reachedState == -1) return false;
+        
+        if (logRun) {
+            IntegerSet stateSet;
+            stateSet = new IntegerSet();
+            stateSet.insert(reachedState);
+            lastLog.add(stateSet);
+        }
+        
         return (finalStateSet.contains(reachedState));
     }
     
@@ -526,6 +541,8 @@ public class FSA implements Serializable, Cloneable {
         // Startzustände und Endzustände kopieren
         copy.startStateSet = (IntegerSet)this.startStateSet.clone();
         copy.finalStateSet = (IntegerSet)this.finalStateSet.clone();
+        
+        copy.setName(name);
         
         return copy;
     }
