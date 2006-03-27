@@ -43,7 +43,7 @@ import javax.swing.event.ListSelectionListener;
 public class Sidebar extends JPanel {
     
     private JList autList;
-    private JButton newAut, renAut, delAut, resetResults;
+    private JButton newAut, renAut, delAut, resetResults, dupAut;
     private DefaultListModel listModel;
     private LinkedList<FSA> listData;
     private int lastSel;
@@ -70,10 +70,12 @@ public class Sidebar extends JPanel {
         newAut = new JButton("Add");
         renAut = new JButton("Rename");
         delAut = new JButton("Remove");
+        dupAut = new JButton("Duplicate");
         
         newAut.setToolTipText("insert a new, empty automaton");
         renAut.setToolTipText("rename the currently selected automaton");
         delAut.setToolTipText("remove the currently selected automaton");
+        dupAut.setToolTipText("inserts a copy of the current automaton");
         
         autList = new JList();
         autList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -91,6 +93,7 @@ public class Sidebar extends JPanel {
         buttonPanel.add(newAut);
         buttonPanel.add(renAut);
         buttonPanel.add(delAut);
+        buttonPanel.add(dupAut);
         
         // initial ist nur ein Automat in der Liste, dieser kann nicht gelöscht werden
         delAut.setEnabled(false);
@@ -133,6 +136,29 @@ public class Sidebar extends JPanel {
                     autList.setSelectedIndex(listModel.getSize()-1);
                     if (listModel.getSize()<=1)
                         delAut.setEnabled(false);
+                }
+            }
+        });
+        
+        // verdoppelt den aktuellen automaten in der liste
+        // kein super tolles feature, aber recht praktisch für einige Situationen
+        dupAut.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (lastSel != -1) {
+                    FSA toCopy = getCurrentAut();
+                    FSA copy = (FSA)toCopy.clone();
+                    copy.setName(copy.getName()+"_copy");
+                    
+                    // wurde ein leerer automat, d.h. ohne transitonen, die zustände
+                    // interessieren dabei nicht, kopiert, wird ein dummy zustand
+                    // eingefügt (da die Zustände ohne Transitionen beim Kopieren
+                    // verloren gehen), ohne Dummyzustand gehts beim Speichern kaputt
+                    
+                    if (copy.getNonGuiStates().size()<=0) {
+                        copy.setPosition(0, new Point(30,30));
+                    }
+                    
+                    insertAut(copy, false);
                 }
             }
         });
