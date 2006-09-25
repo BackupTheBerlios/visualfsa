@@ -19,12 +19,32 @@
 
 package gui;
 
+import javax.swing.JTabbedPane;
+import javax.swing.JScrollPane;
 
-public class AutWindowAnimator extends AutWindow {
+import datastructs.FSA;
+
+public class AutContainer extends JTabbedPane {
     
-  
-    public AutWindowAnimator() {
-        super(null, true);
+    
+    public AutContainer () {
+        addNewAutomaton();
+    }   
+    
+    public void addNewAutomaton() {
+        AutWindow newAut =
+            new AutWindow(this);
+        
+        JScrollPane autScroller = new
+            JScrollPane(newAut);
+        
+        addTab("Blubberbla", autScroller);               
+    }
+    
+    
+    public FSA getCurrentAutomaton() {
+        JScrollPane sp = (JScrollPane)getSelectedComponent();
+        return ((AutWindow)sp.getViewport().getView ()).toFSA ();
     }
     
 }

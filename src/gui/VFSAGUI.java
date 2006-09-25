@@ -41,7 +41,7 @@ public class VFSAGUI extends JFrame {
     
     private BottomBar bottom;
     private Sidebar side;
-    private AutWindow autPane;
+    private AutContainer autContainer;
     private MainMenu menubar;
     
     private String filename;
@@ -63,16 +63,9 @@ public class VFSAGUI extends JFrame {
         getContentPane().add(bottom, BorderLayout.SOUTH);
         
         
-        autPane = new AutWindow(this, false);
+        autContainer = new AutContainer();
         
-        side = new Sidebar(autPane);
-        
-        side.insertNewAut();
-        
-        centerSplitter = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, autPane, side);
-        centerSplitter.setResizeWeight(0.8f);
-        centerSplitter.setOneTouchExpandable(true);
-        getContentPane().add(centerSplitter, BorderLayout.CENTER);
+        getContentPane().add(autContainer, BorderLayout.CENTER);
         
         menubar = new MainMenu(this, side);
         this.setJMenuBar(menubar);
@@ -123,24 +116,30 @@ public class VFSAGUI extends JFrame {
     // es wird in das Ausgabefenster eine textuelle Zusammenfassung
     // über den Automaten ausgegeben
     public void autInfo() {
-        side.insertResults(autPane.toFSA().infoString());
+        side.insertResults(autContainer.getCurrentAutomaton().infoString());
     }
     
     // der User hat den Worterkennungs-button gedrpckt
     // das Wort wird dem Automaten übergeben, das Ergebnis
     // im Resultfenster angezeigt
     public void wInL(String w) {
-        boolean status = autPane.toFSA().accepts(w, false, false);
+        FSA aut;
+        boolean status;
+        
+        aut = autContainer.getCurrentAutomaton();
+        aut.setLog(true);
+        status = aut.accepts(w, false, false);
         
         // für das leere Wort wähle eine spezielle Darstellung
         if (w.length()==0)
             w = "\\epsilon";
         
         if (status) {
-            side.insertResults(w+" in L("+autPane.getCurrentName()+")");
+            side.insertResults(w+" in L("+aut.getName()+")");
         } else {
             side.insertResults(w+" "+"is not recognized");
         }
+        side.insertResults("Run: "+aut.getLastLog());
     }
     
     
@@ -199,9 +198,9 @@ public class VFSAGUI extends JFrame {
         optDlg = new OptionDlg(this, "Options", options);
         options = optDlg.run();
         
-        autPane.setBackground(options.getColorValueForKey("BACKGROUND_COLOR", Color.WHITE));
+        /*autPane.setBackground(options.getColorValueForKey("BACKGROUND_COLOR", Color.WHITE));
         autPane.repaint();
-        autPane.paintComponent(autPane.getGraphics());
+        autPane.paintComponent(autPane.getGraphics());*/
         
         saveOptions();
     }
@@ -317,21 +316,21 @@ public class VFSAGUI extends JFrame {
     }
     
     public void fitWindow() {
-        Utilities.fitToWindow(side.getCurrentAut(), autPane);
-        if (autPane.isGrid()) {
+        /*Utilities.fitToWindow(autContainer.getCurrentAut(), autPane);
+        if (autContainer.isGrid()) {
             Utilities.processGrid(autPane);
-        }
+        }*/
     }
     
     public void alignToGrid() {
-        Utilities.processGrid(autPane);
-        autPane.setGridState(!autPane.isGrid());
+        /*Utilities.processGrid(autContainer);
+        autContainer.setGridState(!autPane.isGrid());*/
     }
     
     public void newFile() {
-        filename = "noname.fsa";
+        /*(filename = "noname.fsa";
         setTitle(verString+" - "+filename);
-        side.reset();
+        side.reset();*/
     }
     
 }

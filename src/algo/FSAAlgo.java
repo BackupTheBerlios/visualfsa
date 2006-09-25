@@ -36,7 +36,7 @@ import threads.GenericAlgoThread;
 
 public class FSAAlgo {
     
-
+    
     // inner class, IntPair
     private static class IntPair implements Cloneable {
         
@@ -65,8 +65,7 @@ public class FSAAlgo {
             if (o instanceof IntPair) {
                 other = (IntPair)o;
                 return (other.getA()==a && other.getB()==b);
-            }
-            else {
+            } else {
                 return false;
             }
         }
@@ -75,11 +74,11 @@ public class FSAAlgo {
     
     
     // gittergröße bei der automatischen Positionsgenerierung für die Zustände
-    private static final int POS_GEN_SIZE = 90;
-    private static final int POS_OFFSET = 8;
+    private static final int POS_GEN_SIZE = 150;
+    private static final int POS_OFFSET = 16;
     
     // wieviel Zustände in eine Reihe
-    private static final int STATES_PER_ROW = 6;
+    private static final int STATES_PER_ROW = 5;
     
     /*
         guessLang versucht die Sprache die ein Automat erkennt zu identifzieren.
@@ -188,7 +187,7 @@ public class FSAAlgo {
     /* Test auf Gleichheit, im Sinne der erkannten Sprache
      
      Idee, geklaut by Buch ;), es gilt:
-     L(A1) = L(A2) gdw L(A1) subset L(A2) und L(A2) subset L(A1) 
+     L(A1) = L(A2) gdw L(A1) subset L(A2) und L(A2) subset L(A1)
      für die Inklusionen gilt jeweils folgendes:
      
      L(A1) subset L(A2) gdw L(A1) n compl(L(A2) gdw L(A1xcompl(A2)) = emptyset
@@ -196,7 +195,7 @@ public class FSAAlgo {
      leider wieder nur ein Test mit unsicherem Ausgang, da die Spracherkennung
      speicherplatzbedingt frühzeitig abbricht, gibt es durchaus ungleiche automaten
      die nicht als ungleich erkannt werden, da die Wörter die den unterschied 'machen'
-     durch die Spracherkennung nicht erfasst werden. 
+     durch die Spracherkennung nicht erfasst werden.
      
      */
     
@@ -209,7 +208,7 @@ public class FSAAlgo {
     
     
     
-    /* 
+    /*
      
         Durchschnitt
      
@@ -219,7 +218,7 @@ public class FSAAlgo {
      */
     
     public static FSA autIntersect(FSA autA, FSA autB) {
-        Vector<IntPair> stateCartesian, finalStateCart, startStateCart;    
+        Vector<IntPair> stateCartesian, finalStateCart, startStateCart;
         FSA result;
         
         stateCartesian = new Vector<IntPair>();
@@ -263,6 +262,8 @@ public class FSAAlgo {
             tla = autA.getStateTransitions(sa);
             tlb = autB.getStateTransitions(sb);
             
+            if (tla == null || tlb == null) continue;
+            
             // durchlaufe das Alphabet von Automat A
             // es ist tendenziell egal, welches der beiden Alphabete
             // man durchläuft, man schneidet sie dadurch implizit
@@ -273,7 +274,7 @@ public class FSAAlgo {
                     if (ta.getChar() == a) {
                         // ...suche eine passende Transition in der Liste von b
                         for ( Transition tb : tlb ) {
-
+                            
                             // auch autB hat mit Zeichen a von sb aus eine Transition
                             if (tb.getChar() == a) {
                                 // der neue Zielzustand, ist das Paar aus den Zielzuständen
@@ -283,9 +284,9 @@ public class FSAAlgo {
                                 // die Zustandsnr ergibt sich dabei durch die Position
                                 // des Zahlenpaares innerhalb des Vectors
                                 result.addTransition(stateCartesian.indexOf(currentPair),
-                                        stateCartesian.indexOf(temp), a);
+                                    stateCartesian.indexOf(temp), a);
                             }
-                        
+                            
                         }
                         
                     }
@@ -294,7 +295,7 @@ public class FSAAlgo {
             }
             
         }
-
+        
         for ( IntPair pair : stateCartesian ) {
             if (startStateCart.contains(pair)) {
                 result.setStartFlag(stateCartesian.indexOf(pair), true);
@@ -306,14 +307,14 @@ public class FSAAlgo {
         
         result = generatePositions(result);
         result.setName(autA.getName()+"_intersect_"+autB.getName());
-       
+        
         return result;
     }
     
     
     
     /*
-    
+     
         Vereinigung zweier Automaten
      
         Einfaches Spiel diesmal, die Automaten werden einfach zusammengelegt
@@ -329,9 +330,9 @@ public class FSAAlgo {
         int stateMaxB = -1;
         int offset;
         
-        // bevor wir hier Referenzen kaputt haun, lieber n neuen Automaten 
+        // bevor wir hier Referenzen kaputt haun, lieber n neuen Automaten
         // als Rückgabewert erstellen, sieht auch prinzipiell sauberer aus
-
+        
         // der Automat mit der absolut höheren Zustandsnr wird geclonet, ihm
         // werden dann, mit offset versehen die Zustände des anderen hinzugefügt
         // um allerhand Fallunterscheidungen zu sparen, wird der jeweils andere
@@ -344,15 +345,14 @@ public class FSAAlgo {
             resultFSA = (FSA)autA.clone();
             otherClone = (FSA)autB.clone();
             offset = stateMaxA;
-        }
-        else {
+        } else {
             resultFSA = (FSA)autB.clone();
             otherClone = (FSA)autA.clone();
             offset = stateMaxB;
         }
         
         offset++;
-   
+        
         for (Integer key : otherClone.getStates() ) {
             for ( Transition t : otherClone.getStateTransitions(key) ) {
                 resultFSA.addTransition(t.getStartState()+offset,
@@ -360,16 +360,16 @@ public class FSAAlgo {
             }
         }
         
-        for (Integer state : otherClone.getStates() ) { 
+        for (Integer state : otherClone.getStates() ) {
             resultFSA.setStartFlag(state+offset, otherClone.isStartState(state));
             resultFSA.setFinalFlag(state+offset, otherClone.isFinalState(state));
         }
         
         resultFSA.setName(autA.getName()+"_union_"+autB.getName());
-       
+        
         // da die Positionen mit Sicherheit eh hinüber sind... erzeuge einfach neue
         resultFSA = FSAAlgo.generatePositions(resultFSA);
-  
+        
         return resultFSA;
     }
     
@@ -397,7 +397,7 @@ public class FSAAlgo {
         stateStack = new LinkedList<Integer>();
         visitedStates = new Vector<Integer>();
         Integer currState;
-
+        
         
         currState = aut.getStartSet().getFirst();
         
@@ -481,7 +481,70 @@ public class FSAAlgo {
         return result;
     }
     
+    /*
+     Leerheitscheck
+     
+     tendenziell easy-going ;) Wir durchlaufen alle Startzustände des Automaten
+     und prüfen jeweils, mittels einer Art Tiefensuche, ob man von dort aus
+     einen Endzustand erreichen kann, wie ist egal. Damit die Sprache des
+     Automaten nicht leer ist, reicht es ja aus, wenn es einen einzigen gültigen
+     Weg von einem Startzustand zu einem der Endzustände gibt.
+     
+     */
     
+    public static boolean emptinessCheck(FSA aut) {
+        Vector<Integer> startStates = aut.getStartSet().pureElements();
+        
+        for ( Integer k : startStates ) {
+            if (canReachFinalState(aut, k)) return false;
+        }
+        
+        return true;
+    }
+    
+    // hilfsmethide für den Leerheitstest
+    private static boolean canReachFinalState(FSA aut, int startState) {
+        Vector<Integer> visited = new Vector<Integer>();
+        LinkedList<Integer> stateStack = new LinkedList<Integer>();
+        LinkedList<Transition> transList;
+        Integer current, next;
+        
+        // Startzustand auf den Stack... und markieren
+        visited.add(startState);
+        stateStack.addLast(startState);
+        
+        while(!stateStack.isEmpty()) {
+            // zustand vom stack holen
+            current = stateStack.getLast();
+            // besorge dessen transitionen
+            transList = aut.getStateTransitions(current);
+            
+            if (transList!=null) {
+                for (Transition t : transList) {
+                    next = t.getEndState();
+                    
+                    // ist der Zielzustand auch Endzustand sind wir schon fertig...
+                    if (aut.getFinalSet().contains(next)) return true;
+                    
+                    // waren wir da schon...?
+                    if (!visited.contains(next)) {
+                        visited.add(next);
+                        stateStack.addLast(next);
+                        break; // for
+                    }
+                }
+            }
+         
+            // es wurde kein neuer Zustand auf den Stack gepackt, der letzte
+            // fliegt also runter
+            if (current==stateStack.getLast()) {
+                stateStack.removeLast();
+            }
+            
+        }
+        
+        return false;
+    }
     
    /*
         Determinisierung per Potenzmengenkonstruktion
@@ -671,7 +734,7 @@ public class FSAAlgo {
     
     
     
-    private static FSA generatePositions(FSA aut) {
+    public static FSA generatePositions(FSA aut) {
         Set<Integer> stateSet;
         
         // hier müssen die internen Zustände herhalten, da der Automat noch gar kein

@@ -19,6 +19,7 @@
 
 package gui;
 
+import com.sun.corba.se.spi.activation._ActivatorImplBase;
 import datastructs.Transition;
 import datastructs.FSA;
 
@@ -73,127 +74,190 @@ public class AutWindow extends JLayeredPane {
     private BasicStroke linePen;
     private Color lineColour, charColour, bgCol;
     
-    private boolean staticWindow;
+    private Vector<JState> markedStates;
     
     private Point initialPoint, lastPos;
     private Polygon stateShape;
     
     private boolean dragging;
-    private JState draggedState;
     
-    public AutWindow(VFSAGUI _topLevel, boolean _st) {
-        super();
-        topLevel = _topLevel;
-        setLayout(null);
-        setDoubleBuffered(true);
-        setOpaque(true);
+    public AutWindow (AutContainer parent) {
+        super ();
         
-        stateShape = new Polygon();
+        setLayout (null);
+        setDoubleBuffered (true);
+        setOpaque (true);
         
-        stateShape.addPoint(0,0); stateShape.addPoint(0, STATE_SIZE-1);
-        stateShape.addPoint(STATE_SIZE-1, STATE_SIZE-1); stateShape.addPoint(STATE_SIZE-1,0);
+        stateShape = new Polygon ();
         
-        linePen = new BasicStroke(1.5f);
+        resetStateShape ();
         
-        staticWindow = _st;
+        linePen = new BasicStroke (1.5f);
+                        
+        bgCol = topLevel.options.getColorValueForKey ("BACKGROUND_COLOR", Color.WHITE);
         
-        bgCol = topLevel.options.getColorValueForKey("BACKGROUND_COLOR", Color.WHITE);
+        setBackground (bgCol);
         
-        setBackground(bgCol);
+        enableEvents (AWTEvent.MOUSE_EVENT_MASK|AWTEvent.MOUSE_MOTION_EVENT_MASK);
+        statePopup = new StatePopup (null);
         
-        if (!staticWindow) {
-            enableEvents(AWTEvent.MOUSE_EVENT_MASK|AWTEvent.MOUSE_MOTION_EVENT_MASK);
-            statePopup = new StatePopup(_topLevel);
-        }
+        startTriangle = new Polygon ();
+        startTriangle.addPoint (0,0);
+        startTriangle.addPoint (8,0);
+        startTriangle.addPoint (0,8);
         
-        startTriangle = new Polygon();
-        startTriangle.addPoint(0,0);
-        startTriangle.addPoint(8,0);
-        startTriangle.addPoint(0,8);
+        vertex = new Polygon ();
+        vertex.addPoint (0,0);
+        vertex.addPoint (4,10);
+        vertex.addPoint (-4, 10);
         
-        vertex = new Polygon();
-        vertex.addPoint(0,0);
-        vertex.addPoint(4,10);
-        vertex.addPoint(-4, 10);
+        markedStates = new Vector<JState>();
         
-        
-        initialPoint = new Point();
-        lastPos = new Point();
+        initialPoint = new Point ();
+        lastPos = new Point ();
     }
     
-    public JState addState(Point position) {
+    public JState addState (Point position) {
         JState newState;
-    
-        newState = new JState(getComponentCountInLayer(STATE_LAYER), this);
         
-        newState.setBounds(position.x, position.y, STATE_SIZE, STATE_SIZE);
+        newState = new JState (getComponentCountInLayer (STATE_LAYER), this);
         
-        add(newState);
-        setLayer(newState, STATE_LAYER);
+        newState.setBounds (position.x, position.y, STATE_SIZE, STATE_SIZE);
+        
+        add (newState);
+        setLayer (newState, STATE_LAYER);
         return newState;
     }
     
     
-    public Polygon getStartTriangle() {
+    public Polygon getStartTriangle () {
         return startTriangle;
     }
     
+    // fuegt einen Zustand der aktuellen Auswahl hinzu/entfernt ihn
+    public void setMark (JState state, boolean add) {
+        if (add) {
+            markedState = state;
+            if (!markedStates.contains (state)) {
+                markedStates.add (state);
+                state.setMode (true);
+            }
+        } else {
+            markedStates.remove (state);
+            state.setMode (false);
+        }
+        
+        System.out.println("markvector: "+markedStates);
+        System.out.println("(last) marked: "+markedState);
+    }
+    
+    // auswahl-status eines Zustandes erfragen
+    public boolean getMarkFor (JState state) {
+        return markedStates.contains (state);
+    }
+    
+    // auswahl zuruecksetzen
+    public void clearSelection () {
+        for (JState s : markedStates) {
+            s.setMode (false);
+        }
+        markedStates.clear ();
+    }
+    
+    public Dimension getPreferredSize() {        
+        Object[] states;
+        states = getComponentsInLayer(STATE_LAYER);
+        JState s;
+        
+        int xmax = 400;
+        int ymax = 300;
+        
+        for (int i = 0 ; i < states.length ; i++ ) {
+            s = (JState)states[i];
+            xmax = Math.max ( s.getLocation().x, xmax );
+            ymax = Math.max ( s.getLocation().y, ymax );
+        }
+        
+        return new Dimension(xmax, ymax);
+    }
+    
+    
     // entferne den Zustand which
-    public void removeState(JState which) {
+    public void removeState (JState which) {
         JState curr;
         Object[] states;
         
         // um nur die Zustände ausser diesem zu erwischen verschiebe ihn kurzzeitig in
         // einen anderen Layer
-        setLayer(which, STATE_LAYER+1);
-        states = getComponentsInLayer(STATE_LAYER);
+        setLayer (which, STATE_LAYER+1);
+        states = getComponentsInLayer (STATE_LAYER);
         
         // jeder andere Zustand entfernt nun seine ausgehenden Transitionen zu diesem
         // Zustand
         for (int i = 0 ; i < states.length ; i++ ) {
             curr = (JState)states[i];
-            curr.removeTransTo(which);
-            if (curr.getNumber()>which.getNumber()) curr.setNumber(curr.getNumber()-1);
+            curr.removeTransTo (which);
+            if (curr.getNumber ()>which.getNumber ()) curr.setNumber (curr.getNumber ()-1);
         }
         
         if (markedState==which)
             markedState = null;
         
-        remove(which);
+        remove (which);
         which = null;
-        repaint();
+        repaint ();
     }
     
-    public void setStatePoint(Point p, Point statePos) {
+    public void setStatePoint (Point p, Point statePos) {
         initialPoint.x = p.x;
         initialPoint.y = p.y;
         lastPos.x =  statePos.x;
         lastPos.y = statePos.y;
-        drawStateShape(lastPos, true);
-        lastPos.translate(initialPoint.x, initialPoint.y);
+        drawStateShape (lastPos, true);
+        lastPos.translate (initialPoint.x, initialPoint.y);
     }
     
-    public void setDragging(boolean b, JState which) {
+    public void setDragging (boolean b) {
         dragging = b;
-        draggedState = which;
     }
     
-    public boolean isDragging() {
+    public boolean isDragging () {
         return dragging;
     }
     
     // füge bei Doppelklick einen neuen Zustand ein
-    protected void processMouseEvent(MouseEvent ev) {
+    protected void processMouseEvent (MouseEvent ev) {
         
-        if (ev.getClickCount()==2 && ev.getButton()==MouseEvent.BUTTON1
-                && ev.getID()==MouseEvent.MOUSE_PRESSED) {
-            addState(ev.getPoint());
+        // deaktiviere mouse events beim Anzeigen des popups
+        if (isShowingPopup ()) return;
+        
+        requestFocus ();
+        
+        if (ev.getID ()==MouseEvent.MOUSE_CLICKED && ev.getButton ()==MouseEvent.BUTTON1) {
+            clearSelection ();
         }
         
-        if (dragging && draggedState!=null && ev.getID()==MouseEvent.MOUSE_RELEASED) {
+        if (ev.getClickCount ()==2 && ev.getButton ()==MouseEvent.BUTTON1
+            && ev.getID ()==MouseEvent.MOUSE_PRESSED) {
+            addState (ev.getPoint ());
+        }                
+        
+        if (dragging && markedState!=null && ev.getID ()==MouseEvent.MOUSE_RELEASED) {
             dragging = false;
-            drawStateShape(lastPos, false);
-            lastPos.translate( -initialPoint.x, -initialPoint.y);
+            drawStateShape (lastPos, false);
+            lastPos.translate ( -initialPoint.x, -initialPoint.y);         
+            
+            
+            markedStates.remove(markedState);
+            
+            for ( JState s : markedStates ) {
+                s.setLocation (s.getLocation ().x+-(markedState.getLocation ().x-lastPos.x),
+                               s.getLocation ().y+-(markedState.getLocation ().y-lastPos.y));                                    
+            }
+            
+            markedStates.add(markedState);
+            
+            //lastPos.translate ( -initialPoint.x, initialPoint.y );
             
             if (grid) {
                 lastPos.x = lastPos.x - (lastPos.x % GRID_SIZE);
@@ -201,113 +265,150 @@ public class AutWindow extends JLayeredPane {
                 if (lastPos.x < 1) { lastPos.x = 1; }
                 if (lastPos.y < 1) { lastPos.y = 1; }
             }
-            
-            draggedState.setLocation(lastPos);
-            repaint();
+                                    
+            markedState.setLocation (lastPos);
+            repaint ();
         }
         
     }
     
-    public void processMouseMotionEvent(MouseEvent ev) {
-        if (!dragging || isShowingPopup()) return;
-        Point p = new Point(ev.getPoint());
-        //p.x -= initialPoint.x;
-        //p.y -= initialPoint.y;
-        drawStateShape(p, true);
+    public void processMouseMotionEvent (MouseEvent ev) {
+        if (!dragging || isShowingPopup ()) return;
+        Point p = new Point (ev.getPoint ());   
+        drawStateShape (p, true);
     }
     
     
-    private void drawStateShape(Point newPos, boolean drawAgain) {
-        Graphics gr = this.getGraphics();
+    private void resetStateShape () {
+        stateShape.reset ();
+        stateShape.addPoint (0,0);
+        stateShape.addPoint (0, STATE_SIZE-1);
+        stateShape.addPoint (STATE_SIZE-1, STATE_SIZE-1);
+        stateShape.addPoint (STATE_SIZE-1,0);
+    }
+    
+    private void drawStateShape (Point newPos, boolean drawAgain) {
+        Graphics gr = this.getGraphics ();
+        boolean putBack;
         
-        gr.setXORMode(Color.GREEN);
+        gr.setXORMode (Color.GREEN);
         
-        stateShape.translate(lastPos.x-initialPoint.x, lastPos.y-initialPoint.y);
-        gr.drawPolygon(stateShape);
-        stateShape.translate(-(lastPos.x-initialPoint.x), -(lastPos.y-initialPoint.y));
+        putBack = markedStates.remove (markedState);
+        
+        // die zusaetzlich markierten Zustaende zeichnen
+        
+        for ( JState s : markedStates ) {
+            stateShape.translate (
+                -(markedState.getLocation ().x-lastPos.x+initialPoint.x),
+                -(markedState.getLocation ().y-lastPos.y+initialPoint.y));
+            
+            stateShape.translate (s.getLocation ().x, s.getLocation ().y );
+            
+            gr.drawPolygon (stateShape);
+            
+            resetStateShape ();
+        }
+        
+        // den eigentlich Zustand
+        
+        stateShape.translate ((lastPos.x-initialPoint.x), (lastPos.y-initialPoint.y));
+        gr.drawPolygon (stateShape);
+        stateShape.translate (-(lastPos.x-initialPoint.x), -(lastPos.y-initialPoint.y));
         
         if (drawAgain) {
             lastPos = newPos;
-            stateShape.translate((lastPos.x-initialPoint.x), (lastPos.y-initialPoint.y));
-            gr.drawPolygon(stateShape);
-            stateShape.translate(-(lastPos.x-initialPoint.x), -(lastPos.y-initialPoint.y));
+            stateShape.translate ((lastPos.x-initialPoint.x), (lastPos.y-initialPoint.y));
+            gr.drawPolygon (stateShape);
+            stateShape.translate (-(lastPos.x-initialPoint.x), -(lastPos.y-initialPoint.y));
+            
+            
+            for ( JState s : markedStates ) {
+                stateShape.translate (
+                    -(markedState.getLocation ().x-lastPos.x+initialPoint.x),
+                    -(markedState.getLocation ().y-lastPos.y+initialPoint.y));
+                
+                stateShape.translate (s.getLocation ().x, s.getLocation ().y );
+                
+                gr.drawPolygon (stateShape);
+                
+                resetStateShape ();
+            }
+            
         }
         
-    }
-    
-    
-    public boolean isStatic() {
-        return staticWindow;
+        if (putBack) 
+            markedStates.add (markedState);
+        
     }
     
     
     // jedem Zustand wird seine Transitionsliste entnommen und die entspr.
     // Transitionen dann gezeichnet
-    public void paintComponent(Graphics gr) {
+    public void paintComponent (Graphics gr) {
         int numstate;
         JState current, endState;
         Object[] states;
         Point startLoc, endLoc;
         
-        Graphics2D g = (Graphics2D)gr.create();
+        Graphics2D g = (Graphics2D)gr.create ();
         
         if (grid) {
             
-            int wi = this.getWidth();
-            int he = this.getHeight();
+            int wi = this.getWidth ();
+            int he = this.getHeight ();
             
-            g.setColor(Color.LIGHT_GRAY);
+            g.setColor (Color.LIGHT_GRAY);
             
             for (int i = (STATE_HALFSIZE) ; i <= wi ; i+=GRID_SIZE) {
-                g.drawLine(i,0,i,he);
+                g.drawLine (i,0,i,he);
             }
             
             for (int j = (STATE_HALFSIZE) ; j <= he ; j+=GRID_SIZE) {
-                g.drawLine(0,j,wi,j);
+                g.drawLine (0,j,wi,j);
             }
         }
         
-        g.setStroke(linePen);
+        g.setStroke (linePen);
         
-        numstate = getComponentCountInLayer(STATE_LAYER);
-        states = getComponentsInLayer(STATE_LAYER);
+        numstate = getComponentCountInLayer (STATE_LAYER);
+        states = getComponentsInLayer (STATE_LAYER);
         
         for (int i = 0 ; i < numstate ; i++ ) {
             current = (JState)states[i];
-            current.setTransDrawn(false);
+            current.setTransDrawn (false);
         }
         
-        if (topLevel.options.getBoolValueForKey("ANTIALIAS_OPTION", true)) {
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if (topLevel.options.getBoolValueForKey ("ANTIALIAS_OPTION", true)) {
+            g.setRenderingHint (RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
         
         // wir holen uns bereits hier die Farben aus dem Optionsobjekt
         // um unnötigen Methodenaufruf-Overhead in drawTransitions zu vermeiden
-        charColour = topLevel.options.getColorValueForKey("CHAR_COLOR", Color.RED);
-        lineColour = topLevel.options.getColorValueForKey("LINE_COLOR", Color.BLACK);
+        charColour = topLevel.options.getColorValueForKey ("CHAR_COLOR", Color.RED);
+        lineColour = topLevel.options.getColorValueForKey ("LINE_COLOR", Color.BLACK);
         
         for (int i = 0 ; i < numstate ; i++ ) {
             current = (JState)states[i];
-            drawTransitions(current, g);
-            current.setTransDrawn(true);
+            drawTransitions (current, g);
+            current.setTransDrawn (true);
         }
         
-        g.dispose();
+        g.dispose ();
         
     }
     
-    public void showPopup(JState who) {
+    public void showPopup (JState who) {
         if (drawingEdge) return;
-        if (!statePopup.isVisible()) {
-            statePopup.handlePopupEvent(who);
+        if (!statePopup.isVisible ()) {
+            statePopup.handlePopupEvent (who);
         }
     }
     
-    public boolean isShowingPopup() {
-        return statePopup.isVisible();
+    public boolean isShowingPopup () {
+        return statePopup.isVisible ();
     }
     
-    protected void drawTransitions(JState startState, Graphics2D g) {
+    protected void drawTransitions (JState startState, Graphics2D g) {
         Point startLoc, endLoc;
         LinkedHashMap<JState, TransitionData> transList;
         ListIterator<TransitionData> current;
@@ -315,7 +416,7 @@ public class AutWindow extends JLayeredPane {
         Shape finalVertex;
         AffineTransform affineTrans;
         
-        Point mp = new Point(), endPoint;
+        Point mp = new Point (), endPoint;
         int xsize,ysize;
         
         // dreiecksseiten
@@ -323,35 +424,35 @@ public class AutWindow extends JLayeredPane {
         double winkel, cosine, sine;
         int schnittx, schnitty;
         
-        transList = startState.getTransList();
+        transList = startState.getTransList ();
         
-        Point a = new Point();
+        Point a = new Point ();
         
-        affineTrans = new AffineTransform();
+        affineTrans = new AffineTransform ();
         
         
-        for ( JState endState : transList.keySet() ) {
+        for ( JState endState : transList.keySet () ) {
             
-            currTrans = transList.get(endState);
+            currTrans = transList.get (endState);
             
             // Transition ist eine Schlinge
             if (endState==startState) {
-                startLoc = startState.getLocation();
-                startLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
+                startLoc = startState.getLocation ();
+                startLoc.translate (STATE_HALFSIZE,STATE_HALFSIZE);
                 // zeichne einen  'dreiviertel bogen'
-                g.setColor(lineColour);
-                g.drawArc(startLoc.x-STATE_SIZE, startLoc.y-STATE_SIZE, STATE_SIZE, STATE_SIZE, 0, 270);
+                g.setColor (lineColour);
+                g.drawArc (startLoc.x-STATE_SIZE, startLoc.y-STATE_SIZE, STATE_SIZE, STATE_SIZE, 0, 270);
                 // die Transititionszeichen werden oberhalb des
                 // Kreisbogens dargestellt
                 mp.x = startLoc.x-STATE_SIZE;
                 mp.y = startLoc.y-STATE_SIZE-10;
-                g.setColor(charColour);
-                g.drawString(currTrans.getChars().toString(), mp.x, mp.y);
+                g.setColor (charColour);
+                g.drawString (currTrans.getChars ().toString (), mp.x, mp.y);
                 continue;
             }
             
             // aktueller Zielzustand, linke obere Ecke, Mittelpunkt berechnen
-            endLoc = endState.getLocation();
+            endLoc = endState.getLocation ();
             
             // hat der aktuelle Zielzustand auch eine Transition zu uns,
             // wird eine der beiden Transition leicht nach unten verschoben
@@ -359,27 +460,27 @@ public class AutWindow extends JLayeredPane {
             // wird unsere Transition zu ihm verschoben, der Zielzustand
             // seinerseits wird seine dann nicht verschieben
             
-            startLoc = startState.getLocation();
+            startLoc = startState.getLocation ();
             
-            if (endState.hasTransTo(startState) && endState.getTransDrawn()) {
-                startLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE-12);
-                endLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE-12);
+            if (endState.hasTransTo (startState) && endState.getTransDrawn ()) {
+                startLoc.translate (STATE_HALFSIZE,STATE_HALFSIZE-12);
+                endLoc.translate (STATE_HALFSIZE,STATE_HALFSIZE-12);
             } else {
-                startLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
-                endLoc.translate(STATE_HALFSIZE,STATE_HALFSIZE);
+                startLoc.translate (STATE_HALFSIZE,STATE_HALFSIZE);
+                endLoc.translate (STATE_HALFSIZE,STATE_HALFSIZE);
             }
             
             
             // für die Beschriftung mit den Transitionszeichen die Mitte der Linie bestimmen
-            ankath = xsize = Math.abs(endLoc.x-startLoc.x);
-            gegenkath = ysize = Math.abs(endLoc.y-startLoc.y);
+            ankath = xsize = Math.abs (endLoc.x-startLoc.x);
+            gegenkath = ysize = Math.abs (endLoc.y-startLoc.y);
             
             xsize = xsize / 2;
             ysize = ysize / 2;
             
             // mit der Transition als Hypotenuse bildet
             // das ganze ein rechtwinkliges Dreieck, berechne die fehlenden Seiten
-            hypo = Math.sqrt(ankath*ankath + gegenkath*gegenkath);
+            hypo = Math.sqrt (ankath*ankath + gegenkath*gegenkath);
             
             // zu kurze Transition werden ausgeblendet
             if (hypo<MIN_STATE_DISTANCE) continue;
@@ -390,12 +491,12 @@ public class AutWindow extends JLayeredPane {
             else
                 winkel = 0;
             
-            winkel = Math.asin(winkel);
+            winkel = Math.asin (winkel);
             
             // um den Zielzustand befindet sich ein imaginärer Kreis, dessen Schnittpunkt
             // mit der Hypotenuse ist gesucht
-            cosine = Math.cos(winkel);
-            sine = Math.sin(winkel);
+            cosine = Math.cos (winkel);
+            sine = Math.sin (winkel);
             
             // cos alpha = u/r -> u = cos alpha * r
             // u ist die x koor des Schnittpunkts
@@ -404,7 +505,7 @@ public class AutWindow extends JLayeredPane {
             schnittx = (int)(cosine*25);
             schnitty = (int)(sine*25);
             
-            endPoint = new Point(endLoc);
+            endPoint = new Point (endLoc);
             
             // abhängig wie die Zustände zueinander liegen wird dieser Punkt nun
             // auf den Mittelpunkt draufaddiert/subtrahiert
@@ -435,62 +536,45 @@ public class AutWindow extends JLayeredPane {
                 mp.y = startLoc.y + ysize; endPoint.y -= schnitty;
             }
             
-            g.setColor(charColour);
-            g.drawString(currTrans.getChars().toString(), mp.x, mp.y-4);
-            g.setColor(lineColour);
-            g.drawLine(startLoc.x,startLoc.y,endPoint.x,endPoint.y);
+            g.setColor (charColour);
+            g.drawString (currTrans.getChars ().toString (), mp.x, mp.y-4);
+            g.setColor (lineColour);
+            g.drawLine (startLoc.x,startLoc.y,endPoint.x,endPoint.y);
             
             // Pfeilspitze
-            affineTrans.setToRotation(rotAngel,  endPoint.x, endPoint.y);
-            affineTrans.translate(endPoint.x, endPoint.y);
+            affineTrans.setToRotation (rotAngel,  endPoint.x, endPoint.y);
+            affineTrans.translate (endPoint.x, endPoint.y);
             
-            finalVertex = affineTrans.createTransformedShape(vertex);
+            finalVertex = affineTrans.createTransformedShape (vertex);
             
-            g.fill(finalVertex);
+            g.fill (finalVertex);
             
         }
         
     }
     
     
-    public void setGridState(boolean gs) {
+    public void setGridState (boolean gs) {
         grid = gs;
     }
     
-    public boolean isGrid() {
+    public boolean isGrid () {
         return grid;
     }
     
-    
-    // ein Zustand ruft diese Methode auf um anzuzeigen das von ihm
-    // aus das zeichnen einer neuen Transition gestartet wurde
-    // wir merken uns diesen Zustand
-    // ein markierter Zustand verliert diese, Markieren ist während
-    // des Zeichnens generell deaktiviert
-    public void startEdge(JState start) {
-        drawingEdge = true;
-        
-        if (markedState!=null && markedState!=start) {
-            markedState.setMode(JState.MODE_NOMARK);
-            markedState = null;
-        }
-        
-        edgeState = start;
-    }
-    
-    
     // der User beendet das Zeichnen einer neuen Transition
-    public void endEdge(JState end) {
+    public void endEdge (JState end) {
         Vector<Character> autoTrans;
         
+        if (markedState==null) return;
+        
+        clearSelection ();
+        
         // prüfe ob der Nutzer das Autotransitions feature nutzt
-        autoTrans = parseTransChars(topLevel.getAutoTransition());
-        edgeState.insertTransition(end, autoTrans);
+        autoTrans = parseTransChars (topLevel.getAutoTransition ());
+        markedState.insertTransition (end, autoTrans);
         
-        edgeState.setMode(JState.MODE_MARK);
-        markedState = edgeState;
-        
-        drawingEdge = false;
+        setMark (markedState, true);
     }
     
     
@@ -499,18 +583,18 @@ public class AutWindow extends JLayeredPane {
     // gültige Zeichen sind Buchstaben und Zahlen
     // der Rückgabewert 'null' zeigt an das der Benutzer Cancel gedrückt
     // oder keine (bzw. keine gültigen) Zeichen eingegeben hat
-    public Vector<Character> editTransChars(String initial) {
+    public Vector<Character> editTransChars (String initial) {
         String result;
         
-        result = JOptionPane.showInputDialog(this, "Characters (seperated by commas)", initial);
+        result = JOptionPane.showInputDialog (this, "Characters (seperated by commas)", initial);
         
-        if (result==null || result.length()==0) return null;
+        if (result==null || result.length ()==0) return null;
         
-        return parseTransChars(result);
+        return parseTransChars (result);
     }
     
     // erzeugt aus einem FSA Objekt die GUI Darstellung
-    public void insertAut(FSA aut) {
+    public void insertAut (FSA aut) {
         Iterator stateIt;
         Integer currentStateNum;
         JState currentState, destState;
@@ -521,133 +605,123 @@ public class AutWindow extends JLayeredPane {
         Vector<Character> transChars;
         
         // Zeichenfenster zurücksetzen
-        this.removeAll();
+        this.removeAll ();
         markedState = null;
         
-        stateIt = aut.getStates().iterator();
+        stateIt = aut.getStates ().iterator ();
         
-        while (stateIt.hasNext()) {
-            currentStateNum = (Integer)stateIt.next();
-            currentState = addState(aut.getPosition(currentStateNum));
+        while (stateIt.hasNext ()) {
+            currentStateNum = (Integer)stateIt.next ();
+            currentState = addState (aut.getPosition (currentStateNum));
             
-            currentState.setFinalState(aut.isFinalState(currentStateNum));
-            currentState.setStartState(aut.isStartState(currentStateNum));
+            currentState.setFinalState (aut.isFinalState (currentStateNum));
+            currentState.setStartState (aut.isStartState (currentStateNum));
             
             // Zuordnung Referenz JState nach Zustandsnummer merken
             // damit man gleich die Transitionen einfacher zuordnen/einfüge kann
-            stateMap.put(currentStateNum, currentState);
+            stateMap.put (currentStateNum, currentState);
         }
         
-        stateIt = stateMap.keySet().iterator();
+        stateIt = stateMap.keySet ().iterator ();
         
-        while (stateIt.hasNext()) {
-            currentStateNum = (Integer)stateIt.next();
-            currTransList = aut.getStateTransitions(currentStateNum);
+        while (stateIt.hasNext ()) {
+            currentStateNum = (Integer)stateIt.next ();
+            currTransList = aut.getStateTransitions (currentStateNum);
             
             if (currTransList!=null) {
                 
-                transIt = currTransList.listIterator();
+                transIt = currTransList.listIterator ();
                 
                 // Referenz für diese Nummer holen
-                currentState = stateMap.get(currentStateNum);
+                currentState = stateMap.get (currentStateNum);
                 
-                while (transIt.hasNext()) {
-                    currTrans = transIt.next();
-                    destState = stateMap.get(currTrans.getEndState());
+                while (transIt.hasNext ()) {
+                    currTrans = transIt.next ();
+                    destState = stateMap.get (currTrans.getEndState ());
                     transChars = null; // gc
                     transChars = new Vector<Character>();
-                    transChars.add(currTrans.getChar());
-                    currentState.insertTransition(destState, transChars);
+                    transChars.add (currTrans.getChar ());
+                    currentState.insertTransition (destState, transChars);
                 }
             }
         }
         
-        currentName = aut.getName();
+        currentName = aut.getName ();
         
-        repaint();
+        repaint ();
     }
     
     // wandelt die gui infos in einen FSA um
-    public FSA toFSA() {
+    public FSA toFSA () {
         Object[] states;
-        FSA result = new FSA();
+        FSA result = new FSA ();
         JState current;
         TransitionData cTrans;
         LinkedHashMap<JState,TransitionData> transitions;
         int fromState, toState;
         
-        states = getComponentsInLayer(STATE_LAYER);
+        states = getComponentsInLayer (STATE_LAYER);
         
         for (int i = 0 ; i < states.length ; i++ ) {
             // nimm einen Zustand her
             current = (JState)states[i];
             // speichere seine Position
-            fromState = current.getNumber();
-            if (current.isFinalState()) result.setFinalFlag(fromState, true);
-            if (current.isStartState()) result.setStartFlag(fromState, true);
-            result.setPosition((Integer)fromState, current.getLocation());
+            fromState = current.getNumber ();
+            if (current.isFinalState ()) result.setFinalFlag (fromState, true);
+            if (current.isStartState ()) result.setStartFlag (fromState, true);
+            result.setPosition ((Integer)fromState, current.getLocation ());
             // durchlaufe seine Transitionen und füge diese in den Aut. ein
             
-            transitions = current.getTransList();
+            transitions = current.getTransList ();
             
-            for (JState endState : transitions.keySet() ) {
-                cTrans = transitions.get(endState);
-                toState = endState.getNumber();
+            for (JState endState : transitions.keySet () ) {
+                cTrans = transitions.get (endState);
+                toState = endState.getNumber ();
                 
-                for (Character c : cTrans.getChars() ) {
-                    result.addTransition(fromState, toState, c );
+                for (Character c : cTrans.getChars () ) {
+                    result.addTransition (fromState, toState, c );
                 }
                 
             }
         }
-        result.setName(currentName);
+        result.setName (currentName);
         return result;
     }
     
     
-    public String getCurrentName() {
+    public String getCurrentName () {
         return currentName;
     }
     
-    public void setCurrentName(String _n) {
+    public void setCurrentName (String _n) {
         currentName = _n;
     }
     
     
-    public boolean isDrawingEdge() {
+    public boolean isDrawingEdge () {
         return drawingEdge;
     }
     
-    
-    public JState getMarkedState() {
-        return markedState;
-    }
-    
-    public void setMarkedState(JState _marked) {
-        markedState =  _marked;
-    }
-    
-    
-    public static Vector<Character> parseTransChars(String inp) {
+    public static Vector<Character> parseTransChars (String inp) {
         StringTokenizer strTok;
         String ctok;
         Character currChar;
         Vector<Character> chVec = new Vector<Character>();
         
-        strTok = new StringTokenizer(inp,",; ");
+        strTok = new StringTokenizer (inp,",; ");
         
-        while (strTok.hasMoreTokens()) {
-            ctok = strTok.nextToken();
-            if (ctok.length()==1) {
-                if (Character.isLetterOrDigit(ctok.charAt(0))) {
-                    currChar = new Character(ctok.charAt(0));
-                    if (!chVec.contains(currChar))
-                        chVec.add(currChar);
+        while (strTok.hasMoreTokens ()) {
+            ctok = strTok.nextToken ();
+            if (ctok.length ()==1) {
+                if (Character.isLetterOrDigit (ctok.charAt (0))) {
+                    currChar = new Character (ctok.charAt (0));
+                    if (!chVec.contains (currChar))
+                        chVec.add (currChar);
                 }
             }
         }
         // nur ungültige Zeichen
-        if (chVec.isEmpty()) return null;
+        if (chVec.isEmpty ()) return null;
         return chVec;
     }
     

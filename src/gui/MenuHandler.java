@@ -27,10 +27,11 @@ import javax.swing.JOptionPane;
 
 import gui.dialogs.AboutDialog;
 import gui.dialogs.SelectAutDialog;
+import gui.dialogs.BusyDialog;
 
 import static gui.MainMenu.MenuID;
 import datastructs.FSA;
-
+import algo.GenericAlgorithm;
 import algo.FSAAlgo;
 
 /* Eventhandler für das Anwendungsmenü */
@@ -55,8 +56,9 @@ public class MenuHandler implements ActionListener {
         
         FSA currAut;
         int selectedAut;
-        
+        GenericAlgorithm genAlgo;
         SelectAutDialog selAutDlg;
+        BusyDialog waitDlg;
         
         switch (val) {
             case FILE_NEW:
@@ -108,8 +110,8 @@ public class MenuHandler implements ActionListener {
                     FSA otherAut = guiSide.getList().get(selAutDlg.getSelection());
                     
                     if (!currAut.hasTransitions() || !otherAut.hasTransitions()) {
-                        JOptionPane.showMessageDialog(guiMain, "At least one automaton does not have any transitions.", 
-                                "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(guiMain, "At least one automaton does not have any transitions.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                     
@@ -123,7 +125,7 @@ public class MenuHandler implements ActionListener {
                     currAut = guiSide.getCurrentAut();
                     FSA otherAut = guiSide.getList().get(selAutDlg.getSelection());
                     
-                    guiSide.insertAut(FSAAlgo.autIntersect(currAut, otherAut), 
+                    guiSide.insertAut(FSAAlgo.autIntersect(currAut, otherAut),
                         guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
                 }
                 break;
@@ -135,24 +137,49 @@ public class MenuHandler implements ActionListener {
                 break;
             case ALGO_REMISO:
                 currAut = guiSide.getCurrentAut();
-                 if (!currAut.isDeterministic()) {
+                if (!currAut.isDeterministic()) {
                     JOptionPane.showMessageDialog(guiMain, "Only DFA can be minimized.", "Warning", JOptionPane.WARNING_MESSAGE);
                     break;
                 }
                 guiSide.insertAut(FSAAlgo.removeIsolatedStates(currAut), guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
                 break;
             case ALGO_COMPLEMENT:
-                // muhahaha, easy ;)
                 currAut = guiSide.getCurrentAut();
-                currAut.setName(currAut.getName()+"_compl");
+                String nameBackup = currAut.getName();
+                
+                // nfa lassen sich (leider) nicht so einfach komplementieren ...
+                // frickelkram-alarm
+                if (!currAut.isDeterministic()) {
+                    if (currAut.getStartSet().cardinality()==0 || currAut.getStates().size()>=17) {
+                        guiSide.insertResults("Complement: automaton needs to be converted to DFA\n" +
+                            "Error: No start-state or more than 16 states.");
+                        return;
+                    }
+                    guiSide.insertResults("Complement: automaton is convert to DFA (this may take a while)");
+                    GenericAlgorithm determ = FSAAlgo.determ(currAut);
+                    waitDlg = new BusyDialog(guiMain, "Patience", true);
+                    waitDlg.run(determ);
+                    currAut = (FSA)determ.getResult();
+                    currAut.setName(nameBackup);
+                }
+                
                 currAut.invertStates();
+                currAut.setName(currAut.getName()+"_compl");
                 guiSide.insertAut(currAut, guiMain.options.getBoolValueForKey("REPLACE_AUT", false));
+                break;
+            case ALGO_EMPTINESS:
+                System.out.println(FSAAlgo.emptinessCheck(guiSide.getCurrentAut()));
                 break;
             case VIEW_FITWINDOW:
                 guiMain.fitWindow();
                 break;
             case VIEW_ALIGNGRID:
                 guiMain.alignToGrid();
+                break;
+            case VIEW_REALIGN:
+                currAut = guiSide.getCurrentAut();
+                currAut = FSAAlgo.generatePositions(currAut);
+                guiSide.insertAut(currAut, true);
                 break;
             case HELP_ABOUT:
                 AboutDialog aboutDlg = new AboutDialog(guiMain,"About",true);

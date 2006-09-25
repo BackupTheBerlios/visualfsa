@@ -34,8 +34,8 @@ public class MainMenu extends JMenuBar {
     
     public static enum MenuID {
         FILE_NEW, FILE_OPEN, FILE_SAVE, FILE_SAVEAS, FILE_QUIT, FILE_OPTIONS,
-        ALGO_REPLACE, ALGO_LANG, ALGO_DETERM, ALGO_REMISO, ALGO_COMPLEMENT, ALGO_INTERSECT, ALGO_UNION, ALGO_EQUALITY,
-        VIEW_FITWINDOW, VIEW_ALIGNGRID,
+        ALGO_REPLACE, ALGO_LANG, ALGO_DETERM, ALGO_REMISO, ALGO_COMPLEMENT, ALGO_INTERSECT, ALGO_UNION, ALGO_EQUALITY, ALGO_EMPTINESS,
+        VIEW_FITWINDOW, VIEW_ALIGNGRID, VIEW_REALIGN,
         HELP_HELP, HELP_ABOUT
     }
     
@@ -137,9 +137,15 @@ public class MainMenu extends JMenuBar {
         
         JMenu algo_setop = new JMenu("Set Operations");
         
+        algo_setop.setMnemonic('O');
+        
         JMenuItem algo_setop_union = new JMenuItem("Union...");
         JMenuItem algo_setop_intersect = new JMenuItem("Intersection...");
         JMenuItem algo_setop_complement = new JMenuItem("Complement");
+        
+        algo_setop_union.setMnemonic('U');
+        algo_setop_intersect.setMnemonic('c');
+        algo_setop_intersect.setMnemonic('m');
         
         algo_setop.add(algo_setop_union);
         algo_setop.add(algo_setop_intersect);
@@ -152,10 +158,14 @@ public class MainMenu extends JMenuBar {
         algo.add(algo_setop);
         
         JMenuItem algo_equality = new JMenuItem("Equality Test...");
+        JMenuItem algo_emptiness = new JMenuItem("Emptiness Test");
         
+        entries.put(algo_emptiness, MenuID.ALGO_EMPTINESS);
         entries.put(algo_equality, MenuID.ALGO_EQUALITY);
         
         algo.add(algo_equality);
+        algo.add(algo_emptiness);
+        
         add(algo);
         
         JMenu view_menu = new JMenu("View");
@@ -172,14 +182,19 @@ public class MainMenu extends JMenuBar {
         view_grid.setMnemonic('G');
         view_grid.setAccelerator(KeyStroke.getKeyStroke('G', InputEvent.CTRL_MASK));
         
+        JMenuItem view_realign = new JMenuItem("Realign");
+        
+        view_realign.setMnemonic('R');
+        
         view_menu.add(view_fitwin);
         view_menu.add(view_grid);
+        view_menu.add(view_realign);
         
         add(view_menu);
         
         entries.put(view_fitwin, MenuID.VIEW_FITWINDOW);
         entries.put(view_grid, MenuID.VIEW_ALIGNGRID);
-        
+        entries.put(view_realign, MenuID.VIEW_REALIGN);
         
         JMenu help = new JMenu("Help");
         
